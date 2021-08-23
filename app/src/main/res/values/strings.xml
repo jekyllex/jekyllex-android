@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">JekyllEx</string>
+    <string name="app_repository_url">https://github.com/gouravkhunger</string>
+
+    <string name="com_auth0_domain">jekyllex.us.auth0.com</string>
+    <string name="com_auth0_scheme">jekyllex</string>
+
+    <string name="authenticate">Authenticate</string>
+    <string name="login">Login</string>
+    <string name="profile_picture">Profile Picture</string>
+    <string name="profile">Profile</string>
+    <string name="loading_msg">Please wait while we are loading required data…</string>
+    <string name="no_connection">No Internet Connection Available</string>
+    <string name="retry">Retry</string>
+    <string name="go_back">Go Back</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="markdown_editor">Markdown Editor</string>
+    <string name="select_repo_message">Here\'s the list of your repositories, choose one that has your jekyll blog in it</string>
+    <string name="posts">Posts</string>
+    <string name="login_msg">Please log-in with your GitHub account to start using JekyllEx</string>
+    <string name="no_posts_found">No \"_posts\" folder found in this repository</string>
+    <string name="editor_et_hint">Click here to start writing</string>
+    <string name="preview">Preview Changes</string>
+    <string name="edit_meta">Edit Meta Data</string>
+    <string name="alert_et_msg">Add post\'s Meta-Data here…</string>
+    <string name="save">Save</string>
+    <string name="metadata_editor">Meta Data Editor</string>
+    <string name="cancel">Cancel</string>
+    <string name="upload_post">Upload Post</string>
+    <string name="logout">Logout</string>
+    <string name="commit_message">Commit Message</string>
+    <string name="enter_commit_message">Enter Commit Message</string>
+    <string name="upload">Upload</string>
+    <string name="working">Working on it…</string>
+    <string name="repo_private">Private</string>
+    <string name="repo_archived">Archived</string>
+    <string name="open_in_browser">Open in Browser</string>
+    <string name="built_with"><![CDATA[Built with: <b>%1$s</b>.]]></string>
+    <string name="file_size"><![CDATA[File size: <b>%1$s</b>.]]></string>
+    <string name="written_on"><![CDATA[Written on: <b>%1$s</b>.]]></string>
+    <string name="new_post">New Post</string>
+    <string name="create">Create</string>
+    <string name="enter_new_post_filename">Enter New Post\'s Filename</string>
+    <string name="file_name_example"><![CDATA[Example:<br /><b>2021–08–22-my-awesome-post.md</b>]]></string>
+    <string name="report_msg">Report a bug/issue</string>
+    <string name="edit_file">Edit File</string>
+    <string name="preview_changes">Preview Changes</string>
+</resources>

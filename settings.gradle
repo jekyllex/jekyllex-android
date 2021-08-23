@@ -1,0 +1,20 @@
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        jcenter() // Warning: this repository is going to shut down soon
+    }
+}
+rootProject.name = "JekyllEx"
+include ':app'
+
+/*
+include ':markwon-core',
+        ':markwon-ext-latex',
+        ':markwon-ext-strikethrough',
+        ':markwon-ext-tables',
+        ':markwon-html',
+        ':markwon-image-glide',
+        ':markwon-syntax-highlight',
+        ':markwon-test-span'*/

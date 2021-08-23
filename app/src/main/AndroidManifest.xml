@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.github.gouravkhunger.jekyllex">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_logo"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_logo"
+        android:supportsRtl="true"
+        android:theme="@style/SplashScreenTheme">
+        <activity
+            android:name=".ui.posts.PostsActivity"
+            android:label=""
+            android:parentActivityName=".ui.home.HomeActivity" />
+        <activity
+            android:name=".ui.editor.MarkdownEditor"
+            android:label=""
+            android:parentActivityName=".ui.posts.PostsActivity" />
+        <activity
+            android:name=".ui.profile.ProfileActivity"
+            android:parentActivityName=".ui.home.HomeActivity"
+            android:label=""/>
+        <activity
+            android:name=".ui.home.HomeActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.auth.AuthActivity"
+            android:label="@string/authenticate"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="@string/com_auth0_scheme"
+                    android:host="@string/com_auth0_domain"
+                    android:pathPrefix="/login" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
