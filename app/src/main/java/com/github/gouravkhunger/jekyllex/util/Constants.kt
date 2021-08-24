@@ -26,12 +26,10 @@ package com.github.gouravkhunger.jekyllex.util
 
 class Constants {
     companion object {
-
         // constant values used throughout the app
         const val JEKYLLEX_API_BASE_URL = "https://jekyllex-api.herokuapp.com"
 
-        //const val JEKYLLEX_API_BASE_URL = "https://api.jekyllex.xyz"
+        // const val JEKYLLEX_API_BASE_URL = "https://api.jekyllex.xyz"
         const val GITHUB_API_BASE_URL = "https://api.github.com"
-
     }
 }

@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2021 Gourav Khunger
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.github.gouravkhunger.jekyllex.ui.auth
 
 import android.content.ClipData
@@ -40,10 +64,8 @@ class AuthActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         when (preActivityStartChecks(this)) {
-            0 -> {
-            }
-            1 -> {
-            }
+            0 -> Unit
+            1 -> Unit
             2 -> {
                 Toast.makeText(this, "No Internet Connection...", Toast.LENGTH_SHORT).show()
                 setContentView(R.layout.other_no_internet)
@@ -91,24 +113,27 @@ class AuthActivity : AppCompatActivity() {
                 .withScope("read:userdata")
                 .withConnection("github")
                 // Launch the authentication passing the callback where the results will be received
-                .start(this, object : Callback<Credentials, AuthenticationException> {
+                .start(
+                    this,
+                    object : Callback<Credentials, AuthenticationException> {
 
-                    // Called when there is an authentication failure
-                    override fun onFailure(error: AuthenticationException) {
-                        showErrorAlert(error.message)
-                        it.visibility = View.VISIBLE
-                        loginProgressBar.visibility = View.GONE
+                        // Called when there is an authentication failure
+                        override fun onFailure(error: AuthenticationException) {
+                            showErrorAlert(error.message)
+                            it.visibility = View.VISIBLE
+                            loginProgressBar.visibility = View.GONE
+                        }
+
+                        // Called when authentication completed successfully
+                        override fun onSuccess(result: Credentials) {
+                            // Get the access token from the credentials object.
+                            // This can be used to call APIs
+                            manager.saveCredentials(result)
+
+                            getUserInfo(result)
+                        }
                     }
-
-                    // Called when authentication completed successfully
-                    override fun onSuccess(result: Credentials) {
-                        // Get the access token from the credentials object.
-                        // This can be used to call APIs
-                        manager.saveCredentials(result)
-
-                        getUserInfo(result)
-                    }
-                })
+                )
         }
 
         viewModel.userData.observe(this, {
@@ -132,7 +157,6 @@ class AuthActivity : AppCompatActivity() {
                 goToHome()
             }
         })
-
     }
 
     private fun getUserInfo(credentials: Credentials) {
@@ -181,7 +205,6 @@ class AuthActivity : AppCompatActivity() {
         val alert: AlertDialog = dialog.create()
         alert.window?.setBackgroundDrawableResource(R.drawable.rounded_corners)
         alert.show()
-
     }
 
     override fun onNewIntent(intent: Intent?) {

@@ -33,7 +33,6 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 
 class GithubApiInstance {
     companion object {
-
         // retrofit configurations
         private val retrofit by lazy {
             val logging = HttpLoggingInterceptor()
@@ -55,6 +54,5 @@ class GithubApiInstance {
         val api: GithubApi by lazy {
             retrofit.create(GithubApi::class.java)
         }
-
     }
 }

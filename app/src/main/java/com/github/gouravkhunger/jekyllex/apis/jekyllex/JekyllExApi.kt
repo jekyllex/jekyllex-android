@@ -31,11 +31,9 @@ import retrofit2.http.Header
 import retrofit2.http.Path
 
 interface JekyllExApi {
-
     @GET("/user/{id}")
     suspend fun getUserData(
         @Path("id") userId: String,
         @Header("Authorization") accessToken: String
     ): Response<UserModel>
-
 }

@@ -24,15 +24,14 @@
 
 package com.github.gouravkhunger.jekyllex.apis.jekyllex
 
+import com.github.gouravkhunger.jekyllex.util.Constants.Companion.JEKYLLEX_API_BASE_URL
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import com.github.gouravkhunger.jekyllex.util.Constants.Companion.JEKYLLEX_API_BASE_URL
 import retrofit2.converter.gson.GsonConverterFactory
 
 class JekyllExApiInstance {
     companion object {
-
         // retrofit configurations
         private val retrofit by lazy {
             val logging = HttpLoggingInterceptor()
@@ -53,6 +52,5 @@ class JekyllExApiInstance {
         val api: JekyllExApi by lazy {
             retrofit.create(JekyllExApi::class.java)
         }
-
     }
 }

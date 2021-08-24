@@ -28,10 +28,14 @@ import com.github.gouravkhunger.jekyllex.models.CommitModel
 import com.github.gouravkhunger.jekyllex.models.repo_content.RepoContentModel
 import com.github.gouravkhunger.jekyllex.models.repository.RepoModel
 import retrofit2.Response
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Headers
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface GithubApi {
-
     @GET("/user/repos")
     suspend fun getUserRepositories(
         @Header("Authorization") accessToken: String
@@ -64,5 +68,4 @@ interface GithubApi {
         @Path("path", encoded = true) path: String,
         @Header("Authorization") accessToken: String
     ): Response<Void>
-
 }
