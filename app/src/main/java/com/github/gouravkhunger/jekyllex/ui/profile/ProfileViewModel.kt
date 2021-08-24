@@ -8,4 +8,5 @@ class ProfileViewModel(
 ) : ViewModel() {
 
     fun getUserProfile(id: String) = repository.getSavedUser(id)
+
 }

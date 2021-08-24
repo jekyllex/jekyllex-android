@@ -47,7 +47,8 @@ configurations.all {
 }
 
 dependencies {
-    
+
+    // Core Dependencies
     implementation "androidx.core:core-ktx:1.6.0"
     implementation "androidx.appcompat:appcompat:1.3.1"
     implementation "com.google.android.material:material:1.4.0"
@@ -77,10 +78,7 @@ dependencies {
     // Kotlin Extensions and Coroutines support for Room
     implementation "androidx.room:room-ktx:2.3.0"
 
-    // JWT Decode
-    implementation "com.auth0.android:jwtdecode:2.0.0"
-
-    // Shared Perference
+    // Shared Preferences
     implementation "androidx.preference:preference-ktx:1.1.1"
 
     // Markwon
@@ -92,8 +90,4 @@ dependencies {
     implementation "io.noties.markwon:image-glide:$markwon_version"
     implementation "io.noties.markwon:syntax-highlight:$markwon_version"
 
-    testImplementation "junit:junit:4.13.2"
-
-    androidTestImplementation "androidx.test.ext:junit:1.1.3"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
 }

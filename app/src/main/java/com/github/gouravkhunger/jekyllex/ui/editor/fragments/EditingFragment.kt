@@ -26,7 +26,7 @@ class EditingFragment : Fragment(R.layout.fragment_editing) {
         })
 
         viewModel.isTextUpdated.observe(viewLifecycleOwner, {
-            if(it){
+            if (it) {
                 previewBtnParent.visibility = View.VISIBLE
             } else {
                 previewBtnParent.visibility = View.GONE

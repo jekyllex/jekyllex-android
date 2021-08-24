@@ -22,7 +22,7 @@ class PostsViewModel(
         val response = repository.getRepoContent(repoName, "", accessToken)
         if (response.isSuccessful) {
             var flag = false
-            run loop@ {
+            run loop@{
                 response.body()!!.forEach {
                     if (it.name == "_posts") {
                         hasPosts.postValue(true)

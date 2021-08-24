@@ -15,7 +15,6 @@ import com.github.gouravkhunger.jekyllex.ui.posts.PostsActivity
 import kotlinx.android.synthetic.main.other_repository_item.view.*
 import androidx.core.text.HtmlCompat
 
-
 // Adapter of RecyclerView present in Bookmarked Quotes Fragment
 class RepositoriesAdapter(private val activity: Activity) :
     RecyclerView.Adapter<RepositoriesAdapter.RepositoryViewHolder>() {

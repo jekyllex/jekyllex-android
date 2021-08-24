@@ -47,7 +47,7 @@ class MarkdownEditor : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         when (preActivityStartChecks(this)) {
-            0 -> {}
+            0 -> Unit
             1 -> {
                 Toast.makeText(
                     this,
@@ -59,7 +59,7 @@ class MarkdownEditor : AppCompatActivity() {
                 finish()
                 return
             }
-            2-> {
+            2 -> {
                 Toast.makeText(this, "No Internet Connection...", Toast.LENGTH_SHORT).show()
                 setContentView(R.layout.other_no_internet)
                 retry.setOnClickListener {

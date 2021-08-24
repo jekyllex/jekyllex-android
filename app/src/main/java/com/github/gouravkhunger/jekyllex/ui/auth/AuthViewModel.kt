@@ -11,12 +11,12 @@ class AuthViewModel(
     private val repository: UserRepository
 ) : ViewModel() {
 
-    val userData : MutableLiveData<UserModel?> by lazy { MutableLiveData() }
-    val saved : MutableLiveData<Boolean> by lazy { MutableLiveData() }
+    val userData: MutableLiveData<UserModel?> by lazy { MutableLiveData() }
+    val saved: MutableLiveData<Boolean> by lazy { MutableLiveData() }
 
     fun getUserData(id: String, accessToken: String) = viewModelScope.launch {
         val response = repository.getUserData(id, accessToken)
-        if(response.isSuccessful) {
+        if (response.isSuccessful) {
             userData.postValue(response.body())
         } else {
             userData.postValue(null)

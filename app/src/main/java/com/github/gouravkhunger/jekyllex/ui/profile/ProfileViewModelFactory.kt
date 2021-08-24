@@ -8,6 +8,7 @@ class ProfileViewModelFactory(
     private val repository: UserRepository
 ) :  ViewModelProvider.Factory {
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return ProfileViewModel(repository) as T
     }

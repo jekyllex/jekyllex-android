@@ -40,9 +40,11 @@ class AuthActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         when (preActivityStartChecks(this)) {
-            0 -> {}
-            1 -> {}
-            2-> {
+            0 -> {
+            }
+            1 -> {
+            }
+            2 -> {
                 Toast.makeText(this, "No Internet Connection...", Toast.LENGTH_SHORT).show()
                 setContentView(R.layout.other_no_internet)
                 retry.setOnClickListener {
@@ -124,7 +126,7 @@ class AuthActivity : AppCompatActivity() {
         })
 
         viewModel.saved.observe(this, {
-            if(it) {
+            if (it) {
                 loginBtn.visibility = View.VISIBLE
                 loginProgressBar.visibility = View.GONE
                 goToHome()

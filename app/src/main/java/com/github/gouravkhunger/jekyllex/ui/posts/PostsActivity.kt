@@ -45,7 +45,7 @@ class PostsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         when (preActivityStartChecks(this)) {
-            0 -> {}
+            0 -> Unit
             1 -> {
                 Toast.makeText(
                     this,
@@ -57,7 +57,7 @@ class PostsActivity : AppCompatActivity() {
                 finish()
                 return
             }
-            2-> {
+            2 -> {
                 Toast.makeText(this, "No Internet Connection...", Toast.LENGTH_SHORT).show()
                 setContentView(R.layout.other_no_internet)
                 retry.setOnClickListener {
@@ -195,7 +195,12 @@ class PostsActivity : AppCompatActivity() {
                 override fun afterTextChanged(s: Editable?) {
                 }
 
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
                 }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {

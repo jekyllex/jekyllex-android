@@ -90,6 +90,8 @@
                     android:id="@+id/rvPostFileSize"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/openPostInBrowser"
                     android:layout_marginTop="10dp"
                     android:singleLine="true"
                     android:textColor="#757575"
