@@ -40,4 +40,11 @@ class GithubContentRepository {
         path: String,
         accessToken: String
     ) = GithubApiInstance.api.updateFile(commitModel, currentRepo, path, accessToken)
+
+    suspend fun deleteFile(
+        commitModel: CommitModel,
+        currentRepo: String,
+        path: String,
+        accessToken: String
+    ) = GithubApiInstance.api.deleteFile(commitModel, currentRepo, path, accessToken)
 }

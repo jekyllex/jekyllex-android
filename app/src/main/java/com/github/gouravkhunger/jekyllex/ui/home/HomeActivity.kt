@@ -57,14 +57,9 @@ class HomeActivity : AppCompatActivity() {
         when (preActivityStartChecks(this)) {
             0 -> Unit
             1 -> {
-                Toast.makeText(
-                    this,
-                    "Your session has expired...\nPlease log in again",
-                    Toast.LENGTH_SHORT
-                ).show()
                 startActivity(Intent(this, AuthActivity::class.java))
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-                finish()
+                finishAffinity()
                 return
             }
             2 -> {

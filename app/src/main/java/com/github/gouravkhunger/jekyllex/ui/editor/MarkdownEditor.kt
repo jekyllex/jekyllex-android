@@ -78,7 +78,7 @@ class MarkdownEditor : AppCompatActivity() {
                 ).show()
                 startActivity(Intent(this, AuthActivity::class.java))
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-                finish()
+                finishAffinity()
                 return
             }
             2 -> {

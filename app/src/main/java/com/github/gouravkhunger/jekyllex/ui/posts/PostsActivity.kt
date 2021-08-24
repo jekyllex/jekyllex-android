@@ -44,6 +44,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.gouravkhunger.jekyllex.R
+import com.github.gouravkhunger.jekyllex.models.CommitModel
+import com.github.gouravkhunger.jekyllex.models.repo_content.RepoContentItemModel
 import com.github.gouravkhunger.jekyllex.repositories.GithubContentRepository
 import com.github.gouravkhunger.jekyllex.ui.auth.AuthActivity
 import com.github.gouravkhunger.jekyllex.ui.editor.MarkdownEditor
@@ -64,6 +66,7 @@ class PostsActivity : AppCompatActivity() {
     private lateinit var currentRepo: String
     private lateinit var viewModel: PostsViewModel
     private lateinit var repositoriesAdapter: PostsAdapter
+    private var list: ArrayList<RepoContentItemModel>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,7 +81,7 @@ class PostsActivity : AppCompatActivity() {
                 ).show()
                 startActivity(Intent(this, AuthActivity::class.java))
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-                finish()
+                finishAffinity()
                 return
             }
             2 -> {
@@ -123,7 +126,7 @@ class PostsActivity : AppCompatActivity() {
                 .putString("current_repo", currentRepo)
                 .apply()
         } else {
-            Toast.makeText(this, "", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Unexpected error!", Toast.LENGTH_SHORT).show()
             onBackPressed()
         }
 
@@ -146,7 +149,8 @@ class PostsActivity : AppCompatActivity() {
 
         viewModel.posts.observe(this, {
             if (!it.isNullOrEmpty()) {
-                repositoriesAdapter.differ.submitList(it)
+                list = it
+                repositoriesAdapter.differ.submitList(list)
                 rvPosts.visibility = View.VISIBLE
                 postsProgressParent.visibility = View.GONE
             } else {
@@ -165,6 +169,19 @@ class PostsActivity : AppCompatActivity() {
         postsList.apply {
             adapter = repositoriesAdapter
             layoutManager = LinearLayoutManager(this@PostsActivity)
+        }
+    }
+
+    fun deletePost(pos: Int, name: String, path: String, sha: String) {
+        if (list != null && currentRepo.isNotEmpty() && accessToken.isNotEmpty()) {
+            val commit = CommitModel("Deleted $name", null, sha)
+            viewModel.deletePost(commit, currentRepo, path, "Bearer $accessToken")
+            list!!.removeAt(pos)
+            repositoriesAdapter.differ.submitList(list)
+            repositoriesAdapter.notifyItemRemoved(pos)
+            repositoriesAdapter.notifyItemRangeChanged(pos, repositoriesAdapter.differ.currentList.size)
+        } else {
+            Toast.makeText(this, "Current Repository not found", Toast.LENGTH_SHORT).show()
         }
     }
 

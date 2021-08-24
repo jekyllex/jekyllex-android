@@ -27,6 +27,7 @@ package com.github.gouravkhunger.jekyllex.ui.posts
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.gouravkhunger.jekyllex.models.CommitModel
 import com.github.gouravkhunger.jekyllex.models.repo_content.RepoContentItemModel
 import com.github.gouravkhunger.jekyllex.repositories.GithubContentRepository
 import kotlinx.coroutines.launch
@@ -87,5 +88,14 @@ class PostsViewModel(
             }
         }
         return postsArray
+    }
+
+    fun deletePost(
+        commitModel: CommitModel,
+        repo: String,
+        path: String,
+        accessToken: String
+    ) = viewModelScope.launch {
+        val response = repository.deleteFile(commitModel, repo, path, accessToken)
     }
 }

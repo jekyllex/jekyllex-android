@@ -45,4 +45,6 @@
     <string name="report_msg">Report a bug/issue</string>
     <string name="edit_file">Edit File</string>
     <string name="preview_changes">Preview Changes</string>
+    <string name="followers">Followers</string>
+    <string name="following">Following</string>
 </resources>

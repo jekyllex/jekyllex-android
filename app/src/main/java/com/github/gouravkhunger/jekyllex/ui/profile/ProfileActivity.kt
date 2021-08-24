@@ -107,8 +107,12 @@ class ProfileActivity : AppCompatActivity() {
                 Glide.with(this).load(it.picture).circleCrop().into(profilePicImgView)
 
                 userName.text = it.name
-                userEmail.text = it.email
-                userId.text = it.user_id
+                userBio.text = it.bio
+                /*userEmail.text = it.nickname
+                userId.text = it.user_id*/
+
+                followersTv.text = it.followers.toString()
+                followingTv.text = it.following.toString()
 
                 userProfileParentView.visibility = View.VISIBLE
                 profileLoadingProgress.visibility = View.GONE

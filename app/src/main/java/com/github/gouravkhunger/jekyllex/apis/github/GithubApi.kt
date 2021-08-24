@@ -30,10 +30,11 @@ import com.github.gouravkhunger.jekyllex.models.repository.RepoModel
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.HTTP
 import retrofit2.http.Header
 import retrofit2.http.Headers
-import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.PUT
 
 interface GithubApi {
     @GET("/user/repos")
@@ -63,6 +64,17 @@ interface GithubApi {
         "Accept: application/vnd.github.v3+json"
     )
     suspend fun updateFile(
+        @Body commitModel: CommitModel,
+        @Path("currentRepo", encoded = true) currentRepo: String,
+        @Path("path", encoded = true) path: String,
+        @Header("Authorization") accessToken: String
+    ): Response<Void>
+
+    @HTTP(method = "DELETE", path = "/repos/{currentRepo}/contents/{path}", hasBody = true)
+    @Headers(
+        "Accept: application/vnd.github.v3+json"
+    )
+    suspend fun deleteFile(
         @Body commitModel: CommitModel,
         @Path("currentRepo", encoded = true) currentRepo: String,
         @Path("path", encoded = true) path: String,

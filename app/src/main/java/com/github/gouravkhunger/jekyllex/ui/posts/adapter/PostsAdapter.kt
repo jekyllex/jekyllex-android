@@ -31,6 +31,7 @@ import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -38,6 +39,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.github.gouravkhunger.jekyllex.R
 import com.github.gouravkhunger.jekyllex.models.repo_content.RepoContentItemModel
 import com.github.gouravkhunger.jekyllex.ui.editor.MarkdownEditor
+import com.github.gouravkhunger.jekyllex.ui.posts.PostsActivity
 import kotlinx.android.synthetic.main.other_post_item.view.*
 
 // Adapter of RecyclerView present in Bookmarked Quotes Fragment
@@ -106,6 +108,24 @@ class PostsAdapter(private val activity: Activity) :
 
             openPostInBrowser.setOnClickListener {
                 activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(post.html_url)))
+            }
+
+            deletePost.setOnClickListener {
+                val dialog = AlertDialog.Builder(activity)
+                    .setTitle("Attention!")
+                    .setMessage("Are you sure you want to delete this post?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes") { dialog, _ ->
+                        (activity as PostsActivity).deletePost(position, post.name, post.path, post.sha)
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("No") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+
+                val alert: AlertDialog = dialog.create()
+                alert.window?.setBackgroundDrawableResource(R.drawable.rounded_corners)
+                alert.show()
             }
 
             rvPostCard.setOnClickListener {

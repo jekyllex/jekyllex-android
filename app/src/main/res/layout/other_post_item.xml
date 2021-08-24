@@ -53,14 +53,38 @@
             android:layout_margin="16dp"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/rvPostName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:textColor="@android:color/black"
-                android:textSize="20sp"
-                tools:text="2021-08-22-some-random-post.md" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/rvPostName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@+id/deletePost"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginEnd="95dp"
+                    android:singleLine="true"
+                    android:textColor="@android:color/black"
+                    android:textSize="20sp"
+                    tools:text="some-random-post.md" />
+
+                <ImageView
+                    android:id="@+id/deletePost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="@null"
+                    android:clickable="true"
+                    android:contentDescription="@string/open_in_browser"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_delete" />
+
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/rvPostPath"
@@ -91,8 +115,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
-                    android:layout_toStartOf="@+id/openPostInBrowser"
                     android:layout_marginTop="10dp"
+                    android:layout_toStartOf="@+id/openPostInBrowser"
                     android:singleLine="true"
                     android:textColor="#757575"
                     android:textSize="16sp"
