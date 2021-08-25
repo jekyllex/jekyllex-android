@@ -5,9 +5,9 @@
     android:id="@+id/authActivityRootView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.auth.AuthActivity"
-    tools:theme="@style/Theme.JekyllEx"
-    tools:background="@color/white">
+    android:theme="@style/Theme.JekyllEx"
+    tools:background="@color/white"
+    tools:context=".ui.auth.AuthActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

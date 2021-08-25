@@ -2,7 +2,6 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "kotlin-kapt"
-    id "kotlin-android-extensions"
 }
 
 android {
@@ -33,12 +32,18 @@ android {
             buildConfigField "String", "API_AUDIENCE", API_AUDIENCE
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+
+    buildFeatures {
+        viewBinding true
     }
 }
 
@@ -80,6 +85,9 @@ dependencies {
 
     // Shared Preferences
     implementation "androidx.preference:preference-ktx:1.1.1"
+
+    // App Updater
+    implementation "com.github.javiersantos:AppUpdater:2.7"
 
     // Markwon
     final def markwon_version = "4.6.2"

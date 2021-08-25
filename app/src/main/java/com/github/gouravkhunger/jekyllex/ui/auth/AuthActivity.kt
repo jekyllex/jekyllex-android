@@ -46,15 +46,17 @@ import com.auth0.android.result.Credentials
 import com.auth0.android.result.UserProfile
 import com.github.gouravkhunger.jekyllex.BuildConfig
 import com.github.gouravkhunger.jekyllex.R
+import com.github.gouravkhunger.jekyllex.databinding.ActivityAuthBinding
+import com.github.gouravkhunger.jekyllex.databinding.OtherNoInternetBinding
 import com.github.gouravkhunger.jekyllex.db.userdb.UserDataBase
 import com.github.gouravkhunger.jekyllex.repositories.UserRepository
 import com.github.gouravkhunger.jekyllex.ui.home.HomeActivity
 import com.github.gouravkhunger.jekyllex.util.preActivityStartChecks
-import kotlinx.android.synthetic.main.activity_auth.*
-import kotlinx.android.synthetic.main.other_no_internet.*
 
 class AuthActivity : AppCompatActivity() {
 
+    private lateinit var authBinding: ActivityAuthBinding
+    private lateinit var noInternetBinding: OtherNoInternetBinding
     private lateinit var viewModel: AuthViewModel
     private lateinit var account: Auth0
     private lateinit var apiClient: AuthenticationAPIClient
@@ -63,24 +65,8 @@ class AuthActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        when (preActivityStartChecks(this)) {
-            0 -> Unit
-            1 -> Unit
-            2 -> {
-                Toast.makeText(this, "No Internet Connection...", Toast.LENGTH_SHORT).show()
-                setContentView(R.layout.other_no_internet)
-                retry.setOnClickListener {
-                    startActivity(
-                        Intent(this, HomeActivity::class.java)
-                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    )
-                    overridePendingTransition(R.anim.zoom_in, R.anim.zoom_out)
-                    finish()
-                }
-                return
-            }
-        }
+        authBinding = ActivityAuthBinding.inflate(layoutInflater)
+        noInternetBinding = OtherNoInternetBinding.inflate(layoutInflater)
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -100,12 +86,31 @@ class AuthActivity : AppCompatActivity() {
         setTheme(R.style.Theme_JekyllEx)
         if (isLoggedIn) goToHome()
 
-        setContentView(R.layout.activity_auth)
+        when (preActivityStartChecks(this)) {
+            0 -> Unit
+            1 -> Unit
+            2 -> {
+                Toast.makeText(this, "No Internet Connection...", Toast.LENGTH_SHORT).show()
+                setContentView(noInternetBinding.root)
+                noInternetBinding.retry.setOnClickListener {
+                    startActivity(
+                        Intent(this, HomeActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    )
+                    overridePendingTransition(R.anim.zoom_in, R.anim.zoom_out)
+                    finish()
+                }
+                return
+            }
+        }
 
-        loginBtn.setOnClickListener {
+        setContentView(authBinding.root)
+
+        authBinding.loginBtn.setOnClickListener {
 
             it.visibility = View.GONE
-            loginProgressBar.visibility = View.VISIBLE
+            authBinding.loginProgressBar.visibility = View.VISIBLE
 
             WebAuthProvider.login(account)
                 .withScheme(getString(R.string.com_auth0_scheme))
@@ -121,7 +126,7 @@ class AuthActivity : AppCompatActivity() {
                         override fun onFailure(error: AuthenticationException) {
                             showErrorAlert(error.message)
                             it.visibility = View.VISIBLE
-                            loginProgressBar.visibility = View.GONE
+                            authBinding.loginProgressBar.visibility = View.GONE
                         }
 
                         // Called when authentication completed successfully
@@ -152,8 +157,8 @@ class AuthActivity : AppCompatActivity() {
 
         viewModel.saved.observe(this, {
             if (it) {
-                loginBtn.visibility = View.VISIBLE
-                loginProgressBar.visibility = View.GONE
+                authBinding.loginBtn.visibility = View.VISIBLE
+                authBinding.loginProgressBar.visibility = View.GONE
                 goToHome()
             }
         })

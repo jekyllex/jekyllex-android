@@ -47,4 +47,7 @@
     <string name="preview_changes">Preview Changes</string>
     <string name="followers">Followers</string>
     <string name="following">Following</string>
+    <string name="email">Email</string>
+    <string name="uid">uid: %1$s</string>
+    <string name="refresh_profile">Refresh Profile</string>
 </resources>

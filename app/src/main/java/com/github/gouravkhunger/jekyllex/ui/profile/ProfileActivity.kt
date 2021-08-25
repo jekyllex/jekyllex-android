@@ -25,6 +25,7 @@
 package com.github.gouravkhunger.jekyllex.ui.profile
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -37,25 +38,47 @@ import androidx.preference.PreferenceManager
 import com.auth0.android.Auth0
 import com.auth0.android.authentication.AuthenticationAPIClient
 import com.auth0.android.authentication.AuthenticationException
+import com.auth0.android.authentication.storage.CredentialsManagerException
 import com.auth0.android.authentication.storage.SecureCredentialsManager
 import com.auth0.android.authentication.storage.SharedPreferencesStorage
 import com.auth0.android.callback.Callback
 import com.auth0.android.provider.WebAuthProvider
+import com.auth0.android.result.Credentials
 import com.bumptech.glide.Glide
 import com.github.gouravkhunger.jekyllex.BuildConfig
 import com.github.gouravkhunger.jekyllex.R
+import com.github.gouravkhunger.jekyllex.databinding.ActivityProfileBinding
+import com.github.gouravkhunger.jekyllex.databinding.OtherNoInternetBinding
 import com.github.gouravkhunger.jekyllex.db.userdb.UserDataBase
+import com.github.gouravkhunger.jekyllex.models.user.UserModel
 import com.github.gouravkhunger.jekyllex.repositories.UserRepository
 import com.github.gouravkhunger.jekyllex.ui.auth.AuthActivity
 import com.github.gouravkhunger.jekyllex.ui.home.HomeActivity
 import com.github.gouravkhunger.jekyllex.util.preActivityStartChecks
-import kotlinx.android.synthetic.main.activity_profile.*
-import kotlinx.android.synthetic.main.other_no_internet.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ProfileActivity : AppCompatActivity() {
 
+    private lateinit var profileBinding: ActivityProfileBinding
+    private lateinit var noInternetBinding: OtherNoInternetBinding
+    private lateinit var viewModel: ProfileViewModel
+    private lateinit var accessToken: String
+    private lateinit var uid: String
+    private var user: UserModel? = null
+
+    private lateinit var account: Auth0
+    private lateinit var manager: SecureCredentialsManager
+    private lateinit var apiClient: AuthenticationAPIClient
+
+    private var canGoBack = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        profileBinding = ActivityProfileBinding.inflate(layoutInflater)
+        noInternetBinding = OtherNoInternetBinding.inflate(layoutInflater)
 
         when (preActivityStartChecks(this)) {
             0 -> Unit
@@ -72,8 +95,8 @@ class ProfileActivity : AppCompatActivity() {
             }
             2 -> {
                 Toast.makeText(this, "No Internet Connection...", Toast.LENGTH_SHORT).show()
-                setContentView(R.layout.other_no_internet)
-                retry.setOnClickListener {
+                setContentView(noInternetBinding.root)
+                noInternetBinding.retry.setOnClickListener {
                     startActivity(
                         Intent(this, HomeActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -87,38 +110,113 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val uid = prefs.getString("user_id", "") ?: ""
+        uid = prefs.getString("user_id", "") ?: ""
+        accessToken = prefs.getString("access_token", "") ?: ""
+
+        account = Auth0(
+            BuildConfig.Auth0ClientId,
+            getString(R.string.com_auth0_domain)
+        )
+
+        apiClient = AuthenticationAPIClient(account)
+        manager = SecureCredentialsManager(this, apiClient, SharedPreferencesStorage(this))
 
         val repository = UserRepository(UserDataBase(this))
         val factory = ProfileViewModelFactory(repository)
-        val viewModel = ViewModelProvider(this, factory).get(ProfileViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory).get(ProfileViewModel::class.java)
 
         setTheme(R.style.Theme_JekyllEx)
-        setContentView(R.layout.activity_profile)
-        setSupportActionBar(toolbar_profile)
+        setContentView(profileBinding.root)
+        setSupportActionBar(profileBinding.toolbarProfile)
         supportActionBar?.setHomeButtonEnabled(true)
-        toolbar_profile.setNavigationIcon(R.drawable.ic_back)
-        toolbar_profile.setNavigationOnClickListener {
+        profileBinding.toolbarProfile.setNavigationIcon(R.drawable.ic_back)
+        profileBinding.toolbarProfile.setNavigationOnClickListener {
             onBackPressed()
         }
 
         viewModel.getUserProfile(uid).observe(this, {
             if (it != null) {
-                Glide.with(this).load(it.picture).circleCrop().into(profilePicImgView)
+                canGoBack = true
+                user = it
+                profileBinding.apply {
+                    Glide.with(this@ProfileActivity).load(it.picture).circleCrop()
+                        .into(profilePicImgView)
 
-                userName.text = it.name
-                userBio.text = it.bio
-                /*userEmail.text = it.nickname
-                userId.text = it.user_id*/
+                    userName.text = it.name
+                    userBio.text = it.bio
 
-                followersTv.text = it.followers.toString()
-                followingTv.text = it.following.toString()
+                    userGithub.text = it.nickname
+                    githubParent.setOnClickListener {
+                        startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("https://github.com/${userGithub.text}")
+                            )
+                        )
+                    }
 
-                userProfileParentView.visibility = View.VISIBLE
-                profileLoadingProgress.visibility = View.GONE
+                    if (it.email.isNullOrEmpty()) {
+                        emailParent.visibility = View.GONE
+                    } else {
+                        userEmail.text = it.email
+                        emailParent.setOnClickListener {
+                            val mailIntent = Intent(Intent.ACTION_SENDTO)
+                            mailIntent.data = Uri.parse("mailto:")
+                            mailIntent.putExtra(
+                                Intent.EXTRA_EMAIL,
+                                arrayOf(userEmail.text.toString())
+                            )
+                            startActivity(mailIntent)
+                        }
+                    }
+
+                    if (it.location.isNullOrEmpty()) {
+                        locationParent.visibility = View.GONE
+                    } else {
+                        userLocation.text = it.location
+                    }
+
+                    userId.text = getString(R.string.uid, it.user_id)
+
+                    followersTv.text = it.followers.toString()
+                    followingTv.text = it.following.toString()
+
+                    if (it.blog.isNullOrEmpty()) {
+                        blogParent.visibility = View.GONE
+                    } else {
+                        userBlog.text = it.blog.toString()
+                        blogParent.setOnClickListener {
+                            startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(userBlog.text.toString())
+                                )
+                            )
+                        }
+                    }
+
+                    if (it.twitter_username.isNullOrEmpty()) {
+                        twitterParent.visibility = View.GONE
+                    } else {
+                        userTwitter.text = it.twitter_username
+                        twitterParent.setOnClickListener {
+                            startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse("https://twitter.com/${userTwitter.text}")
+                                )
+                            )
+                        }
+                    }
+
+                    userProfileParentView.visibility = View.VISIBLE
+                    profileLoadingProgress.visibility = View.GONE
+                }
             } else {
-                userProfileParentView.visibility = View.GONE
-                profileLoadingProgress.visibility = View.VISIBLE
+                profileBinding.apply {
+                    userProfileParentView.visibility = View.GONE
+                    profileLoadingProgress.visibility = View.VISIBLE
+                }
             }
         })
     }
@@ -131,28 +229,65 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.logout) {
-            val dialog = AlertDialog.Builder(this)
-                .setTitle("Log Out")
-                .setMessage("Are you sure you want to logout?")
-                .setCancelable(false)
-                .setPositiveButton("Log Out") { _, _ ->
-                    logout()
-                }
-                .setNegativeButton("Cancel") { dialog, _ ->
-                    dialog.dismiss()
-                }
+        when (item.itemId) {
+            R.id.logout -> {
+                val dialog = AlertDialog.Builder(this)
+                    .setTitle("Log Out")
+                    .setMessage("Are you sure you want to logout?")
+                    .setCancelable(false)
+                    .setPositiveButton("Log Out") { _, _ ->
+                        logout()
+                    }
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.dismiss()
+                    }
 
-            val alert: AlertDialog = dialog.create()
-            alert.window?.setBackgroundDrawableResource(R.drawable.rounded_corners)
-            alert.show()
+                val alert: AlertDialog = dialog.create()
+                alert.window?.setBackgroundDrawableResource(R.drawable.rounded_corners)
+                alert.show()
+            }
+            R.id.refreshProfile -> {
+                if (user != null && accessToken.isNotEmpty()) {
+                    canGoBack = false
+                    manager.getCredentials(object :
+                            Callback<Credentials, CredentialsManagerException> {
+                            override fun onSuccess(result: Credentials) {
+                                // Use credentials
+                                CoroutineScope(Dispatchers.Default).launch {
+                                    viewModel.deleteUser(user!!)
+                                    viewModel.refreshUserProfile(
+                                        uid,
+                                        "Bearer ${result.accessToken}"
+                                    )
+                                }
+                            }
+
+                            override fun onFailure(error: CredentialsManagerException) {
+                                // No credentials were previously saved 
+                                // or they couldn't be refreshed
+                                Toast.makeText(
+                                    this@ProfileActivity,
+                                    "Error retreiving access token",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        })
+                } else {
+                    Toast.makeText(this, "User undefined", Toast.LENGTH_SHORT).show()
+                }
+            }
+            else -> Unit
         }
         return super.onOptionsItemSelected(item)
     }
 
     override fun onBackPressed() {
-        finish()
-        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+        if (canGoBack) {
+            finish()
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+        } else {
+            Toast.makeText(this, "Please wait, refreshing profile...", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun logout() {
@@ -162,13 +297,11 @@ class ProfileActivity : AppCompatActivity() {
             .clear()
             .apply()
 
-        val account = Auth0(
-            BuildConfig.Auth0ClientId,
-            getString(R.string.com_auth0_domain)
-        )
-
-        val apiClient = AuthenticationAPIClient(account)
-        val manager = SecureCredentialsManager(this, apiClient, SharedPreferencesStorage(this))
+        if (user != null) {
+            CoroutineScope(Dispatchers.Default).launch {
+                viewModel.deleteUser(user!!)
+            }
+        }
 
         WebAuthProvider.logout(account)
             .withScheme(getString(R.string.com_auth0_scheme))
@@ -188,7 +321,8 @@ class ProfileActivity : AppCompatActivity() {
                         finishAffinity()
 
                         val intent = Intent(this@ProfileActivity, AuthActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                        intent.flags =
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
 
                         startActivity(intent)
                     }

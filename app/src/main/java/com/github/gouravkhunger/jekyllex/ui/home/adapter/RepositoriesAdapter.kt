@@ -35,15 +35,16 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.github.gouravkhunger.jekyllex.R
+import com.github.gouravkhunger.jekyllex.databinding.OtherRepositoryItemBinding
 import com.github.gouravkhunger.jekyllex.models.repository.RepoItemModel
 import com.github.gouravkhunger.jekyllex.ui.posts.PostsActivity
-import kotlinx.android.synthetic.main.other_repository_item.view.*
 
 // Adapter of RecyclerView present in Bookmarked Quotes Fragment
 class RepositoriesAdapter(private val activity: Activity) :
     RecyclerView.Adapter<RepositoriesAdapter.RepositoryViewHolder>() {
 
-    inner class RepositoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    inner class RepositoryViewHolder(val binding: OtherRepositoryItemBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
     // differ callback that checks if elements are same of not
     private val differCallback = object : DiffUtil.ItemCallback<RepoItemModel>() {
@@ -66,13 +67,9 @@ class RepositoriesAdapter(private val activity: Activity) :
 
     // inflate layout
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RepositoryViewHolder {
-        return RepositoryViewHolder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.other_repository_item,
-                parent,
-                false
-            )
-        )
+        val binding =
+            OtherRepositoryItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return RepositoryViewHolder(binding)
     }
 
     override fun getItemCount(): Int {
@@ -81,7 +78,7 @@ class RepositoriesAdapter(private val activity: Activity) :
 
     override fun onBindViewHolder(holder: RepositoryViewHolder, position: Int) {
         val repo = differ.currentList[position]
-        holder.itemView.apply {
+        holder.binding.apply {
             rvRepoTitle.text = repo.name
             rvRepoDescription.text = repo.description
             rvRepoDescription.visibility =

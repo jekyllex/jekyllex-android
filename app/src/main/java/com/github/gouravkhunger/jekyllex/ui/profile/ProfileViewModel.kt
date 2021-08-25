@@ -25,10 +25,27 @@
 package com.github.gouravkhunger.jekyllex.ui.profile
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.github.gouravkhunger.jekyllex.apis.jekyllex.JekyllExApiInstance
+import com.github.gouravkhunger.jekyllex.models.user.UserModel
 import com.github.gouravkhunger.jekyllex.repositories.UserRepository
+import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val repository: UserRepository
 ) : ViewModel() {
+
     fun getUserProfile(id: String) = repository.getSavedUser(id)
+
+    fun deleteUser(user: UserModel) = viewModelScope.launch {
+        repository.deleteUser(user)
+    }
+
+    suspend fun refreshUserProfile(id: String, accessToken: String) {
+        val response = JekyllExApiInstance.api.getUserData(id, accessToken)
+        if (response.isSuccessful) {
+            repository.saveUser(response.body()!!)
+            getUserProfile(id)
+        }
+    }
 }

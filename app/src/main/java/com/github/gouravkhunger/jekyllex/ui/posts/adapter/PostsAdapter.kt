@@ -29,7 +29,6 @@ import android.content.Intent
 import android.net.Uri
 import android.text.format.Formatter
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.text.HtmlCompat
@@ -37,16 +36,17 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.github.gouravkhunger.jekyllex.R
+import com.github.gouravkhunger.jekyllex.databinding.OtherPostItemBinding
 import com.github.gouravkhunger.jekyllex.models.repo_content.RepoContentItemModel
 import com.github.gouravkhunger.jekyllex.ui.editor.MarkdownEditor
 import com.github.gouravkhunger.jekyllex.ui.posts.PostsActivity
-import kotlinx.android.synthetic.main.other_post_item.view.*
 
 // Adapter of RecyclerView present in Bookmarked Quotes Fragment
 class PostsAdapter(private val activity: Activity) :
     RecyclerView.Adapter<PostsAdapter.PostsViewHolder>() {
 
-    inner class PostsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    inner class PostsViewHolder(val binding: OtherPostItemBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
     // differ callback that checks if elements are same of not
     private val differCallback = object : DiffUtil.ItemCallback<RepoContentItemModel>() {
@@ -69,13 +69,9 @@ class PostsAdapter(private val activity: Activity) :
 
     // inflate layout
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostsViewHolder {
-        return PostsViewHolder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.other_post_item,
-                parent,
-                false
-            )
-        )
+        val binding =
+            OtherPostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return PostsViewHolder(binding)
     }
 
     override fun getItemCount(): Int {
@@ -84,7 +80,8 @@ class PostsAdapter(private val activity: Activity) :
 
     override fun onBindViewHolder(holder: PostsViewHolder, position: Int) {
         val post = differ.currentList[position]
-        holder.itemView.apply {
+
+        holder.binding.apply {
             val date = post.name.substring(0, 10)
             val postName = post.name.substring(11)
 
@@ -116,7 +113,12 @@ class PostsAdapter(private val activity: Activity) :
                     .setMessage("Are you sure you want to delete this post?")
                     .setCancelable(false)
                     .setPositiveButton("Yes") { dialog, _ ->
-                        (activity as PostsActivity).deletePost(position, post.name, post.path, post.sha)
+                        (activity as PostsActivity).deletePost(
+                            position,
+                            post.name,
+                            post.path,
+                            post.sha
+                        )
                         dialog.dismiss()
                     }
                     .setNegativeButton("No") { dialog, _ ->

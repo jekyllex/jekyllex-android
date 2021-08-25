@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:theme="@style/Theme.JekyllEx"
+    android:theme="@style/Theme.JekyllEx"
     tools:background="@color/white"
     tools:context=".ui.posts.PostsActivity">
 
@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_posts"
+            android:id="@+id/toolbarPosts"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:contentInsetStart="0dp"
@@ -76,9 +76,36 @@
 
     </LinearLayout>
 
-    <include
+    <LinearLayout
         android:id="@+id/noPosts"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:visibility="gone"
-        layout="@layout/other_no_posts" />
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_margin="10dp"
+            android:contentDescription="@string/no_connection"
+            android:src="@drawable/not_found" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:textSize="24sp"
+            android:textAlignment="center"
+            android:text="@string/no_posts_found"/>
+
+        <Button
+            android:id="@+id/goBack"
+            android:layout_marginTop="20dp"
+            android:text="@string/go_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

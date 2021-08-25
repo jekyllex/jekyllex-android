@@ -35,17 +35,20 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.github.gouravkhunger.jekyllex.R
+import com.github.gouravkhunger.jekyllex.databinding.ActivityHomeBinding
+import com.github.gouravkhunger.jekyllex.databinding.OtherNoInternetBinding
 import com.github.gouravkhunger.jekyllex.repositories.UserReposRepository
 import com.github.gouravkhunger.jekyllex.ui.auth.AuthActivity
 import com.github.gouravkhunger.jekyllex.ui.home.adapter.RepositoriesAdapter
 import com.github.gouravkhunger.jekyllex.ui.profile.ProfileActivity
 import com.github.gouravkhunger.jekyllex.util.preActivityStartChecks
-import kotlinx.android.synthetic.main.activity_home.*
-import kotlinx.android.synthetic.main.activity_profile.*
-import kotlinx.android.synthetic.main.other_no_internet.*
+import com.github.javiersantos.appupdater.AppUpdater
+import com.github.javiersantos.appupdater.enums.UpdateFrom
 
 class HomeActivity : AppCompatActivity() {
 
+    private lateinit var homeBinding: ActivityHomeBinding
+    private lateinit var noInternetBinding: OtherNoInternetBinding
     private lateinit var userId: String
     private lateinit var picUrl: String
     private lateinit var accessToken: String
@@ -53,6 +56,9 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        homeBinding = ActivityHomeBinding.inflate(layoutInflater)
+        noInternetBinding = OtherNoInternetBinding.inflate(layoutInflater)
 
         when (preActivityStartChecks(this)) {
             0 -> Unit
@@ -64,8 +70,8 @@ class HomeActivity : AppCompatActivity() {
             }
             2 -> {
                 Toast.makeText(this, "No Internet Connection...", Toast.LENGTH_SHORT).show()
-                setContentView(R.layout.other_no_internet)
-                retry.setOnClickListener {
+                setContentView(noInternetBinding.root)
+                noInternetBinding.retry.setOnClickListener {
                     startActivity(
                         Intent(this, HomeActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -89,15 +95,15 @@ class HomeActivity : AppCompatActivity() {
 
         setTheme(R.style.Theme_JekyllEx)
 
-        setContentView(R.layout.activity_home)
-        setSupportActionBar(toolbar_home)
+        setContentView(homeBinding.root)
+        setSupportActionBar(homeBinding.toolbarHome)
         supportActionBar?.title = ""
 
         setupRecyclerView()
 
-        Glide.with(this).load(picUrl).circleCrop().into(profileIcon)
+        Glide.with(this).load(picUrl).circleCrop().into(homeBinding.profileIcon)
 
-        profileIcon.setOnClickListener {
+        homeBinding.profileIcon.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         }
@@ -105,24 +111,24 @@ class HomeActivity : AppCompatActivity() {
         viewModel.userRepos.observe(this, {
             if (it.isNotEmpty()) {
                 repositoriesAdapter.differ.submitList(it)
-                loadingMessageParent.visibility = View.GONE
-                repositoriesParent.visibility = View.VISIBLE
-                selectRepoTv.visibility = View.VISIBLE
+                homeBinding.loadingMessageParent.visibility = View.GONE
+                homeBinding.repositoriesParent.visibility = View.VISIBLE
+                homeBinding.selectRepoTv.visibility = View.VISIBLE
             } else {
-                loadingMessageParent.visibility = View.VISIBLE
-                repositoriesParent.visibility = View.GONE
-                selectRepoTv.visibility = View.GONE
+                homeBinding.loadingMessageParent.visibility = View.VISIBLE
+                homeBinding.repositoriesParent.visibility = View.GONE
+                homeBinding.selectRepoTv.visibility = View.GONE
             }
         })
 
         viewModel.getUserRepositories("Bearer $accessToken")
 
-        fabReport.setOnLongClickListener {
+        homeBinding.fabReport.setOnLongClickListener {
             Toast.makeText(this, getString(R.string.report_msg), Toast.LENGTH_SHORT).show()
             true
         }
 
-        fabReport.setOnClickListener {
+        homeBinding.fabReport.setOnClickListener {
             startActivity(
                 Intent(
                     Intent.ACTION_VIEW,
@@ -130,12 +136,16 @@ class HomeActivity : AppCompatActivity() {
                 )
             )
         }
+
+        AppUpdater(this).setUpdateFrom(UpdateFrom.GITHUB)
+            .setGitHubUserAndRepo("gouravkhunger", "jekyllex-andriod")
+            .start()
     }
 
     // function to set adapter and layout manager on the recycler view
     private fun setupRecyclerView() {
         repositoriesAdapter = RepositoriesAdapter(this)
-        repositoryList.apply {
+        homeBinding.repositoryList.apply {
             adapter = repositoriesAdapter
             layoutManager = LinearLayoutManager(this@HomeActivity)
         }

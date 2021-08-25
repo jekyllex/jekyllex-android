@@ -44,6 +44,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.github.gouravkhunger.jekyllex.R
+import com.github.gouravkhunger.jekyllex.databinding.ActivityEditorBinding
+import com.github.gouravkhunger.jekyllex.databinding.OtherNoInternetBinding
 import com.github.gouravkhunger.jekyllex.models.CommitModel
 import com.github.gouravkhunger.jekyllex.repositories.GithubContentRepository
 import com.github.gouravkhunger.jekyllex.ui.auth.AuthActivity
@@ -53,11 +55,11 @@ import com.github.gouravkhunger.jekyllex.util.preActivityStartChecks
 import com.github.gouravkhunger.jekyllex.util.stringToBase64
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.android.material.textfield.TextInputEditText
-import kotlinx.android.synthetic.main.activity_editor.*
-import kotlinx.android.synthetic.main.other_no_internet.*
 
 class MarkdownEditor : AppCompatActivity() {
 
+    private lateinit var mdEditorBinding: ActivityEditorBinding
+    private lateinit var noInternetBinding: OtherNoInternetBinding
     lateinit var viewModel: EditorViewModel
     private lateinit var fileSha: String
     private lateinit var currentRepo: String
@@ -67,6 +69,9 @@ class MarkdownEditor : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mdEditorBinding = ActivityEditorBinding.inflate(layoutInflater)
+        noInternetBinding = OtherNoInternetBinding.inflate(layoutInflater)
 
         when (preActivityStartChecks(this)) {
             0 -> Unit
@@ -83,8 +88,8 @@ class MarkdownEditor : AppCompatActivity() {
             }
             2 -> {
                 Toast.makeText(this, "No Internet Connection...", Toast.LENGTH_SHORT).show()
-                setContentView(R.layout.other_no_internet)
-                retry.setOnClickListener {
+                setContentView(noInternetBinding.root)
+                noInternetBinding.retry.setOnClickListener {
                     startActivity(
                         Intent(this, HomeActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -107,12 +112,12 @@ class MarkdownEditor : AppCompatActivity() {
         accessToken = prefs.getString("access_token", "") ?: ""
 
         setTheme(R.style.Theme_JekyllEx)
-        setContentView(R.layout.activity_editor)
+        setContentView(mdEditorBinding.root)
 
-        setSupportActionBar(toolbar_editor)
+        setSupportActionBar(mdEditorBinding.toolbarEditor)
         supportActionBar?.setHomeButtonEnabled(true)
-        toolbar_editor.setNavigationIcon(R.drawable.ic_back)
-        toolbar_editor.setNavigationOnClickListener {
+        mdEditorBinding.toolbarEditor.setNavigationIcon(R.drawable.ic_back)
+        mdEditorBinding.toolbarEditor.setNavigationOnClickListener {
             onBackPressed()
         }
 
@@ -142,12 +147,15 @@ class MarkdownEditor : AppCompatActivity() {
             invalidateOptionsMenu()
         })
 
-        editorViewPager.apply {
+        mdEditorBinding.editorViewPager.apply {
             adapter = ViewPagerAdapter(this@MarkdownEditor)
             currentItem = 0
         }
 
-        TabLayoutMediator(editorTabLayout, editorViewPager) { currentTab, currentPosition ->
+        TabLayoutMediator(
+            mdEditorBinding.editorTabLayout,
+            mdEditorBinding.editorViewPager
+        ) { currentTab, currentPosition ->
             currentTab.text = when (currentPosition) {
                 0 -> getString(R.string.edit_file)
                 1 -> getString(R.string.preview_changes)
@@ -164,19 +172,19 @@ class MarkdownEditor : AppCompatActivity() {
             imm?.hideSoftInputFromWindow(view.windowToken, 0)
         }
 
-        editorViewPager.currentItem = id
+        mdEditorBinding.editorViewPager.currentItem = id
     }
 
     private fun showEditorArea() {
-        editorProgressBarParent.visibility = View.GONE
-        editorTabLayout.visibility = View.VISIBLE
-        editorViewPager.visibility = View.VISIBLE
+        mdEditorBinding.editorProgressBarParent.visibility = View.GONE
+        mdEditorBinding.editorTabLayout.visibility = View.VISIBLE
+        mdEditorBinding.editorViewPager.visibility = View.VISIBLE
     }
 
     private fun hideEditorArea() {
-        editorProgressBarParent.visibility = View.GONE
-        editorTabLayout.visibility = View.GONE
-        editorViewPager.visibility = View.GONE
+        mdEditorBinding.editorProgressBarParent.visibility = View.GONE
+        mdEditorBinding.editorTabLayout.visibility = View.GONE
+        mdEditorBinding.editorViewPager.visibility = View.GONE
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -294,7 +302,6 @@ class MarkdownEditor : AppCompatActivity() {
                                     )
                                     .show()
                                 alertDialog.dismiss()
-                                onBackPressed()
                             }
                         })
                     }
@@ -308,8 +315,8 @@ class MarkdownEditor : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (editorViewPager.currentItem == 1) {
-            editorViewPager.currentItem = 0
+        if (mdEditorBinding.editorViewPager.currentItem == 1) {
+            mdEditorBinding.editorViewPager.currentItem = 0
         } else if (!viewModel.isTextUpdated.value!!) {
             finish()
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)

@@ -44,6 +44,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.gouravkhunger.jekyllex.R
+import com.github.gouravkhunger.jekyllex.databinding.ActivityPostsBinding
+import com.github.gouravkhunger.jekyllex.databinding.OtherNoInternetBinding
 import com.github.gouravkhunger.jekyllex.models.CommitModel
 import com.github.gouravkhunger.jekyllex.models.repo_content.RepoContentItemModel
 import com.github.gouravkhunger.jekyllex.repositories.GithubContentRepository
@@ -54,14 +56,11 @@ import com.github.gouravkhunger.jekyllex.ui.posts.adapter.PostsAdapter
 import com.github.gouravkhunger.jekyllex.util.isValidFileName
 import com.github.gouravkhunger.jekyllex.util.preActivityStartChecks
 import com.google.android.material.textfield.TextInputLayout
-import kotlinx.android.synthetic.main.activity_home.*
-import kotlinx.android.synthetic.main.activity_posts.*
-import kotlinx.android.synthetic.main.other_newpost_alert.*
-import kotlinx.android.synthetic.main.other_no_internet.*
-import kotlinx.android.synthetic.main.other_no_posts.*
 
 class PostsActivity : AppCompatActivity() {
 
+    private lateinit var postsBinding: ActivityPostsBinding
+    private lateinit var noInternetBinding: OtherNoInternetBinding
     private lateinit var accessToken: String
     private lateinit var currentRepo: String
     private lateinit var viewModel: PostsViewModel
@@ -70,6 +69,9 @@ class PostsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        postsBinding = ActivityPostsBinding.inflate(layoutInflater)
+        noInternetBinding = OtherNoInternetBinding.inflate(layoutInflater)
 
         when (preActivityStartChecks(this)) {
             0 -> Unit
@@ -86,8 +88,8 @@ class PostsActivity : AppCompatActivity() {
             }
             2 -> {
                 Toast.makeText(this, "No Internet Connection...", Toast.LENGTH_SHORT).show()
-                setContentView(R.layout.other_no_internet)
-                retry.setOnClickListener {
+                setContentView(noInternetBinding.root)
+                noInternetBinding.retry.setOnClickListener {
                     startActivity(
                         Intent(this, HomeActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -108,11 +110,11 @@ class PostsActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, factory).get(PostsViewModel::class.java)
 
         setTheme(R.style.Theme_JekyllEx)
-        setContentView(R.layout.activity_posts)
-        setSupportActionBar(toolbar_posts)
+        setContentView(postsBinding.root)
+        setSupportActionBar(postsBinding.toolbarPosts)
         supportActionBar?.setHomeButtonEnabled(true)
-        toolbar_posts.setNavigationIcon(R.drawable.ic_back)
-        toolbar_posts.setNavigationOnClickListener {
+        postsBinding.toolbarPosts.setNavigationIcon(R.drawable.ic_back)
+        postsBinding.toolbarPosts.setNavigationOnClickListener {
             onBackPressed()
         }
 
@@ -120,7 +122,7 @@ class PostsActivity : AppCompatActivity() {
 
         if (extras != null && accessToken.isNotEmpty()) {
             currentRepo = extras.getString("repo_name") ?: ""
-            postToolbarTv.text = currentRepo
+            postsBinding.postToolbarTv.text = currentRepo
             viewModel.getRepoRootContent(currentRepo, "Bearer $accessToken")
             prefs.edit()
                 .putString("current_repo", currentRepo)
@@ -132,16 +134,16 @@ class PostsActivity : AppCompatActivity() {
 
         viewModel.hasPosts.observe(this, {
             if (it) {
-                rvPosts.visibility = View.VISIBLE
-                postsProgressParent.visibility = View.VISIBLE
-                noPosts.visibility = View.GONE
+                postsBinding.rvPosts.visibility = View.VISIBLE
+                postsBinding.postsProgressParent.visibility = View.VISIBLE
+                postsBinding.noPosts.visibility = View.GONE
                 val repoName = extras!!.getString("repo_name") ?: ""
                 viewModel.getContentFromPath(true, repoName, "_posts", "Bearer $accessToken")
             } else {
-                rvPosts.visibility = View.GONE
-                postsProgressParent.visibility = View.GONE
-                noPosts.visibility = View.VISIBLE
-                goBack.setOnClickListener {
+                postsBinding.rvPosts.visibility = View.GONE
+                postsBinding.postsProgressParent.visibility = View.GONE
+                postsBinding.noPosts.visibility = View.VISIBLE
+                postsBinding.goBack.setOnClickListener {
                     onBackPressed()
                 }
             }
@@ -151,11 +153,11 @@ class PostsActivity : AppCompatActivity() {
             if (!it.isNullOrEmpty()) {
                 list = it
                 repositoriesAdapter.differ.submitList(list)
-                rvPosts.visibility = View.VISIBLE
-                postsProgressParent.visibility = View.GONE
+                postsBinding.rvPosts.visibility = View.VISIBLE
+                postsBinding.postsProgressParent.visibility = View.GONE
             } else {
-                rvPosts.visibility = View.GONE
-                postsProgressParent.visibility = View.VISIBLE
+                postsBinding.rvPosts.visibility = View.GONE
+                postsBinding.postsProgressParent.visibility = View.VISIBLE
                 Toast.makeText(this, "An unexpected error occured!", Toast.LENGTH_LONG).show()
             }
         })
@@ -166,7 +168,7 @@ class PostsActivity : AppCompatActivity() {
     // set adapter and layout manager on the recycler view
     private fun setupRecyclerView() {
         repositoriesAdapter = PostsAdapter(this)
-        postsList.apply {
+        postsBinding.postsList.apply {
             adapter = repositoriesAdapter
             layoutManager = LinearLayoutManager(this@PostsActivity)
         }
@@ -179,7 +181,10 @@ class PostsActivity : AppCompatActivity() {
             list!!.removeAt(pos)
             repositoriesAdapter.differ.submitList(list)
             repositoriesAdapter.notifyItemRemoved(pos)
-            repositoriesAdapter.notifyItemRangeChanged(pos, repositoriesAdapter.differ.currentList.size)
+            repositoriesAdapter.notifyItemRangeChanged(
+                pos,
+                repositoriesAdapter.differ.currentList.size
+            )
         } else {
             Toast.makeText(this, "Current Repository not found", Toast.LENGTH_SHORT).show()
         }

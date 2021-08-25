@@ -28,16 +28,29 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.TextWatcher
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.github.gouravkhunger.jekyllex.R
+import com.github.gouravkhunger.jekyllex.databinding.FragmentEditingBinding
 import com.github.gouravkhunger.jekyllex.ui.editor.EditorViewModel
 import com.github.gouravkhunger.jekyllex.ui.editor.MarkdownEditor
-import kotlinx.android.synthetic.main.fragment_editing.*
 
-class EditingFragment : Fragment(R.layout.fragment_editing) {
+class EditingFragment : Fragment() {
+
+    private var _editorBinding: FragmentEditingBinding? = null
+    private val editorBinding get() = _editorBinding!!
 
     lateinit var viewModel: EditorViewModel
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _editorBinding = FragmentEditingBinding.inflate(inflater, container, false)
+        return editorBinding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -45,23 +58,23 @@ class EditingFragment : Fragment(R.layout.fragment_editing) {
         viewModel = (activity as MarkdownEditor).viewModel
 
         viewModel.originalContent.observe(viewLifecycleOwner, {
-            markdownEt.text = SpannableStringBuilder(it)
-            previewBtnParent.visibility = View.GONE
+            editorBinding.markdownEt.text = SpannableStringBuilder(it)
+            editorBinding.previewBtnParent.visibility = View.GONE
         })
 
         viewModel.isTextUpdated.observe(viewLifecycleOwner, {
             if (it) {
-                previewBtnParent.visibility = View.VISIBLE
+                editorBinding.previewBtnParent.visibility = View.VISIBLE
             } else {
-                previewBtnParent.visibility = View.GONE
+                editorBinding.previewBtnParent.visibility = View.GONE
             }
         })
 
-        editorScrollView.setOnScrollChangeListener { _, _, scrollY, _, _ ->
+        editorBinding.editorScrollView.setOnScrollChangeListener { _, _, scrollY, _, _ ->
             viewModel.setScrollDist(scrollY)
         }
 
-        markdownEt.addTextChangedListener(object : TextWatcher {
+        editorBinding.markdownEt.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 viewModel.setNewText(s.toString())
             }
@@ -73,9 +86,14 @@ class EditingFragment : Fragment(R.layout.fragment_editing) {
             }
         })
 
-        previewBtn.setOnClickListener {
+        editorBinding.previewBtn.setOnClickListener {
             (activity as MarkdownEditor).setCurrentPage(1)
-            previewBtnParent.visibility = View.GONE
+            editorBinding.previewBtnParent.visibility = View.GONE
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _editorBinding = null
     }
 }
