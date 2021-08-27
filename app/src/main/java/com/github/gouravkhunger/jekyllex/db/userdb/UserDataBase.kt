@@ -47,6 +47,7 @@ abstract class UserDataBase : RoomDatabase() {
         private var instance: UserDataBase? = null
         private val LOCK = Any()
 
+        // Function to create database instance when the class is called.
         operator fun invoke(context: Context) = instance ?: synchronized(LOCK) {
             instance ?: createDatabase(context).also { instance = it }
         }

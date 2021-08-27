@@ -34,12 +34,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class PostsViewModel(
+    // repository which this view model interacts with to get/set data.
     private val repository: GithubContentRepository
 ) : ViewModel() {
 
+    // Live data variables.
     val hasPosts: MutableLiveData<Boolean> by lazy { MutableLiveData() }
     val posts: MutableLiveData<ArrayList<RepoContentItemModel>> by lazy { MutableLiveData() }
 
+    // Function to get the content from the main branch of the repository.
     fun getRepoRootContent(
         repoName: String,
         accessToken: String
@@ -62,6 +65,7 @@ class PostsViewModel(
         }
     }
 
+    // Function to get the content of the repository at a specific path inside it.
     fun getContentFromPath(
         shouldPost: Boolean,
         repoName: String,
@@ -90,6 +94,7 @@ class PostsViewModel(
         return postsArray
     }
 
+    // Function to delete a specific file in the repository
     fun deletePost(
         commitModel: CommitModel,
         repo: String,

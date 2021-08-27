@@ -28,6 +28,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.github.gouravkhunger.jekyllex.repositories.UserRepository
 
+// View Model Provider Factory Class
 class ProfileViewModelFactory(
     private val repository: UserRepository
 ) : ViewModelProvider.Factory {

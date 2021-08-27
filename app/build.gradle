@@ -2,6 +2,8 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "kotlin-kapt"
+    id "com.google.gms.google-services"
+    id "com.google.firebase.crashlytics"
 }
 
 android {
@@ -97,5 +99,12 @@ dependencies {
     implementation "io.noties.markwon:html:$markwon_version"
     implementation "io.noties.markwon:image-glide:$markwon_version"
     implementation "io.noties.markwon:syntax-highlight:$markwon_version"
+
+    // Firebase BOM
+    implementation platform('com.google.firebase:firebase-bom:28.4.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
 
 }

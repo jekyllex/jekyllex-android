@@ -28,17 +28,22 @@ import com.github.gouravkhunger.jekyllex.apis.jekyllex.JekyllExApiInstance
 import com.github.gouravkhunger.jekyllex.db.userdb.UserDataBase
 import com.github.gouravkhunger.jekyllex.models.user.UserModel
 
+// Android MVVM repository - the source of data for view-models
 class UserRepository(
     private val db: UserDataBase
 ) {
+    // Function to get User's data from the JekyllEx api.
     suspend fun getUserData(id: String, accessToken: String) =
         JekyllExApiInstance.api.getUserData(id, accessToken)
 
+    // Function to save a specific user's data in the local database.
     suspend fun saveUser(user: UserModel) =
         db.getUserDao().upsert(user)
 
+    // Function to delete the specified saved user from the local database.
     suspend fun deleteUser(user: UserModel) =
         db.getUserDao().deleteUser(user)
 
+    // Function to get a saved User's data.
     fun getSavedUser(id: String) = db.getUserDao().getUser(id)
 }

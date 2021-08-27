@@ -30,19 +30,23 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.github.gouravkhunger.jekyllex.ui.editor.fragments.EditingFragment
 import com.github.gouravkhunger.jekyllex.ui.editor.fragments.PreviewFragment
 
+// The adapter for the ViewPager in the Markdown editor activity
 class ViewPagerAdapter(
     fragmentActivity: FragmentActivity
 ) : FragmentStateAdapter(fragmentActivity) {
 
+    // Constant values for this class
     companion object {
         internal const val EDITOR_SCREEN_POSITION = 0
         internal const val PREVIEW_SCREEN_POSITION = 1
     }
 
+    // This function returns the total items in the Tab Layout.
     override fun getItemCount(): Int {
         return 2
     }
 
+    // Function to create the fragments at their specific positions.
     override fun createFragment(position: Int): Fragment = when (position) {
         EDITOR_SCREEN_POSITION -> EditingFragment()
         PREVIEW_SCREEN_POSITION -> PreviewFragment()

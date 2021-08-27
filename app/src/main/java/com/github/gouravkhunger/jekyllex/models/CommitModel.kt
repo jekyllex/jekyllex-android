@@ -24,6 +24,7 @@
 
 package com.github.gouravkhunger.jekyllex.models
 
+// A class that represents a commit.
 data class CommitModel(
     val message: String,
     val content: String?,

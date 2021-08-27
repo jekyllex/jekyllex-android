@@ -39,7 +39,7 @@ import com.github.gouravkhunger.jekyllex.databinding.OtherRepositoryItemBinding
 import com.github.gouravkhunger.jekyllex.models.repository.RepoItemModel
 import com.github.gouravkhunger.jekyllex.ui.posts.PostsActivity
 
-// Adapter of RecyclerView present in Bookmarked Quotes Fragment
+// Adapter of RecyclerView present in Home Activity
 class RepositoriesAdapter(private val activity: Activity) :
     RecyclerView.Adapter<RepositoriesAdapter.RepositoryViewHolder>() {
 
@@ -72,10 +72,12 @@ class RepositoriesAdapter(private val activity: Activity) :
         return RepositoryViewHolder(binding)
     }
 
+    // gets the size of the current list
     override fun getItemCount(): Int {
         return differ.currentList.size
     }
 
+    // sets content on the items.
     override fun onBindViewHolder(holder: RepositoryViewHolder, position: Int) {
         val repo = differ.currentList[position]
         holder.binding.apply {

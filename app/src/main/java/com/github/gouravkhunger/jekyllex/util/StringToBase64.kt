@@ -26,11 +26,20 @@ package com.github.gouravkhunger.jekyllex.util
 
 import android.util.Base64
 
+// A function that combines posts' meta-data with the content
+// of the post, and returns a Base64 string that can be sent
+// through to the Github Api to create/update the specific file.
 fun stringToBase64(metaData: String, content: String): String {
     var combined = metaData
+
+    // add some whitespace after the meta-data if there's none at the end.
     if (!metaData[metaData.length - 1].isWhitespace()) {
         combined += "\n\n"
     }
+
+    // Join with the content
     combined += content
+
+    // return the Base64 encoded string
     return Base64.encodeToString(combined.toByteArray(), Base64.DEFAULT)
 }

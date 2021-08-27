@@ -31,6 +31,7 @@ import retrofit2.http.Header
 import retrofit2.http.Path
 
 interface JekyllExApi {
+    // Function to get a specific user's data from JekyllEx's Api.
     @GET("/user/{id}")
     suspend fun getUserData(
         @Path("id") userId: String,

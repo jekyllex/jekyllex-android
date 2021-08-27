@@ -30,7 +30,11 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 
+// Custom converter class which configures saving User's Social Identity Providers
+// to the local database.
 class IdentityConverter {
+
+    // Function to convert JSON to Identity data class for easy storing.
     @TypeConverter
     fun fromIdentityList(countryLang: List<Identity?>?): String? {
         if (countryLang == null) {
@@ -42,6 +46,7 @@ class IdentityConverter {
         return gson.toJson(countryLang, type)
     }
 
+    // Function to convert Identity data class to JSON for easy storing.
     @TypeConverter
     fun toIdentityList(identityString: String?): List<Identity>? {
         if (identityString == null) {

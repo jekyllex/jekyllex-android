@@ -38,12 +38,16 @@ import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.html.HtmlPlugin
 import io.noties.markwon.image.glide.GlideImagesPlugin
 
+// The fragment where markdown can be previewed
 class PreviewFragment : Fragment() {
 
+    // View Binding variables.
     private var _previewBinding: FragmentPeviewBinding? = null
     private val previewBinding get() = _previewBinding!!
+
     lateinit var viewModel: EditorViewModel
 
+    // Initialise the view bindings and inflate the root view.
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,28 +57,33 @@ class PreviewFragment : Fragment() {
         return previewBinding.root
     }
 
+    // Once the views are initialised, observe view model values and more.
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val act = (activity as MarkdownEditor)
         viewModel = act.viewModel
 
-        val markwon = Markwon.builder(act.baseContext)
+        // Initialise markwon library.
+        val markwon = Markwon.builder(view.context)
             .usePlugin(StrikethroughPlugin.create())
-            .usePlugin(TablePlugin.create(act.baseContext))
+            .usePlugin(TablePlugin.create(view.context))
             .usePlugin(HtmlPlugin.create())
-            .usePlugin(GlideImagesPlugin.create(act.baseContext))
+            .usePlugin(GlideImagesPlugin.create(view.context))
             .build()
 
+        // Observe the text for changes and set preview accordingly.
         viewModel.text.observe(viewLifecycleOwner, {
             markwon.setMarkdown(previewBinding.previewTv, it)
         })
 
+        // Observe the scroll dist of the editor area and scroll to that distance.
         viewModel.scrollDist.observe(viewLifecycleOwner, {
             previewBinding.previewScrollView.smoothScrollTo(0, it)
         })
     }
 
+    // When the fragment destroys, destroy the view bindings too.
     override fun onDestroyView() {
         super.onDestroyView()
         _previewBinding = null

@@ -27,7 +27,9 @@ package com.github.gouravkhunger.jekyllex.models.user
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+// Room database entity declaration to make a table named user for this class.
 @Entity(tableName = "user")
+// A data class that represents a user.
 data class UserModel(
     val bio: String?,
     val blog: String?,

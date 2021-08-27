@@ -29,56 +29,57 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.editor.fragments.EditingFragment">
+    android:theme="@style/Theme.JekyllEx"
+    tools:background="@color/white"
+    tools:context=".ui.profile.ProfileActivity">
 
-    <ScrollView
-        android:id="@+id/editorScrollView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/previewBtnParent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <LinearLayout
-            android:id="@+id/editorEtParent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="20dp">
-
-            <EditText
-                android:id="@+id/markdownEt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:autofillHints="@null"
-                android:background="@null"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:hint="@string/editor_et_hint"
-                android:inputType="textMultiLine"
-                android:theme="@style/androidDefaultFont"
-                android:layout_marginBottom="30dp" />
-
-        </LinearLayout>
-
-    </ScrollView>
-
-    <RelativeLayout
-        android:id="@+id/previewBtnParent"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbarContent"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:contentInsetStart="0dp"
+            app:contentInsetStartWithNavigation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/contentTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                tools:text="Content" />
+
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editorScrollView">
+        app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
 
-        <Button
-            android:id="@+id/previewBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:drawableEnd="@drawable/ic_forward"
-            android:text="@string/preview" />
+        <TextView
+            android:id="@+id/contentTv"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_margin="10dp"
+            android:paddingBottom="20dp"
+            android:textSize="20sp"
+            tools:text="Oh! Hi" />
 
-    </RelativeLayout>
+    </ScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -26,11 +26,11 @@ package com.github.gouravkhunger.jekyllex.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.github.gouravkhunger.jekyllex.repositories.UserReposRepository
+import com.github.gouravkhunger.jekyllex.repositories.GithubContentRepository
 
 // View Model Provider Factory Class
 class HomeViewModelFactory(
-    private val repository: UserReposRepository
+    private val repository: GithubContentRepository
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")

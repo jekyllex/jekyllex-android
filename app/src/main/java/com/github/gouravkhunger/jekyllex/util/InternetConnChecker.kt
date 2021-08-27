@@ -30,8 +30,8 @@ import android.net.NetworkCapabilities.TRANSPORT_CELLULAR
 import android.net.NetworkCapabilities.TRANSPORT_ETHERNET
 import android.net.NetworkCapabilities.TRANSPORT_WIFI
 
-// function to check all the possible conditons when the device can have
-// an active internet connection or not
+// Function to check all the possible conditions when the device can have
+// an active internet connection or not.
 fun hasInternetConnection(ctx: Context): Boolean {
     val connectivityManager = ctx.getSystemService(
         Context.CONNECTIVITY_SERVICE

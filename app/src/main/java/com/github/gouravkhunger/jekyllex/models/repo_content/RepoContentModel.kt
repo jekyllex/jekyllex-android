@@ -24,4 +24,5 @@
 
 package com.github.gouravkhunger.jekyllex.models.repo_content
 
+// A class that represents a list of items in a github repository.
 class RepoContentModel : ArrayList<RepoContentItemModel>()

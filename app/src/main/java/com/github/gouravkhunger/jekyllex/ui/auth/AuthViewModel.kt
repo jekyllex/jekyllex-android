@@ -32,11 +32,15 @@ import com.github.gouravkhunger.jekyllex.repositories.UserRepository
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
+    // repository which this view model interacts with to get/set data.
     private val repository: UserRepository
 ) : ViewModel() {
+
+    // Observable live data variables.
     val userData: MutableLiveData<UserModel?> by lazy { MutableLiveData() }
     val saved: MutableLiveData<Boolean> by lazy { MutableLiveData() }
 
+    // Function to get user data from JekyllEx Api.
     fun getUserData(id: String, accessToken: String) = viewModelScope.launch {
         val response = repository.getUserData(id, accessToken)
         if (response.isSuccessful) {
@@ -46,6 +50,7 @@ class AuthViewModel(
         }
     }
 
+    // Function that save user data to the local database.
     fun saveUser(user: UserModel) = viewModelScope.launch {
         repository.saveUser(user)
         saved.postValue(true)

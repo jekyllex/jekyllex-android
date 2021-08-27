@@ -24,6 +24,7 @@
 
 package com.github.gouravkhunger.jekyllex.models.repo_content
 
+// A data class that represents a repository content item.
 data class RepoContentItemModel(
     val download_url: String,
     val git_url: String,

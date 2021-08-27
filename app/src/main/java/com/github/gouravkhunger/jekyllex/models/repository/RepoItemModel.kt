@@ -24,6 +24,7 @@
 
 package com.github.gouravkhunger.jekyllex.models.repository
 
+// A data class that represents a github repository.
 data class RepoItemModel(
     val archive_url: String?,
     val archived: Boolean,

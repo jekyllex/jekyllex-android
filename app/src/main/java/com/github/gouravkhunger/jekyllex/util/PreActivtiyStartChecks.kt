@@ -26,6 +26,13 @@ package com.github.gouravkhunger.jekyllex.util
 
 import android.content.Context
 
+/*
+ * Function that runs before each activity starts,
+ * to check for common errors such as internet or login.
+ *
+ * The function returns specific integers that are used
+ * to identify the error detected.
+ */
 fun preActivityStartChecks(ctx: Context): Int {
     if (!checkCredentials(ctx)) return 1
     if (!hasInternetConnection(ctx)) return 2

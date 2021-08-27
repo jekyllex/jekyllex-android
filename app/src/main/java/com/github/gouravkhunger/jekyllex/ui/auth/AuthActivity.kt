@@ -55,6 +55,7 @@ import com.github.gouravkhunger.jekyllex.util.preActivityStartChecks
 
 class AuthActivity : AppCompatActivity() {
 
+    // variables
     private lateinit var authBinding: ActivityAuthBinding
     private lateinit var noInternetBinding: OtherNoInternetBinding
     private lateinit var viewModel: AuthViewModel
@@ -65,27 +66,11 @@ class AuthActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // initialise the view bindings required for this class
         authBinding = ActivityAuthBinding.inflate(layoutInflater)
         noInternetBinding = OtherNoInternetBinding.inflate(layoutInflater)
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-        val userRepository = UserRepository(UserDataBase(this))
-        val factory = AuthViewModelFactory(userRepository)
-        viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
-
-        account = Auth0(
-            BuildConfig.Auth0ClientId,
-            getString(R.string.com_auth0_domain)
-        )
-
-        apiClient = AuthenticationAPIClient(account)
-        manager = SecureCredentialsManager(this, apiClient, SharedPreferencesStorage(this))
-        val isLoggedIn = manager.hasValidCredentials()
-
-        setTheme(R.style.Theme_JekyllEx)
-        if (isLoggedIn) goToHome()
-
+        // pre-checks for the activity
         when (preActivityStartChecks(this)) {
             0 -> Unit
             1 -> Unit
@@ -105,13 +90,34 @@ class AuthActivity : AppCompatActivity() {
             }
         }
 
+        // initialise variables
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+        val userRepository = UserRepository(UserDataBase(this))
+        val factory = AuthViewModelFactory(userRepository)
+        viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
+
+        account = Auth0(
+            BuildConfig.Auth0ClientId,
+            getString(R.string.com_auth0_domain)
+        )
+
+        apiClient = AuthenticationAPIClient(account)
+        manager = SecureCredentialsManager(this, apiClient, SharedPreferencesStorage(this))
+        val isLoggedIn = manager.hasValidCredentials()
+
+        if (isLoggedIn) goToHome()
+
+        // variables are set- can show the main screen to the user now.
+        setTheme(R.style.Theme_JekyllEx)
         setContentView(authBinding.root)
 
+        // Defines what happens when the user presses the login button.
         authBinding.loginBtn.setOnClickListener {
-
             it.visibility = View.GONE
             authBinding.loginProgressBar.visibility = View.VISIBLE
 
+            // Try logging the user in with Auth0
             WebAuthProvider.login(account)
                 .withScheme(getString(R.string.com_auth0_scheme))
                 .withAudience(BuildConfig.API_AUDIENCE)
@@ -141,6 +147,8 @@ class AuthActivity : AppCompatActivity() {
                 )
         }
 
+        // Observe the user data values. Once user data is received,
+        // save it to local storage for easy access later.
         viewModel.userData.observe(this, {
             if (it == null) {
                 showErrorAlert("Couldn't load user data")
@@ -155,6 +163,8 @@ class AuthActivity : AppCompatActivity() {
             }
         })
 
+        // once the user is saved in the local db,
+        // go to the home screen after hiding the progress bar.
         viewModel.saved.observe(this, {
             if (it) {
                 authBinding.loginBtn.visibility = View.VISIBLE
@@ -164,6 +174,8 @@ class AuthActivity : AppCompatActivity() {
         })
     }
 
+    // Function to extract saved credentials frm auth0 client
+    // and use them to get User Profile from JekyllEx Api.
     private fun getUserInfo(credentials: Credentials) {
         apiClient.userInfo(credentials.accessToken)
             .start(object : Callback<UserProfile, AuthenticationException> {
@@ -173,7 +185,7 @@ class AuthActivity : AppCompatActivity() {
                 }
 
                 override fun onSuccess(result: UserProfile) {
-                    // We have the user's profile!
+                    // We have got basic user data! Use it to extract complete profile.
                     viewModel.getUserData(
                         result.getId().toString(),
                         "Bearer ${credentials.accessToken}"
@@ -182,12 +194,16 @@ class AuthActivity : AppCompatActivity() {
             })
     }
 
+    // Start the home activity whilst ending the auth activity.
     private fun goToHome() {
         startActivity(Intent(this, HomeActivity::class.java))
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         finish()
     }
 
+    // Handy function to show error alert.
+    // Since there can be different kind of errors,
+    // this function is re-used.
     private fun showErrorAlert(message: String?) {
         val dialog = AlertDialog.Builder(this)
             .setTitle("An Error Occurred")

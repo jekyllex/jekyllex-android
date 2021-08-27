@@ -41,7 +41,7 @@ import com.github.gouravkhunger.jekyllex.models.repo_content.RepoContentItemMode
 import com.github.gouravkhunger.jekyllex.ui.editor.MarkdownEditor
 import com.github.gouravkhunger.jekyllex.ui.posts.PostsActivity
 
-// Adapter of RecyclerView present in Bookmarked Quotes Fragment
+// Adapter of RecyclerView present in Posts Activity
 class PostsAdapter(private val activity: Activity) :
     RecyclerView.Adapter<PostsAdapter.PostsViewHolder>() {
 
@@ -74,10 +74,12 @@ class PostsAdapter(private val activity: Activity) :
         return PostsViewHolder(binding)
     }
 
+    // gets the size of the current list
     override fun getItemCount(): Int {
         return differ.currentList.size
     }
 
+    // sets content on the items.
     override fun onBindViewHolder(holder: PostsViewHolder, position: Int) {
         val post = differ.currentList[position]
 

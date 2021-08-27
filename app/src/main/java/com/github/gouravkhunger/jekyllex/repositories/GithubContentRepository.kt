@@ -27,13 +27,22 @@ package com.github.gouravkhunger.jekyllex.repositories
 import com.github.gouravkhunger.jekyllex.apis.github.GithubApiInstance
 import com.github.gouravkhunger.jekyllex.models.CommitModel
 
+// Android MVVM repository - the source of data for view-models
 class GithubContentRepository {
+
+    // Function to get a user's repositories from Github Api.
+    suspend fun getUserRepositories(accessToken: String) =
+        GithubApiInstance.api.getUserRepositories(accessToken)
+
+    // Function to get content from a github repository at a specified folder (path)
     suspend fun getRepoContent(repoName: String, path: String, accessToken: String) =
         GithubApiInstance.api.getRepoContent(repoName, path, accessToken)
 
+    // Function to get the content of a file at a path, in raw String format.
     suspend fun getRawContent(repoName: String, path: String, accessToken: String) =
         GithubApiInstance.api.getRawContent(repoName, path, accessToken)
 
+    // Function to update a file at the specified path with a commit.
     suspend fun updateFileContent(
         commitModel: CommitModel,
         currentRepo: String,
@@ -41,6 +50,7 @@ class GithubContentRepository {
         accessToken: String
     ) = GithubApiInstance.api.updateFile(commitModel, currentRepo, path, accessToken)
 
+    // Function to delete a file at the specified path with a commit.
     suspend fun deleteFile(
         commitModel: CommitModel,
         currentRepo: String,

@@ -52,6 +52,5 @@ jobs:
         env:
           VALIDATE_KOTLIN: true
           VALIDATE_XML: true
-          VALIDATE_MD: false
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

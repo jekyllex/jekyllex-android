@@ -24,4 +24,5 @@
 
 package com.github.gouravkhunger.jekyllex.models.repository
 
+// A class that represents a list of github repositories
 class RepoModel : ArrayList<RepoItemModel>()

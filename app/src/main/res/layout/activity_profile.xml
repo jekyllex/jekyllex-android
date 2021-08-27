@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ - MIT License
+ -
+ - Copyright (c) 2021 Gourav Khunger
+ -
+ - Permission is hereby granted, free of charge, to any person obtaining a copy
+ - of this software and associated documentation files (the "Software"), to deal
+ - in the Software without restriction, including without limitation the rights
+ - to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ - copies of the Software, and to permit persons to whom the Software is
+ - furnished to do so, subject to the following conditions:
+ -
+ - The above copyright notice and this permission notice shall be included in all
+ - copies or substantial portions of the Software.
+ -
+ - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ - IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ - FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ - AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ - LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ - OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ - SOFTWARE.
+ -->
+
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -90,18 +115,9 @@
                 android:textSize="16sp"
                 tools:text="Bio" />
 
-            <TextView
-                android:id="@+id/userId"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:textSize="20sp"
-                tools:text="github|46792249" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -130,7 +146,7 @@
                 </LinearLayout>
 
                 <View
-                    android:layout_width="1dp"
+                    android:layout_width="1.5dp"
                     android:layout_height="match_parent"
                     android:layout_margin="20dp"
                     android:background="#757575" />
@@ -167,10 +183,9 @@
                 android:layout_gravity="center"
                 android:layout_marginStart="25dp"
                 android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
                 android:layout_marginEnd="25dp"
                 app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                app:cardElevation="3dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -181,19 +196,19 @@
                         android:id="@+id/githubParent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="10dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
                         android:clickable="true"
                         android:focusable="true"
-                        android:foreground="?android:attr/selectableItemBackground">
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
 
                         <ImageView
                             android:layout_width="25dp"
                             android:layout_height="25dp"
                             android:contentDescription="@string/email"
-                            app:tint="@color/black"
-                            android:src="@drawable/ic_github"/>
+                            android:src="@drawable/ic_github"
+                            app:tint="@color/black" />
 
                         <TextView
                             android:id="@+id/userGithub"
@@ -201,8 +216,8 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="10dp"
                             android:gravity="center_vertical"
-                            android:textSize="20sp"
                             android:singleLine="true"
+                            android:textSize="20sp"
                             tools:text="gouravkhunger" />
 
                     </LinearLayout>
@@ -218,19 +233,19 @@
                         android:id="@+id/twitterParent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="10dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
                         android:clickable="true"
                         android:focusable="true"
-                        android:foreground="?android:attr/selectableItemBackground">
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
 
                         <ImageView
                             android:layout_width="25dp"
                             android:layout_height="25dp"
                             android:contentDescription="@string/email"
-                            app:tint="@color/black"
-                            android:src="@drawable/ic_twitter"/>
+                            android:src="@drawable/ic_twitter"
+                            app:tint="@color/black" />
 
                         <TextView
                             android:id="@+id/userTwitter"
@@ -238,8 +253,8 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="10dp"
                             android:gravity="center_vertical"
-                            android:textSize="20sp"
                             android:singleLine="true"
+                            android:textSize="20sp"
                             tools:text="gourav_khunger" />
 
                     </LinearLayout>
@@ -255,19 +270,19 @@
                         android:id="@+id/locationParent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="10dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
                         android:clickable="true"
                         android:focusable="true"
-                        android:foreground="?android:attr/selectableItemBackground">
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
 
                         <ImageView
                             android:layout_width="25dp"
                             android:layout_height="25dp"
                             android:contentDescription="@string/email"
-                            app:tint="@color/black"
-                            android:src="@drawable/ic_location"/>
+                            android:src="@drawable/ic_location"
+                            app:tint="@color/black" />
 
                         <TextView
                             android:id="@+id/userLocation"
@@ -275,8 +290,8 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="10dp"
                             android:gravity="center_vertical"
-                            android:textSize="20sp"
                             android:singleLine="true"
+                            android:textSize="20sp"
                             tools:text="gourav_khunger" />
 
                     </LinearLayout>
@@ -292,12 +307,12 @@
                         android:id="@+id/blogParent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="10dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
                         android:clickable="true"
                         android:focusable="true"
-                        android:foreground="?android:attr/selectableItemBackground">
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
 
                         <ImageView
                             android:layout_width="25dp"
@@ -311,8 +326,8 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="10dp"
                             android:gravity="center_vertical"
-                            android:textSize="20sp"
                             android:singleLine="true"
+                            android:textSize="20sp"
                             tools:text="https://gourav-khunger.web.app" />
 
                     </LinearLayout>
@@ -328,12 +343,12 @@
                         android:id="@+id/emailParent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="10dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
                         android:clickable="true"
                         android:focusable="true"
-                        android:foreground="?android:attr/selectableItemBackground">
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
 
                         <ImageView
                             android:layout_width="25dp"
@@ -347,8 +362,8 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="10dp"
                             android:gravity="center_vertical"
-                            android:textSize="20sp"
                             android:singleLine="true"
+                            android:textSize="20sp"
                             tools:text="john.doe@test.com" />
 
                     </LinearLayout>
@@ -356,6 +371,14 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/userId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:textSize="20sp"
+                tools:text="github|46792249" />
 
         </LinearLayout>
     </ScrollView>

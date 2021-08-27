@@ -61,25 +61,28 @@ import kotlinx.coroutines.launch
 
 class ProfileActivity : AppCompatActivity() {
 
+    // View binding
     private lateinit var profileBinding: ActivityProfileBinding
     private lateinit var noInternetBinding: OtherNoInternetBinding
+
+    // Other variables
     private lateinit var viewModel: ProfileViewModel
     private lateinit var accessToken: String
     private lateinit var uid: String
-    private var user: UserModel? = null
-
     private lateinit var account: Auth0
     private lateinit var manager: SecureCredentialsManager
     private lateinit var apiClient: AuthenticationAPIClient
-
+    private var user: UserModel? = null
     private var canGoBack = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialise view bindings
         profileBinding = ActivityProfileBinding.inflate(layoutInflater)
         noInternetBinding = OtherNoInternetBinding.inflate(layoutInflater)
 
+        // Activity start pre-checks
         when (preActivityStartChecks(this)) {
             0 -> Unit
             1 -> {
@@ -109,22 +112,25 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
 
+        // get required values from shared preference storage.
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         uid = prefs.getString("user_id", "") ?: ""
         accessToken = prefs.getString("access_token", "") ?: ""
 
+        // Initialise the auth0 account
         account = Auth0(
             BuildConfig.Auth0ClientId,
             getString(R.string.com_auth0_domain)
         )
-
         apiClient = AuthenticationAPIClient(account)
         manager = SecureCredentialsManager(this, apiClient, SharedPreferencesStorage(this))
 
+        // Initialise values
         val repository = UserRepository(UserDataBase(this))
         val factory = ProfileViewModelFactory(repository)
         viewModel = ViewModelProvider(this, factory).get(ProfileViewModel::class.java)
 
+        // Set the theme and UI elements
         setTheme(R.style.Theme_JekyllEx)
         setContentView(profileBinding.root)
         setSupportActionBar(profileBinding.toolbarProfile)
@@ -134,12 +140,17 @@ class ProfileActivity : AppCompatActivity() {
             onBackPressed()
         }
 
+        // Observe and set user profile values into the views from the local db
         viewModel.getUserProfile(uid).observe(this, {
             if (it != null) {
                 canGoBack = true
                 user = it
                 profileBinding.apply {
-                    Glide.with(this@ProfileActivity).load(it.picture).circleCrop()
+                    Glide
+                        .with(this@ProfileActivity)
+                        .load(it.picture)
+                        .circleCrop()
+                        .placeholder(R.drawable.ic_user)
                         .into(profilePicImgView)
 
                     userName.text = it.name
@@ -213,6 +224,7 @@ class ProfileActivity : AppCompatActivity() {
                     profileLoadingProgress.visibility = View.GONE
                 }
             } else {
+                // If the profile is still loading/deleted, show progress bar
                 profileBinding.apply {
                     userProfileParentView.visibility = View.GONE
                     profileLoadingProgress.visibility = View.VISIBLE
@@ -221,6 +233,7 @@ class ProfileActivity : AppCompatActivity() {
         })
     }
 
+    // Inflate the options menu
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_profile, menu)
@@ -228,14 +241,17 @@ class ProfileActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
+    // Handle menu itmes pressed.
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.logout -> {
+                // Confirm logout selection.
                 val dialog = AlertDialog.Builder(this)
                     .setTitle("Log Out")
                     .setMessage("Are you sure you want to logout?")
                     .setCancelable(false)
                     .setPositiveButton("Log Out") { _, _ ->
+                        // logout the user.
                         logout()
                     }
                     .setNegativeButton("Cancel") { dialog, _ ->
@@ -248,18 +264,18 @@ class ProfileActivity : AppCompatActivity() {
             }
             R.id.refreshProfile -> {
                 if (user != null && accessToken.isNotEmpty()) {
+                    // refresh the profile from JekyllEx API
+                    // after getting the auth0 token.
                     canGoBack = false
                     manager.getCredentials(object :
                             Callback<Credentials, CredentialsManagerException> {
                             override fun onSuccess(result: Credentials) {
                                 // Use credentials
-                                CoroutineScope(Dispatchers.Default).launch {
-                                    viewModel.deleteUser(user!!)
-                                    viewModel.refreshUserProfile(
-                                        uid,
-                                        "Bearer ${result.accessToken}"
-                                    )
-                                }
+                                viewModel.deleteUser(user!!)
+                                viewModel.refreshUserProfile(
+                                    uid,
+                                    "Bearer ${result.accessToken}"
+                                )
                             }
 
                             override fun onFailure(error: CredentialsManagerException) {
@@ -281,6 +297,9 @@ class ProfileActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    // override back button pressed.
+    // The user shouldn't be able to go back if the profile is refreshing, else
+    // app may crash.
     override fun onBackPressed() {
         if (canGoBack) {
             finish()
@@ -290,6 +309,7 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
+    // Function that clears the local stored values and logouts the user.
     private fun logout() {
         PreferenceManager
             .getDefaultSharedPreferences(this)

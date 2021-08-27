@@ -59,8 +59,11 @@ import com.google.android.material.textfield.TextInputLayout
 
 class PostsActivity : AppCompatActivity() {
 
+    // View binding variables
     private lateinit var postsBinding: ActivityPostsBinding
     private lateinit var noInternetBinding: OtherNoInternetBinding
+
+    // Other variables
     private lateinit var accessToken: String
     private lateinit var currentRepo: String
     private lateinit var viewModel: PostsViewModel
@@ -70,9 +73,11 @@ class PostsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialise view bindings
         postsBinding = ActivityPostsBinding.inflate(layoutInflater)
         noInternetBinding = OtherNoInternetBinding.inflate(layoutInflater)
 
+        // Activity start pre-checks
         when (preActivityStartChecks(this)) {
             0 -> Unit
             1 -> {
@@ -102,13 +107,16 @@ class PostsActivity : AppCompatActivity() {
             }
         }
 
+        // Get saved access token
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         accessToken = prefs.getString("access_token", "") ?: ""
 
+        // Initialise the view-model with the required dependencies.
         val repository = GithubContentRepository()
         val factory = PostsViewModelFactory(repository)
         viewModel = ViewModelProvider(this, factory).get(PostsViewModel::class.java)
 
+        // Once all variables are set, show the UI to the user.
         setTheme(R.style.Theme_JekyllEx)
         setContentView(postsBinding.root)
         setSupportActionBar(postsBinding.toolbarPosts)
@@ -121,6 +129,7 @@ class PostsActivity : AppCompatActivity() {
         val extras = intent.extras
 
         if (extras != null && accessToken.isNotEmpty()) {
+            // Try to extract the passed values.
             currentRepo = extras.getString("repo_name") ?: ""
             postsBinding.postToolbarTv.text = currentRepo
             viewModel.getRepoRootContent(currentRepo, "Bearer $accessToken")
@@ -128,18 +137,24 @@ class PostsActivity : AppCompatActivity() {
                 .putString("current_repo", currentRepo)
                 .apply()
         } else {
-            Toast.makeText(this, "Unexpected error!", Toast.LENGTH_SHORT).show()
+            // If nothing is passed to the activity, show an error.
+            Toast
+                .makeText(this, "Required parameters not passed!", Toast.LENGTH_SHORT)
+                .show()
             onBackPressed()
         }
 
+        // hasPosts denotes if the current repository is a jekyll blog or not.
         viewModel.hasPosts.observe(this, {
             if (it) {
+                // If it is a jekyll blog, get the posts in it
                 postsBinding.rvPosts.visibility = View.VISIBLE
                 postsBinding.postsProgressParent.visibility = View.VISIBLE
                 postsBinding.noPosts.visibility = View.GONE
                 val repoName = extras!!.getString("repo_name") ?: ""
                 viewModel.getContentFromPath(true, repoName, "_posts", "Bearer $accessToken")
             } else {
+                // If it is not a jekyll blog, show it to the user.
                 postsBinding.rvPosts.visibility = View.GONE
                 postsBinding.postsProgressParent.visibility = View.GONE
                 postsBinding.noPosts.visibility = View.VISIBLE
@@ -149,6 +164,8 @@ class PostsActivity : AppCompatActivity() {
             }
         })
 
+        // once the github api returns the post inside the "_post" folder of
+        // the repository, show them to the user.
         viewModel.posts.observe(this, {
             if (!it.isNullOrEmpty()) {
                 list = it
@@ -162,6 +179,7 @@ class PostsActivity : AppCompatActivity() {
             }
         })
 
+        // Initialise up the recycler view.
         setupRecyclerView()
     }
 
@@ -174,6 +192,7 @@ class PostsActivity : AppCompatActivity() {
         }
     }
 
+    // function that will be called by the adapter to delete a specific post.
     fun deletePost(pos: Int, name: String, path: String, sha: String) {
         if (list != null && currentRepo.isNotEmpty() && accessToken.isNotEmpty()) {
             val commit = CommitModel("Deleted $name", null, sha)
@@ -186,10 +205,15 @@ class PostsActivity : AppCompatActivity() {
                 repositoriesAdapter.differ.currentList.size
             )
         } else {
-            Toast.makeText(this, "Current Repository not found", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Required variables not passed to the Activity!",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
+    // Inflate the menu.
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_posts, menu)
@@ -197,8 +221,10 @@ class PostsActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
+    // Handle menu item clicks.
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.newPostMenuItem) {
+            // Show the make a new post dialog.
             val dialogBuilder = AlertDialog.Builder(this)
             val inflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.other_newpost_alert, null)
@@ -209,6 +235,7 @@ class PostsActivity : AppCompatActivity() {
             alertDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             alertDialog.show()
 
+            // Initialise views present in the dialog.
             val exampleTv = dialogView.findViewById<TextView>(R.id.exampleNewPost)
             val cancelDialog = dialogView.findViewById<Button>(R.id.cancelNewPostDialog)
             val createPost = dialogView.findViewById<Button>(R.id.createNewPostBtn)
@@ -224,7 +251,9 @@ class PostsActivity : AppCompatActivity() {
                 alertDialog.dismiss()
             }
             createPost.setOnClickListener {
+                // validate file name
                 if (isValidFileName(fileNameEt.text.toString())) {
+                    // if filename is correct, take the user to the editor activity
                     etParent.error = ""
                     startActivity(
                         Intent(it.context, MarkdownEditor::class.java)
@@ -237,6 +266,7 @@ class PostsActivity : AppCompatActivity() {
                     etParent.error = "Invalid File Name!"
                 }
             }
+            // once the text is edited, remove the errors on the edittext.
             fileNameEt.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
                 }
@@ -257,11 +287,13 @@ class PostsActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    // Get the root content on activity resume.
     override fun onResume() {
         viewModel.getRepoRootContent(currentRepo, "Bearer $accessToken")
         super.onResume()
     }
 
+    // Override the default behaviour on back button pressed.
     override fun onBackPressed() {
         finish()
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)

@@ -32,6 +32,8 @@ import com.auth0.android.authentication.storage.SharedPreferencesStorage
 import com.github.gouravkhunger.jekyllex.BuildConfig
 import com.github.gouravkhunger.jekyllex.R
 
+// function to check if a user is logged in by
+// checking if the saved credentials are valid.
 fun checkCredentials(ctx: Context): Boolean {
     val account = Auth0(
         BuildConfig.Auth0ClientId,
@@ -41,5 +43,6 @@ fun checkCredentials(ctx: Context): Boolean {
     val apiClient = AuthenticationAPIClient(account)
     val manager = SecureCredentialsManager(ctx, apiClient, SharedPreferencesStorage(ctx))
 
+    // Returns true if the credentials are valid.
     return manager.hasValidCredentials()
 }

@@ -37,11 +37,14 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface GithubApi {
+    // Function to get all the repositories owned by a user.
     @GET("/user/repos")
     suspend fun getUserRepositories(
         @Header("Authorization") accessToken: String
     ): Response<RepoModel>
 
+    // Function to get the content of a a folder in a repository at a specified path.
+    // Empty path returns repository's root content.
     @GET("/repos/{repoName}/contents/{path}")
     suspend fun getRepoContent(
         @Path("repoName", encoded = true) repoName: String,
@@ -49,6 +52,7 @@ interface GithubApi {
         @Header("Authorization") accessToken: String
     ): Response<RepoContentModel>
 
+    // Function to get the content of a file in a repository in raw String format.
     @GET("/repos/{repoName}/contents/{path}")
     @Headers(
         "Accept: application/vnd.github.VERSION.raw"
@@ -59,6 +63,8 @@ interface GithubApi {
         @Header("Authorization") accessToken: String
     ): Response<String>
 
+    // Function to update the content of a file with the specific sha.
+    // If an empty sha is passed in the commit model, then a new file is created.
     @PUT("/repos/{currentRepo}/contents/{path}")
     @Headers(
         "Accept: application/vnd.github.v3+json"
@@ -70,6 +76,7 @@ interface GithubApi {
         @Header("Authorization") accessToken: String
     ): Response<Void>
 
+    // Delete a specific file in the a repository.
     @HTTP(method = "DELETE", path = "/repos/{currentRepo}/contents/{path}", hasBody = true)
     @Headers(
         "Accept: application/vnd.github.v3+json"

@@ -58,21 +58,24 @@ import com.google.android.material.textfield.TextInputEditText
 
 class MarkdownEditor : AppCompatActivity() {
 
+    // Variables
     private lateinit var mdEditorBinding: ActivityEditorBinding
     private lateinit var noInternetBinding: OtherNoInternetBinding
-    lateinit var viewModel: EditorViewModel
     private lateinit var fileSha: String
     private lateinit var currentRepo: String
     private lateinit var path: String
+    lateinit var viewModel: EditorViewModel
     private var isNew = false
     private var accessToken = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialise view bindings
         mdEditorBinding = ActivityEditorBinding.inflate(layoutInflater)
         noInternetBinding = OtherNoInternetBinding.inflate(layoutInflater)
 
+        // activity start pre-checks.
         when (preActivityStartChecks(this)) {
             0 -> Unit
             1 -> {
@@ -102,18 +105,22 @@ class MarkdownEditor : AppCompatActivity() {
             }
         }
 
+        // Initialise view-model
         val repository = GithubContentRepository()
         val factory = EditorViewModelFactory(repository)
         viewModel =
             ViewModelProvider(this, factory).get(EditorViewModel::class.java)
 
+        // get required data from the share-preferences.
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         currentRepo = prefs.getString("current_repo", "") ?: ""
         accessToken = prefs.getString("access_token", "") ?: ""
 
+        // Once all the variables are set, show the main content to the user.
         setTheme(R.style.Theme_JekyllEx)
         setContentView(mdEditorBinding.root)
 
+        // set the custom toolbar as the action bar.
         setSupportActionBar(mdEditorBinding.toolbarEditor)
         supportActionBar?.setHomeButtonEnabled(true)
         mdEditorBinding.toolbarEditor.setNavigationIcon(R.drawable.ic_back)
@@ -123,13 +130,19 @@ class MarkdownEditor : AppCompatActivity() {
 
         val extras = intent.extras
 
+        // try to get data about the post which is to be edited.
         if (extras != null && accessToken.isNotEmpty()) {
             path = extras.getString("path", "")
             fileSha = extras.getString("sha", "")
             isNew = extras.getBoolean("isNew")
             if (!isNew) viewModel.getContent(currentRepo, path, "Bearer $accessToken")
+        } else {
+            Toast.makeText(this, "No post to be edited!", Toast.LENGTH_SHORT).show()
+            onBackPressed()
         }
 
+        // if an existing post is edited, get its content and set it to the edittest.
+        // and the preview text view.
         viewModel.originalContent.observe(this, {
             if (!it.isNullOrEmpty()) {
                 showEditorArea()
@@ -139,19 +152,22 @@ class MarkdownEditor : AppCompatActivity() {
             }
         })
 
+        // If post meta data or the content of the post is updated,
+        // show the upload post button on the menu.
         viewModel.postMetaData.observe(this, {
             invalidateOptionsMenu()
         })
-
         viewModel.isTextUpdated.observe(this, {
             invalidateOptionsMenu()
         })
 
+        // Set view pager's attributes
         mdEditorBinding.editorViewPager.apply {
             adapter = ViewPagerAdapter(this@MarkdownEditor)
             currentItem = 0
         }
 
+        // Set titles on the Tab Layout items.
         TabLayoutMediator(
             mdEditorBinding.editorTabLayout,
             mdEditorBinding.editorViewPager
@@ -166,6 +182,8 @@ class MarkdownEditor : AppCompatActivity() {
         if (isNew) showEditorArea()
     }
 
+    // public function that hides the keyboard and sets the current page
+    // of the view pager to whatever is passed in.
     fun setCurrentPage(id: Int) {
         this.currentFocus?.let { view ->
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
@@ -175,18 +193,19 @@ class MarkdownEditor : AppCompatActivity() {
         mdEditorBinding.editorViewPager.currentItem = id
     }
 
+    // private functions to show or hide the editing area on demand.
     private fun showEditorArea() {
         mdEditorBinding.editorProgressBarParent.visibility = View.GONE
         mdEditorBinding.editorTabLayout.visibility = View.VISIBLE
         mdEditorBinding.editorViewPager.visibility = View.VISIBLE
     }
-
     private fun hideEditorArea() {
         mdEditorBinding.editorProgressBarParent.visibility = View.GONE
         mdEditorBinding.editorTabLayout.visibility = View.GONE
         mdEditorBinding.editorViewPager.visibility = View.GONE
     }
 
+    // Handle the Menu
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val inflater: MenuInflater = menuInflater
         inflater.inflate(R.menu.menu_editor, menu)
@@ -197,9 +216,11 @@ class MarkdownEditor : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
+    // Handle item clicks on the menu.
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.editMetaData -> {
+                // show meta data editor dialog
                 val dialogBuilder = AlertDialog.Builder(this)
                 val inflater = this.layoutInflater
                 val dialogView: View = inflater.inflate(R.layout.other_metadata_alert, null)
@@ -210,15 +231,17 @@ class MarkdownEditor : AppCompatActivity() {
                 alertDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                 alertDialog.show()
 
+                // get reference to the views in the dialog
+                val saveMetaDataBtn = dialogView.findViewById<View>(R.id.saveMetaData) as Button
+                val closeMetaDataBtn =
+                    dialogView.findViewById<View>(R.id.closeMetaDataDialog) as Button
                 val editText = dialogView.findViewById<View>(R.id.metaDataEt) as EditText
 
+                // if meta data is already present, set it to the edit text
                 if (!viewModel.postMetaData.value.isNullOrEmpty()) {
                     editText.text = SpannableStringBuilder(viewModel.postMetaData.value)
                 }
 
-                val saveMetaDataBtn = dialogView.findViewById<View>(R.id.saveMetaData) as Button
-                val closeMetaDataBtn =
-                    dialogView.findViewById<View>(R.id.closeMetaDataDialog) as Button
                 saveMetaDataBtn.setOnClickListener {
                     viewModel.saveMetaData(editText.text.toString())
                     alertDialog.dismiss()
@@ -228,6 +251,7 @@ class MarkdownEditor : AppCompatActivity() {
                 }
             }
             R.id.uploadPostMenuItem -> {
+                // show the commit message dialog
                 val dialogBuilder = AlertDialog.Builder(this)
                 val inflater = this.layoutInflater
                 val dialogView: View = inflater.inflate(R.layout.other_commitmessage_alert, null)
@@ -238,6 +262,7 @@ class MarkdownEditor : AppCompatActivity() {
                 alertDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                 alertDialog.show()
 
+                // get reference to the views in the dialog
                 val uploadPostBtn = dialogView.findViewById<Button>(R.id.uploadPostBtn)
                 val closeCommitMsgBtn =
                     dialogView.findViewById<Button>(R.id.closeCommitMessageDialog)
@@ -251,13 +276,12 @@ class MarkdownEditor : AppCompatActivity() {
                     val commitMessage = metaDataEt.text.toString()
                     val postContent = viewModel.text.value ?: ""
                     val postMetaData = viewModel.postMetaData.value ?: ""
-                    val encodedContent = stringToBase64(postMetaData, postContent)
 
+                    // check if anything is empty
                     if (
                         commitMessage.isEmpty() ||
                         postContent.isEmpty() ||
                         postMetaData.isEmpty() ||
-                        encodedContent.isEmpty() ||
                         currentRepo.isEmpty() ||
                         path.isEmpty()
                     ) {
@@ -266,6 +290,7 @@ class MarkdownEditor : AppCompatActivity() {
                             .show()
                         alertDialog.dismiss()
                     } else {
+                        val encodedContent = stringToBase64(postMetaData, postContent)
                         commitMsgParent.visibility = View.GONE
                         progressGroup.visibility = View.VISIBLE
 
@@ -273,11 +298,12 @@ class MarkdownEditor : AppCompatActivity() {
                             if (isNew) CommitModel(commitMessage, encodedContent, null)
                             else CommitModel(commitMessage, encodedContent, fileSha)
 
+                        // upload the post to github repo
                         viewModel.uploadPost(commit, currentRepo, path, "Bearer $accessToken")
 
                         viewModel.isUploaded.observe(this, {
                             if (it) {
-                                viewModel.changeIsTextUpdated(false)
+                                // ic the post is uploaded
                                 alertDialog.dismiss()
                                 dialogBuilder
                                     .setView(null)
@@ -297,7 +323,7 @@ class MarkdownEditor : AppCompatActivity() {
                                 Toast
                                     .makeText(
                                         this,
-                                        "Some unexpected error occured!",
+                                        "Some unexpected error occurred!",
                                         Toast.LENGTH_SHORT
                                     )
                                     .show()
@@ -314,6 +340,8 @@ class MarkdownEditor : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    // Handle different cases on what can happen
+    // when the back button is pressed.
     override fun onBackPressed() {
         if (mdEditorBinding.editorViewPager.currentItem == 1) {
             mdEditorBinding.editorViewPager.currentItem = 0

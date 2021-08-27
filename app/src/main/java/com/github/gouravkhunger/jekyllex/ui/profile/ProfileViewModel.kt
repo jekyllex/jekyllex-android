@@ -32,16 +32,20 @@ import com.github.gouravkhunger.jekyllex.repositories.UserRepository
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
+    // repository which this view model interacts with to get/set data.
     private val repository: UserRepository
 ) : ViewModel() {
 
+    // Function that gets the user profile from the local room database.
     fun getUserProfile(id: String) = repository.getSavedUser(id)
 
+    // Function to delete the user profile from the database.
     fun deleteUser(user: UserModel) = viewModelScope.launch {
         repository.deleteUser(user)
     }
 
-    suspend fun refreshUserProfile(id: String, accessToken: String) {
+    // Function to get user profile from the JekyllEx API.
+    fun refreshUserProfile(id: String, accessToken: String) = viewModelScope.launch {
         val response = JekyllExApiInstance.api.getUserData(id, accessToken)
         if (response.isSuccessful) {
             repository.saveUser(response.body()!!)

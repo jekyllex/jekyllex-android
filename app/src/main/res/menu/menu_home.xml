@@ -24,19 +24,30 @@
  - SOFTWARE.
  -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/uploadPostMenuItem"
-        android:title="@string/upload_post"
-        android:icon="@drawable/ic_upload"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/website"
+        android:title="@string/website"/>
 
     <item
-        android:id="@+id/editMetaData"
-        android:title="@string/edit_meta"
-        android:icon="@drawable/ic_code"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/gh_repo"
+        android:title="@string/github_repository"/>
+
+    <item
+        android:id="@+id/documentation"
+        android:title="@string/docs"/>
+
+    <item
+        android:id="@+id/share"
+        android:title="@string/share"/>
+
+    <item
+        android:id="@+id/privacyPolicy"
+        android:title="@string/privacy_policy"/>
+
+    <item
+        android:id="@+id/tnc"
+        android:title="@string/tnc"/>
 
 </menu>

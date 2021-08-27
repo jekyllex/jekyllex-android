@@ -28,15 +28,19 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.gouravkhunger.jekyllex.models.repository.RepoModel
-import com.github.gouravkhunger.jekyllex.repositories.UserReposRepository
+import com.github.gouravkhunger.jekyllex.repositories.GithubContentRepository
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val repoModel: UserReposRepository
+    // repository which this view model interacts with to get/set data.
+    private val repoModel: GithubContentRepository
 ) : ViewModel() {
 
+    // Live data representing the list of repositories owned by the user
     val userRepos: MutableLiveData<RepoModel> by lazy { MutableLiveData() }
 
+    // function to get the list of repositories owned by the user, from the
+    // Gitub api.
     fun getUserRepositories(accessToken: String) = viewModelScope.launch {
         val response = repoModel.getUserRepositories(accessToken)
         userRepos.postValue(response.body())

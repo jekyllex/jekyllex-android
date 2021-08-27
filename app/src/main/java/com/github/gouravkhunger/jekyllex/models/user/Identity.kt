@@ -24,6 +24,7 @@
 
 package com.github.gouravkhunger.jekyllex.models.user
 
+// A data class that represents a user's social identity provider.
 data class Identity(
     val access_token: String,
     val connection: String,

@@ -14,6 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/SplashScreenTheme"
         tools:replace="android:allowBackup">
+
+        <activity
+            android:name=".ui.content.ContentActivity"
+            android:label=""
+            android:exported="true" />
         <activity
             android:name=".ui.posts.PostsActivity"
             android:label=""
@@ -24,28 +29,32 @@
             android:parentActivityName=".ui.posts.PostsActivity" />
         <activity
             android:name=".ui.profile.ProfileActivity"
-            android:parentActivityName=".ui.home.HomeActivity"
-            android:label=""/>
+            android:label=""
+            android:parentActivityName=".ui.home.HomeActivity" />
         <activity
             android:name=".ui.home.HomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".ui.auth.AuthActivity"
-            android:label="@string/authenticate"
             android:exported="true"
+            android:label="@string/authenticate"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="@string/com_auth0_scheme"
+
+                <data
                     android:host="@string/com_auth0_domain"
-                    android:pathPrefix="/login" />
+                    android:pathPrefix="/login"
+                    android:scheme="@string/com_auth0_scheme" />
             </intent-filter>
         </activity>
     </application>

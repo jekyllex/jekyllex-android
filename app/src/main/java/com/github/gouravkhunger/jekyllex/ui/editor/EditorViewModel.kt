@@ -33,9 +33,11 @@ import com.github.gouravkhunger.jekyllex.util.getMetaDataEndIndex
 import kotlinx.coroutines.launch
 
 class EditorViewModel(
+    // repository which this view model interacts with to get/set data.
     private val repository: GithubContentRepository
 ) : ViewModel() {
 
+    // Observable live data variables.
     val scrollDist: MutableLiveData<Int> by lazy { MutableLiveData() }
     val text: MutableLiveData<String> by lazy { MutableLiveData() }
     val postMetaData: MutableLiveData<String> by lazy { MutableLiveData() }
@@ -43,10 +45,12 @@ class EditorViewModel(
     val isTextUpdated: MutableLiveData<Boolean> by lazy { MutableLiveData(false) }
     val isUploaded: MutableLiveData<Boolean> by lazy { MutableLiveData() }
 
+    // Function to set the Scroll View scroll distance.
     fun setScrollDist(newDist: Int) {
         scrollDist.postValue(newDist)
     }
 
+    // Function to update the text in the preview pane.
     fun setNewText(newText: String) {
         text.postValue(newText)
         viewModelScope.launch {
@@ -54,14 +58,12 @@ class EditorViewModel(
         }
     }
 
-    fun changeIsTextUpdated(value: Boolean) {
-        isTextUpdated.postValue(value)
-    }
-
+    // save Meta-data for the current post
     fun saveMetaData(data: String) {
         postMetaData.postValue(data)
     }
 
+    // Function to get the raw content of a post file from github
     fun getContent(
         repoName: String,
         path: String,
@@ -78,6 +80,7 @@ class EditorViewModel(
         }
     }
 
+    // Function to upload the file to github repo.
     fun uploadPost(
         commitModel: CommitModel,
         currentRepo: String,
@@ -86,5 +89,6 @@ class EditorViewModel(
     ) = viewModelScope.launch {
         val res = repository.updateFileContent(commitModel, currentRepo, path, accessToken)
         isUploaded.postValue(res.isSuccessful)
+        isTextUpdated.postValue(!res.isSuccessful)
     }
 }
