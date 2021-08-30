@@ -1,14 +1,14 @@
 <div align="center">
-<h1>JekyllEx</h1>
+<h1>JekyllEx Android App</h1>
 
 <a href="https://github.com/jekyllex/jekyllex-android/blob/main/LICENSE" target="blank">
     <img src="https://img.shields.io/github/license/jekyllex/jekyllex-android" alt="JekyllEx Android App Licence" />
 </a>
-<a href="https://github.com/jekyllex/jekyllex-android/fork" target="blank">
-    <img src="https://img.shields.io/github/forks/jekyllex/jekyllex-android" alt="JekyllEx Android App Forks"/>
-</a>
 <a href="https://github.com/jekyllex/jekyllex-android/stargazers" target="blank">
     <img src="https://img.shields.io/github/stars/jekyllex/jekyllex-android" alt="JekyllEx Android App Stars"/>
+</a>
+<a href="https://github.com/jekyllex/jekyllex-android/fork" target="blank">
+    <img src="https://img.shields.io/github/forks/jekyllex/jekyllex-android" alt="JekyllEx Android App Forks"/>
 </a>
 <a href="https://github.com/jekyllex/jekyllex-android/issues" target="blank">
     <img src="https://img.shields.io/github/issues/jekyllex/jekyllex-android" alt="JekyllEx Android App Issues"/>
