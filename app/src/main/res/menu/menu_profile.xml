@@ -28,11 +28,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/logout"
-        android:title="@string/logout" />
-
-    <item
         android:id="@+id/refreshProfile"
         android:title="@string/refresh_profile" />
+
+    <item
+        android:id="@+id/logout"
+        android:title="@string/logout" />
 
 </menu>

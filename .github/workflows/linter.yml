@@ -50,6 +50,7 @@ jobs:
       - name: Super Linter
         uses: docker://ghcr.io/github/super-linter:slim-v4
         env:
+          VALIDATE_ALL_CODEBASE: false
           VALIDATE_KOTLIN: true
           VALIDATE_XML: true
           DEFAULT_BRANCH: main

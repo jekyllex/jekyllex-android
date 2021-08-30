@@ -29,8 +29,8 @@
     <string name="website_url">https://jekyllex.xyz</string>
     <string name="docs_url">https://docs.jekyllex.xyz</string>
 
-    <string name="gh_repo_url">https://github.com/gouravkhunger/jekyllex-android</string>
-    <string name="issues_url">https://github.com/gouravkhunger/jekyllex-android/issues/new</string>
+    <string name="gh_repo_url">https://github.com/jekyllex/jekyllex-android</string>
+    <string name="issues_url">https://github.com/jekyllex/jekyllex-android/issues/new</string>
 
     <string name="com_auth0_domain">jekyllex.us.auth0.com</string>
     <string name="com_auth0_scheme">jekyllex</string>
@@ -43,7 +43,7 @@
     <string name="login">Login</string>
     <string name="profile_picture">Profile Picture</string>
     <string name="profile">Profile</string>
-    <string name="loading_msg">Please wait while we are loading required data…</string>
+    <string name="loading_msg">Loading your repositories…</string>
     <string name="no_connection">No Internet Connection Available</string>
     <string name="retry">Retry</string>
     <string name="go_back">Go Back</string>
@@ -86,7 +86,11 @@
     <string name="refresh_profile">Refresh Profile</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="tnc">Terms and Conditions</string>
-
+    <string name="share_text">
+        Hey, Check out JekyllEx- The easiest way to manage your jekyll blog
+        directly from your android device \n\n
+        https://jekyllex.xyz
+    </string>
     <string name="privacy_policy_text">
         <![CDATA[
 Gourav Khunger built the JekyllEx app as an Open Source app.

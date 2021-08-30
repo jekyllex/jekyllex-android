@@ -22,11 +22,11 @@
 </div>
 <br/>
 
-<img alt = "JekyllEx Introduction Image" src="https://raw.githubusercontent.com/jekyllex/jekyllex-android/main/media/cover-image.jpg"/>
+<img alt = "JekyllEx Introduction Image" src="https://raw.githubusercontent.com/jekyllex/jekyllex-android/main/media/cover-image.png"/>
 
 # 🚀 Introduction
 
-<img alt = "JekyllEx App Logo" src="https://raw.githubusercontent.com/jekyllex/jekyllex-android/main/media/logo.jpg" height="100" width="100" align="right" style="margin:10px"/>
+<img alt = "JekyllEx App Logo" src="https://raw.githubusercontent.com/jekyllex/jekyllex-android/main/media/logo.png" height="100" width="100" align="right" style="margin:10px"/>
 
 JekyllEx is an Android App that allows you to manage a Jekyll Blog directly from your Android device!
 

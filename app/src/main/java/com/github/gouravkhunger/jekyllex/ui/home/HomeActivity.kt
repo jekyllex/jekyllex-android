@@ -206,8 +206,7 @@ class HomeActivity : AppCompatActivity() {
                     action = Intent.ACTION_SEND
                     putExtra(
                         Intent.EXTRA_TEXT,
-                        "Hey, Check out JekyllEx- The easiest way to manage your jekyll blog " +
-                            "directly from your android device ${getString(R.string.website_url)}"
+                        getString(R.string.share_text)
                     )
                 }
                 sendIntent.type = "text/plain"
