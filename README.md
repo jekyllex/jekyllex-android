@@ -32,6 +32,11 @@ JekyllEx is an Android App that allows you to manage a Jekyll Blog directly from
 
 [Read the blog post for better understanding](https://genicsblog.com/introducing-jekyllex-android-app) 😃.
 
+# ✨ Try it out
+
+Download and install the [latest release](https://github.com/jekyllex/jekyllex-android/releases/latest) of the app to
+start relishing the power of blogging from your mobile.
+
 # 🔗 Handy Links
 
 - GitHub: https://github.com/jekyllex
@@ -39,11 +44,6 @@ JekyllEx is an Android App that allows you to manage a Jekyll Blog directly from
 - Documentation: https://docs.jekyllex.xyz
 - Api: https://api.jekyllex.xyz
 - Demo blog used for testing jekyllex: https://demo.jekyllex.xyz
-
-# ✨ Try it out
-
-Download and install the [latest release](https://github.com/jekyllex/jekyllex-android/releases/latest) of the app to
-start relishing the power of blogging from your mobile.
 
 # 🛠️ Technical details
 
