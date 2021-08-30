@@ -47,9 +47,9 @@ start relishing the power of blogging from your mobile.
 
 # 🛠️ Technical details
 
-The codebase of this app is based on the MVVM pattern.
+The development of JekyllEx Androi App is done on the [dev](https://github.com/jekyllex/jekyllex-android/tree/dev) branch.
 
-Here's a list of tools/libraries/components JekyllEx uses.
+The codebase of this app is based on the MVVM pattern. Here's a list of tools/libraries/components JekyllEx uses:
 
 ### Platform
 
