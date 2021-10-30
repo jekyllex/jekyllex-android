@@ -51,7 +51,7 @@
             android:src="@drawable/ic_logo"
             android:contentDescription="@string/app_name"/>
 
-        <TextView
+        <com.github.gouravkhunger.fontize.FontizeTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
@@ -59,7 +59,7 @@
             android:textAlignment="center"
             android:text="@string/login_msg"/>
 
-        <Button
+        <com.github.gouravkhunger.fontize.FontizeButton
             android:id="@+id/loginBtn"
             android:layout_marginTop="10dp"
             android:layout_width="wrap_content"

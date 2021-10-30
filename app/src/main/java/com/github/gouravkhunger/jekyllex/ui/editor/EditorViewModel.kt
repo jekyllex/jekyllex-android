@@ -58,6 +58,10 @@ class EditorViewModel(
         }
     }
 
+    fun setOriginalText(original: String) {
+        originalContent.postValue(original)
+    }
+
     // save Meta-data for the current post
     fun saveMetaData(data: String) {
         postMetaData.postValue(data)

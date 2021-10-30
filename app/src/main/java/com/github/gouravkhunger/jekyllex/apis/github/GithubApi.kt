@@ -28,18 +28,14 @@ import com.github.gouravkhunger.jekyllex.models.CommitModel
 import com.github.gouravkhunger.jekyllex.models.repo_content.RepoContentModel
 import com.github.gouravkhunger.jekyllex.models.repository.RepoModel
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.HTTP
-import retrofit2.http.Header
-import retrofit2.http.Headers
-import retrofit2.http.PUT
-import retrofit2.http.Path
+import retrofit2.http.*
 
 interface GithubApi {
     // Function to get all the repositories owned by a user.
-    @GET("/user/repos")
+    @GET("/user/repos?sort=full_name")
     suspend fun getUserRepositories(
+        @Query("page", encoded = true) page: Int,
+        @Query("per_page", encoded = true) per_page: Int,
         @Header("Authorization") accessToken: String
     ): Response<RepoModel>
 

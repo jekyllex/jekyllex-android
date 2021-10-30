@@ -82,6 +82,11 @@ class EditingFragment : Fragment() {
             viewModel.setScrollDist(scrollY)
         }
 
+        // Observe the scroll dist of the editor area and scroll to that distance.
+        viewModel.scrollDist.observe(viewLifecycleOwner, {
+            editorBinding.editorScrollView.smoothScrollTo(0, it)
+        })
+
         // Save the text as it gets changed.
         editorBinding.markdownEt.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {

@@ -57,7 +57,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <TextView
+                <com.github.gouravkhunger.fontize.FontizeTextView
                     android:id="@+id/rvPostName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -86,7 +86,7 @@
 
             </RelativeLayout>
 
-            <TextView
+            <com.github.gouravkhunger.fontize.FontizeTextView
                 android:id="@+id/rvPostPath"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -96,7 +96,7 @@
                 android:textSize="16sp"
                 tools:text="_posts/book-review/2021-05-28-life-is-what-you-make-it.md" />
 
-            <TextView
+            <com.github.gouravkhunger.fontize.FontizeTextView
                 android:id="@+id/rvPostDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -110,7 +110,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <TextView
+                <com.github.gouravkhunger.fontize.FontizeTextView
                     android:id="@+id/rvPostFileSize"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

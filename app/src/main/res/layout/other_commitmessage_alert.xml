@@ -29,7 +29,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/rounded_corners"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:theme="@style/Theme.JekyllEx">
 
     <LinearLayout
         android:id="@+id/commitMessageParent"
@@ -37,7 +38,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
+        <com.github.gouravkhunger.fontize.FontizeTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -55,7 +56,7 @@
             app:boxCornerRadiusTopEnd="16dp"
             app:boxCornerRadiusTopStart="16dp">
 
-            <com.google.android.material.textfield.TextInputEditText
+            <com.github.gouravkhunger.fontize.FontizeTextInputEditText
                 android:id="@+id/commitMessageEt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -73,14 +74,14 @@
             android:gravity="end"
             android:orientation="horizontal">
 
-            <Button
+            <com.github.gouravkhunger.fontize.FontizeButton
                 android:id="@+id/closeCommitMessageDialog"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:text="@string/cancel" />
 
-            <Button
+            <com.github.gouravkhunger.fontize.FontizeButton
                 android:id="@+id/uploadPostBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -99,7 +100,7 @@
         android:gravity="center"
         android:visibility="gone">
 
-        <TextView
+        <com.github.gouravkhunger.fontize.FontizeTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

@@ -26,7 +26,10 @@ package com.github.gouravkhunger.jekyllex.ui.editor
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.SpannableStringBuilder
@@ -64,6 +67,7 @@ class MarkdownEditor : AppCompatActivity() {
     private lateinit var fileSha: String
     private lateinit var currentRepo: String
     private lateinit var path: String
+    private lateinit var prefs: SharedPreferences
     lateinit var viewModel: EditorViewModel
     private var isNew = false
     private var accessToken = ""
@@ -109,10 +113,10 @@ class MarkdownEditor : AppCompatActivity() {
         val repository = GithubContentRepository()
         val factory = EditorViewModelFactory(repository)
         viewModel =
-            ViewModelProvider(this, factory).get(EditorViewModel::class.java)
+            ViewModelProvider(this, factory)[EditorViewModel::class.java]
 
         // get required data from the share-preferences.
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        prefs = PreferenceManager.getDefaultSharedPreferences(this)
         currentRepo = prefs.getString("current_repo", "") ?: ""
         accessToken = prefs.getString("access_token", "") ?: ""
 
@@ -127,6 +131,7 @@ class MarkdownEditor : AppCompatActivity() {
         mdEditorBinding.toolbarEditor.setNavigationOnClickListener {
             onBackPressed()
         }
+        mdEditorBinding.toolbarEditor.applyFont()
 
         val extras = intent.extras
 
@@ -136,6 +141,7 @@ class MarkdownEditor : AppCompatActivity() {
             fileSha = extras.getString("sha", "")
             isNew = extras.getBoolean("isNew")
             if (!isNew) viewModel.getContent(currentRepo, path, "Bearer $accessToken")
+            else viewModel.setOriginalText("")
         } else {
             Toast.makeText(this, "No post to be edited!", Toast.LENGTH_SHORT).show()
             onBackPressed()
@@ -144,7 +150,7 @@ class MarkdownEditor : AppCompatActivity() {
         // if an existing post is edited, get its content and set it to the edittest.
         // and the preview text view.
         viewModel.originalContent.observe(this, {
-            if (!it.isNullOrEmpty()) {
+            if (it != null) {
                 showEditorArea()
                 viewModel.setNewText(it)
             } else {
@@ -210,8 +216,14 @@ class MarkdownEditor : AppCompatActivity() {
         val inflater: MenuInflater = menuInflater
         inflater.inflate(R.menu.menu_editor, menu)
 
+        val tint = prefs.getString("primaryTextColor", "#ffffff")
+
         val uploadPostMenuItem = menu.findItem(R.id.uploadPostMenuItem)
         uploadPostMenuItem.isVisible = viewModel.isTextUpdated.value ?: false
+        uploadPostMenuItem.icon.colorFilter = PorterDuffColorFilter(Color.parseColor(tint), PorterDuff.Mode.SRC_IN)
+
+        val editMetaDataMenuItem = menu.findItem(R.id.editMetaData)
+        editMetaDataMenuItem.icon.colorFilter = PorterDuffColorFilter(Color.parseColor(tint), PorterDuff.Mode.SRC_IN)
 
         return super.onCreateOptionsMenu(menu)
     }

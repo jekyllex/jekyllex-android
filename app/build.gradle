@@ -7,12 +7,12 @@ plugins {
 }
 
 android {
-    compileSdk 30
+    compileSdk 31
 
     defaultConfig {
         applicationId "com.github.gouravkhunger.jekyllex"
         minSdk 23
-        targetSdk 30
+        targetSdk 31
         versionCode 1
         versionName "1.0.0"
 
@@ -56,21 +56,22 @@ configurations.all {
 dependencies {
 
     // Core Dependencies
-    implementation "androidx.core:core-ktx:1.6.0"
+    implementation "androidx.core:core-ktx:1.7.0"
     implementation "androidx.appcompat:appcompat:1.3.1"
     implementation "com.google.android.material:material:1.4.0"
 
     // Architectural Components
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"
 
     // Glide
     implementation "com.github.bumptech.glide:glide:4.12.0"
     implementation "androidx.legacy:legacy-support-v4:1.0.0"
+    implementation 'androidx.preference:preference-ktx:1.1.1'
     annotationProcessor "com.github.bumptech.glide:compiler:4.12.0"
 
     // Auth0
     implementation "com.auth0.android:auth0:2.4.0"
-    implementation "androidx.constraintlayout:constraintlayout:2.1.0"
+    implementation "androidx.constraintlayout:constraintlayout:2.1.1"
 
     // Retrofit
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
@@ -82,6 +83,9 @@ dependencies {
     implementation "androidx.room:room-runtime:2.3.0"
     kapt "androidx.room:room-compiler:2.3.0"
 
+    // needed to run room database on m1 macs
+    kapt "org.xerial:sqlite-jdbc:3.34.0"
+
     // Kotlin Extensions and Coroutines support for Room
     implementation "androidx.room:room-ktx:2.3.0"
 
@@ -90,6 +94,12 @@ dependencies {
 
     // App Updater
     implementation "com.github.javiersantos:AppUpdater:2.7"
+
+    // Fontize
+    implementation project(":fontize")
+
+    // Colour Picker
+    implementation "io.github.vadiole:colorpicker:1.0.2"
 
     // Markwon
     final def markwon_version = "4.6.2"

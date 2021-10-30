@@ -44,6 +44,7 @@ import com.auth0.android.provider.WebAuthProvider
 import com.auth0.android.provider.WebAuthProvider.resume
 import com.auth0.android.result.Credentials
 import com.auth0.android.result.UserProfile
+import com.github.gouravkhunger.fontize.Fontize
 import com.github.gouravkhunger.jekyllex.BuildConfig
 import com.github.gouravkhunger.jekyllex.R
 import com.github.gouravkhunger.jekyllex.databinding.ActivityAuthBinding
@@ -65,6 +66,9 @@ class AuthActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Fontize
+        Fontize(this).setDefaultFont(R.font.josefinsans)
 
         // initialise the view bindings required for this class
         authBinding = ActivityAuthBinding.inflate(layoutInflater)
@@ -95,7 +99,7 @@ class AuthActivity : AppCompatActivity() {
 
         val userRepository = UserRepository(UserDataBase(this))
         val factory = AuthViewModelFactory(userRepository)
-        viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory)[AuthViewModel::class.java]
 
         account = Auth0(
             BuildConfig.Auth0ClientId,

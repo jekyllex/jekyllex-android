@@ -29,9 +29,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/rounded_corners"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:theme="@style/Theme.JekyllEx">
 
-    <TextView
+    <com.github.gouravkhunger.fontize.FontizeTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -68,14 +69,14 @@
         android:gravity="end"
         android:orientation="horizontal">
 
-        <Button
+        <com.github.gouravkhunger.fontize.FontizeButton
             android:id="@+id/closeMetaDataDialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:text="@string/cancel"/>
 
-        <Button
+        <com.github.gouravkhunger.fontize.FontizeButton
             android:id="@+id/saveMetaData"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

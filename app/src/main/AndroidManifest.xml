@@ -14,11 +14,15 @@
         android:supportsRtl="true"
         android:theme="@style/SplashScreenTheme"
         tools:replace="android:allowBackup">
-
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:exported="false"
+            android:label=""
+            android:parentActivityName=".ui.home.HomeActivity" />
         <activity
             android:name=".ui.content.ContentActivity"
-            android:label=""
-            android:exported="true" />
+            android:exported="true"
+            android:label="" />
         <activity
             android:name=".ui.posts.PostsActivity"
             android:label=""
@@ -33,7 +37,8 @@
             android:parentActivityName=".ui.home.HomeActivity" />
         <activity
             android:name=".ui.home.HomeActivity"
-            android:exported="true">
+            android:exported="true"
+            android:label="">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

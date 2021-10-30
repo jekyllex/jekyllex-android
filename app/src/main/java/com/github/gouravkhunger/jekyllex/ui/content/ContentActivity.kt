@@ -37,6 +37,7 @@ class ContentActivity : AppCompatActivity() {
         contentBinding.toolbarContent.setNavigationOnClickListener {
             onBackPressed()
         }
+        contentBinding.toolbarContent.applyFont()
 
         // if there is some data passed to this activity,
         // try extracting the id of the content to be shown.

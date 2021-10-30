@@ -41,7 +41,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.github.gouravkhunger.fontize.FontizeToolbar
             android:id="@+id/toolbarPosts"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -60,7 +60,7 @@
                 android:textSize="24sp"
                 android:singleLine="true"/>
 
-        </androidx.appcompat.widget.Toolbar>
+        </com.github.gouravkhunger.fontize.FontizeToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -116,7 +116,7 @@
             android:contentDescription="@string/no_connection"
             android:src="@drawable/not_found" />
 
-        <TextView
+        <com.github.gouravkhunger.fontize.FontizeTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
@@ -124,7 +124,7 @@
             android:textAlignment="center"
             android:text="@string/no_posts_found"/>
 
-        <Button
+        <com.github.gouravkhunger.fontize.FontizeButton
             android:id="@+id/goBack"
             android:layout_marginTop="20dp"
             android:text="@string/go_back"
