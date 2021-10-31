@@ -162,6 +162,7 @@
                     android:layout_margin="20dp"
                     android:layout_weight="1"
                     android:text="@string/previous"
+                    android:textSize="13sp"
                     app:icon="@drawable/ic_back" />
 
                 <com.github.gouravkhunger.fontize.FontizeButton
@@ -171,6 +172,7 @@
                     android:layout_margin="20dp"
                     android:layout_weight="1"
                     android:text="@string/next"
+                    android:textSize="13sp"
                     app:icon="@drawable/ic_forward"
                     app:iconGravity="end" />
 

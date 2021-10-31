@@ -59,8 +59,7 @@ class SettingsActivity :
     }
 
     override fun onBackPressed() {
-        finish()
-        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+        onSupportNavigateUp()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -73,7 +72,8 @@ class SettingsActivity :
         return if (supportFragmentManager.popBackStackImmediate()) {
             true
         } else {
-            onBackPressed()
+            finish()
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
             false
         }
     }
