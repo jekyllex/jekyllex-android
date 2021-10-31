@@ -28,7 +28,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:theme="@style/Theme.JekyllEx">
 
     <ImageView
         android:layout_width="300dp"
@@ -36,7 +37,7 @@
         android:contentDescription="@string/no_connection"
         android:src="@drawable/no_conn" />
 
-    <Button
+    <com.github.gouravkhunger.fontize.FontizeButton
         android:id="@+id/retry"
         android:layout_marginTop="10dp"
         android:text="@string/retry"

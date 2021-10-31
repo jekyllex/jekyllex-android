@@ -1,0 +1,26 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SeekBarPreference
+        android:max="100"
+        app:min="1"
+        app:icon="@drawable/ic_sync"
+        app:key="default_load_count"
+        app:title="@string/load_header"
+        app:summary="@string/load_summary"
+        app:showSeekBarValue="true"
+        app:defaultValue="30" />
+
+    <Preference
+        app:fragment="com.github.gouravkhunger.jekyllex.ui.settings.SettingsActivity$FontFragment"
+        app:icon="@drawable/ic_font"
+        app:key="font_header"
+        app:title="@string/font_header" />
+
+    <Preference
+        app:fragment="com.github.gouravkhunger.jekyllex.ui.settings.SettingsActivity$ColourFragment"
+        app:icon="@drawable/ic_colour"
+        app:key="colour_header"
+        app:title="@string/colour_header" />
+
+</PreferenceScreen>

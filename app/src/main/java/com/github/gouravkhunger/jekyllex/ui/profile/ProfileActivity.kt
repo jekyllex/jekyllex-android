@@ -38,13 +38,12 @@ import androidx.preference.PreferenceManager
 import com.auth0.android.Auth0
 import com.auth0.android.authentication.AuthenticationAPIClient
 import com.auth0.android.authentication.AuthenticationException
-import com.auth0.android.authentication.storage.CredentialsManagerException
 import com.auth0.android.authentication.storage.SecureCredentialsManager
 import com.auth0.android.authentication.storage.SharedPreferencesStorage
 import com.auth0.android.callback.Callback
 import com.auth0.android.provider.WebAuthProvider
-import com.auth0.android.result.Credentials
 import com.bumptech.glide.Glide
+import com.github.gouravkhunger.fontize.FontizeMenu
 import com.github.gouravkhunger.jekyllex.BuildConfig
 import com.github.gouravkhunger.jekyllex.R
 import com.github.gouravkhunger.jekyllex.databinding.ActivityProfileBinding
@@ -68,7 +67,7 @@ class ProfileActivity : AppCompatActivity() {
     // Other variables
     private lateinit var viewModel: ProfileViewModel
     private lateinit var accessToken: String
-    private lateinit var uid: String
+    private lateinit var username: String
     private lateinit var account: Auth0
     private lateinit var manager: SecureCredentialsManager
     private lateinit var apiClient: AuthenticationAPIClient
@@ -114,7 +113,7 @@ class ProfileActivity : AppCompatActivity() {
 
         // get required values from shared preference storage.
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        uid = prefs.getString("user_id", "") ?: ""
+        username = prefs.getString("user_id", "") ?: ""
         accessToken = prefs.getString("access_token", "") ?: ""
 
         // Initialise the auth0 account
@@ -128,20 +127,22 @@ class ProfileActivity : AppCompatActivity() {
         // Initialise values
         val repository = UserRepository(UserDataBase(this))
         val factory = ProfileViewModelFactory(repository)
-        viewModel = ViewModelProvider(this, factory).get(ProfileViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory)[ProfileViewModel::class.java]
 
         // Set the theme and UI elements
         setTheme(R.style.Theme_JekyllEx)
         setContentView(profileBinding.root)
         setSupportActionBar(profileBinding.toolbarProfile)
         supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         profileBinding.toolbarProfile.setNavigationIcon(R.drawable.ic_back)
         profileBinding.toolbarProfile.setNavigationOnClickListener {
             onBackPressed()
         }
+        profileBinding.toolbarProfile.applyFont()
 
         // Observe and set user profile values into the views from the local db
-        viewModel.getUserProfile(uid).observe(this, {
+        viewModel.getUserProfile(username).observe(this, {
             if (it != null) {
                 canGoBack = true
                 user = it
@@ -238,6 +239,8 @@ class ProfileActivity : AppCompatActivity() {
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_profile, menu)
 
+        menu?.let { FontizeMenu(this@ProfileActivity, it) }
+
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -263,34 +266,12 @@ class ProfileActivity : AppCompatActivity() {
                 alert.show()
             }
             R.id.refreshProfile -> {
-                if (user != null && accessToken.isNotEmpty()) {
-                    // refresh the profile from JekyllEx API
-                    // after getting the auth0 token.
-                    canGoBack = false
-                    manager.getCredentials(object :
-                            Callback<Credentials, CredentialsManagerException> {
-                            override fun onSuccess(result: Credentials) {
-                                // Use credentials
-                                viewModel.deleteUser(user!!)
-                                viewModel.refreshUserProfile(
-                                    uid,
-                                    "Bearer ${result.accessToken}"
-                                )
-                            }
-
-                            override fun onFailure(error: CredentialsManagerException) {
-                                // No credentials were previously saved 
-                                // or they couldn't be refreshed
-                                Toast.makeText(
-                                    this@ProfileActivity,
-                                    "Error retreiving access token",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        })
-                } else {
-                    Toast.makeText(this, "User undefined", Toast.LENGTH_SHORT).show()
-                }
+                Toast.makeText(
+                    this,
+                    "Refreshing profile is discontinued.\n" +
+                        "Login again to trigger refresh.",
+                    Toast.LENGTH_LONG
+                ).show()
             }
             else -> Unit
         }
@@ -314,7 +295,10 @@ class ProfileActivity : AppCompatActivity() {
         PreferenceManager
             .getDefaultSharedPreferences(this)
             .edit()
-            .clear()
+            .remove("username")
+            .remove("user_id")
+            .remove("pic_url")
+            .remove("access_token")
             .apply()
 
         if (user != null) {

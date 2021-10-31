@@ -28,7 +28,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/rvRepositoryCard"
@@ -63,59 +66,70 @@
                     android:id="@+id/rvRepoTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                     android:singleLine="true"
                     android:textSize="22sp"
-                    android:layout_gravity="center"
                     tools:text="Octocat" />
 
                 <TextView
                     android:id="@+id/rvRepoIsPrivate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:singleLine="true"
-                    android:textSize="14sp"
-                    android:textColor="#757575"
                     android:layout_gravity="center"
                     android:layout_marginStart="10dp"
                     android:background="@drawable/rounded_border"
-                    android:visibility="gone"
+                    android:singleLine="true"
                     android:text="@string/repo_private"
-                    tools:visibility="visible"
-                    tools:text="Private" />
+                    android:textColor="#757575"
+                    android:textSize="14sp"
+                    android:visibility="gone"
+                    tools:text="Private"
+                    tools:visibility="visible" />
 
                 <TextView
                     android:id="@+id/rvRepoIsArchived"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:singleLine="true"
-                    android:textSize="14sp"
-                    android:textColor="#757575"
                     android:layout_gravity="center"
                     android:layout_marginStart="10dp"
                     android:background="@drawable/rounded_border"
-                    android:visibility="gone"
+                    android:singleLine="true"
                     android:text="@string/repo_archived"
-                    tools:visibility="visible"
-                    tools:text="Archived" />
+                    android:textColor="#757575"
+                    android:textSize="14sp"
+                    android:visibility="gone"
+                    tools:text="Archived"
+                    tools:visibility="visible" />
 
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/rvRepofullName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="3"
+                android:singleLine="false"
+                android:textColor="#757575"
+                android:textSize="14sp"
+                tools:text="Octocat Hello World awesome repository." />
 
             <TextView
                 android:id="@+id/rvRepoDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:maxLines="3"
                 android:singleLine="false"
-                android:textSize="18sp"
                 android:textColor="#757575"
+                android:textSize="18sp"
                 tools:text="Octocat Hello World awesome repository." />
 
             <RelativeLayout
                 android:id="@+id/repoInfoNumbersParent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:gravity="center_vertical"
-                android:layout_marginTop="10dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -123,11 +137,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
+                    android:drawablePadding="5dp"
                     android:maxLines="3"
                     android:singleLine="false"
-                    android:textSize="20sp"
                     android:textColor="#757575"
-                    android:drawablePadding="5dp"
+                    android:textSize="20sp"
                     app:drawableStartCompat="@drawable/ic_star"
                     tools:text="3" />
 
@@ -157,13 +171,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
-                    android:layout_toStartOf="@+id/openRepoInBrowser"
                     android:layout_marginTop="10dp"
+                    android:layout_toStartOf="@+id/openRepoInBrowser"
                     android:gravity="center_vertical"
                     android:maxLines="3"
                     android:singleLine="false"
-                    android:textSize="18sp"
                     android:textColor="#757575"
+                    android:textSize="18sp"
                     tools:text="Built with: Java" />
 
                 <ImageView

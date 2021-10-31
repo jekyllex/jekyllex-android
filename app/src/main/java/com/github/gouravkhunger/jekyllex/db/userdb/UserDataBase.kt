@@ -34,7 +34,7 @@ import com.github.gouravkhunger.jekyllex.models.user.UserModel
 // Database configurations
 @Database(
     entities = [UserModel::class],
-    version = 1
+    version = 2
 )
 @TypeConverters(IdentityConverter::class)
 abstract class UserDataBase : RoomDatabase() {

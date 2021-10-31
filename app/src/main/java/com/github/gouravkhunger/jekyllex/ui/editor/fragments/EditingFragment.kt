@@ -72,8 +72,10 @@ class EditingFragment : Fragment() {
         viewModel.isTextUpdated.observe(viewLifecycleOwner, {
             if (it) {
                 editorBinding.previewBtnParent.visibility = View.VISIBLE
+                editorBinding.previewBtn.changeDrawableTint(true)
             } else {
                 editorBinding.previewBtnParent.visibility = View.GONE
+                editorBinding.previewBtn.changeDrawableTint(false)
             }
         })
 
@@ -81,6 +83,11 @@ class EditingFragment : Fragment() {
         editorBinding.editorScrollView.setOnScrollChangeListener { _, _, scrollY, _, _ ->
             viewModel.setScrollDist(scrollY)
         }
+
+        // Observe the scroll dist of the editor area and scroll to that distance.
+        viewModel.scrollDist.observe(viewLifecycleOwner, {
+            editorBinding.editorScrollView.smoothScrollTo(0, it)
+        })
 
         // Save the text as it gets changed.
         editorBinding.markdownEt.addTextChangedListener(object : TextWatcher {

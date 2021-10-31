@@ -31,8 +31,8 @@ import com.github.gouravkhunger.jekyllex.models.CommitModel
 class GithubContentRepository {
 
     // Function to get a user's repositories from Github Api.
-    suspend fun getUserRepositories(accessToken: String) =
-        GithubApiInstance.api.getUserRepositories(accessToken)
+    suspend fun getUserRepositories(page: Int, per_page: Int, accessToken: String) =
+        GithubApiInstance.api.getUserRepositories(page, per_page, accessToken)
 
     // Function to get content from a github repository at a specified folder (path)
     suspend fun getRepoContent(repoName: String, path: String, accessToken: String) =

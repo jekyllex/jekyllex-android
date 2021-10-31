@@ -41,7 +41,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.github.gouravkhunger.fontize.FontizeToolbar
             android:id="@+id/toolbarHome"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -53,8 +53,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/app_name"
-                android:textSize="24sp"
-                android:textColor="@color/white"/>
+                android:textColor="@color/white"
+                android:textSize="24sp" />
 
             <ImageView
                 android:id="@+id/profileIcon"
@@ -62,18 +62,18 @@
                 android:layout_height="35dp"
                 android:layout_gravity="end"
                 android:layout_marginEnd="10dp"
-                android:src="@drawable/ic_user"
-                android:contentDescription="@string/profile_picture" />
+                android:contentDescription="@string/profile_picture"
+                android:src="@drawable/ic_user" />
 
-        </androidx.appcompat.widget.Toolbar>
+        </com.github.gouravkhunger.fontize.FontizeToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:id="@+id/loadingMessageParent"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical"
         android:gravity="center"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -81,18 +81,18 @@
 
         <ProgressBar
             android:layout_width="60dp"
-            android:layout_height="60dp"/>
+            android:layout_height="60dp" />
 
-        <TextView
+        <com.github.gouravkhunger.fontize.FontizeTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="20dp"
-            android:textSize="20sp"
-            android:text="@string/loading_msg"/>
+            android:text="@string/loading_msg"
+            android:textSize="20sp" />
 
     </LinearLayout>
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/repositoriesParent"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -102,33 +102,95 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
 
-        <TextView
-            android:id="@+id/selectRepoTv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:layout_margin="10dp"
-            android:textSize="20sp"
-            android:text="@string/select_repo_message"/>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_marginTop="10dp"
-            android:id="@+id/repositoryList"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:overScrollMode="never" />
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:orientation="vertical">
 
-    </LinearLayout>
+            <com.github.gouravkhunger.fontize.FontizeTextView
+                android:id="@+id/selectRepoTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="@string/select_repo_message"
+                android:textSize="20sp"
+                android:visibility="gone" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/nameTextInput"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:endIconMode="clear_text">
+
+                <com.github.gouravkhunger.fontize.FontizeTextInputEditText
+                    android:id="@+id/nameEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/enter_repo_name"
+                    android:inputType="text"
+                    android:singleLine="true" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/repositoryList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
+
+            <LinearLayout
+                android:id="@+id/paginationButtons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone">
+
+                <com.github.gouravkhunger.fontize.FontizeButton
+                    android:id="@+id/prevPage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:layout_weight="1"
+                    android:text="@string/previous"
+                    android:textSize="13sp"
+                    app:icon="@drawable/ic_back" />
+
+                <com.github.gouravkhunger.fontize.FontizeButton
+                    android:id="@+id/nextPage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:layout_weight="1"
+                    android:text="@string/next"
+                    android:textSize="13sp"
+                    app:icon="@drawable/ic_forward"
+                    app:iconGravity="end" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <com.github.gouravkhunger.fontize.FontizeFAB
         android:id="@+id/fabReport"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
+        android:contentDescription="@string/report_msg"
         android:src="@drawable/ic_report"
-        app:tint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:contentDescription="@string/report_msg" />
+        app:tint="@color/white" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

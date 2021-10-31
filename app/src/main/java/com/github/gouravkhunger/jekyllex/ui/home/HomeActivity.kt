@@ -24,28 +24,36 @@
 
 package com.github.gouravkhunger.jekyllex.ui.home
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.NestedScrollView
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.github.gouravkhunger.fontize.FontizeMenu
 import com.github.gouravkhunger.jekyllex.R
 import com.github.gouravkhunger.jekyllex.databinding.ActivityHomeBinding
 import com.github.gouravkhunger.jekyllex.databinding.OtherNoInternetBinding
+import com.github.gouravkhunger.jekyllex.models.repository.RepoModel
 import com.github.gouravkhunger.jekyllex.repositories.GithubContentRepository
 import com.github.gouravkhunger.jekyllex.ui.auth.AuthActivity
 import com.github.gouravkhunger.jekyllex.ui.content.ContentActivity
 import com.github.gouravkhunger.jekyllex.ui.home.adapter.RepositoriesAdapter
 import com.github.gouravkhunger.jekyllex.ui.profile.ProfileActivity
+import com.github.gouravkhunger.jekyllex.ui.settings.SettingsActivity
 import com.github.gouravkhunger.jekyllex.util.preActivityStartChecks
 import com.github.javiersantos.appupdater.AppUpdater
+import com.github.javiersantos.appupdater.enums.Display
 import com.github.javiersantos.appupdater.enums.UpdateFrom
 
 class HomeActivity : AppCompatActivity() {
@@ -55,7 +63,10 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var noInternetBinding: OtherNoInternetBinding
 
     // Variables used by this activity
-    private lateinit var userId: String
+    private var curPage = 1
+    private var perPage: Int = 10
+
+    private lateinit var viewModel: HomeViewModel
     private lateinit var picUrl: String
     private lateinit var accessToken: String
     private lateinit var repositoriesAdapter: RepositoriesAdapter
@@ -94,23 +105,36 @@ class HomeActivity : AppCompatActivity() {
 
         // get simple user data from sharedpreferences
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        userId = prefs.getString("user_id", "") ?: ""
         picUrl = prefs.getString("pic_url", "") ?: ""
         accessToken = prefs.getString("access_token", "") ?: ""
+        perPage = prefs.getInt("default_load_count", 10)
 
         // Initialise view model with the required dependencies.
         val repository = GithubContentRepository()
         val factory = HomeViewModelFactory(repository)
-        val viewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory)[HomeViewModel::class.java]
 
         // All variables are set, set the theme and layout now
         setTheme(R.style.Theme_JekyllEx)
         setContentView(homeBinding.root)
         setSupportActionBar(homeBinding.toolbarHome)
-        supportActionBar?.title = ""
+        homeBinding.toolbarHome.applyFont()
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         // set up the recycler view that will hold 4
         setupRecyclerView()
+
+        homeBinding.repositoriesParent.setOnScrollChangeListener(
+            NestedScrollView.OnScrollChangeListener { _, _, _, _, _ ->
+                homeBinding.repositoriesParent.apply {
+                    if ((getChildAt(childCount - 1).bottom) - (height + scrollY) < 100) {
+                        homeBinding.fabReport.hide()
+                    } else {
+                        homeBinding.fabReport.show()
+                    }
+                }
+            }
+        )
 
         // load user's profile picture into the image view.
         Glide
@@ -126,6 +150,17 @@ class HomeActivity : AppCompatActivity() {
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         }
 
+        viewModel.hasNext.observe(this, {
+            homeBinding.prevPage.isEnabled = curPage != 1
+            homeBinding.nextPage.isEnabled = it
+
+            if (!it && curPage == 1) {
+                homeBinding.paginationButtons.visibility = View.GONE
+            } else {
+                homeBinding.paginationButtons.visibility = View.VISIBLE
+            }
+        })
+
         viewModel.userRepos.observe(this, {
             if (it.isNotEmpty()) {
                 // if user's repositories are not empty, show the list.
@@ -133,6 +168,7 @@ class HomeActivity : AppCompatActivity() {
                 homeBinding.loadingMessageParent.visibility = View.GONE
                 homeBinding.repositoriesParent.visibility = View.VISIBLE
                 homeBinding.selectRepoTv.visibility = View.VISIBLE
+                homeBinding.repositoriesParent.scrollTo(0, 0)
             } else {
                 homeBinding.loadingMessageParent.visibility = View.VISIBLE
                 homeBinding.repositoriesParent.visibility = View.GONE
@@ -140,8 +176,27 @@ class HomeActivity : AppCompatActivity() {
             }
         })
 
+        homeBinding.nameEditText.setOnFocusChangeListener { view, hasFocus ->
+            if (!hasFocus) {
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.hideSoftInputFromWindow(view.windowToken, 0)
+            }
+        }
+
+        homeBinding.nameEditText.addTextChangedListener {
+            filter(it.toString())
+        }
+
         // fetch the user's repositories.
-        viewModel.getUserRepositories("Bearer $accessToken")
+        viewModel.getUserRepositories(1, perPage, "Bearer $accessToken")
+
+        homeBinding.nextPage.setOnClickListener {
+            viewModel.getUserRepositories(++curPage, perPage, "Bearer $accessToken")
+        }
+
+        homeBinding.prevPage.setOnClickListener {
+            viewModel.getUserRepositories(--curPage, perPage, "Bearer $accessToken")
+        }
 
         // Show what the floating action button does, when it is long pressed.
         homeBinding.fabReport.setOnLongClickListener {
@@ -161,8 +216,16 @@ class HomeActivity : AppCompatActivity() {
 
         // At the end, look for app updates, if available...
         AppUpdater(this).setUpdateFrom(UpdateFrom.GITHUB)
-            .setGitHubUserAndRepo("gouravkhunger", "jekyllex-andriod")
+            .setGitHubUserAndRepo("jekyllex", "jekyllex-android")
+            .setDisplay(Display.SNACKBAR)
             .start()
+    }
+
+    override fun onBackPressed() {
+        if (homeBinding.nameEditText.hasFocus()) {
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            imm?.hideSoftInputFromWindow(homeBinding.nameEditText.windowToken, 0)
+        } else super.onBackPressed()
     }
 
     // inflates the options menu
@@ -170,12 +233,18 @@ class HomeActivity : AppCompatActivity() {
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_home, menu)
 
+        menu?.let { FontizeMenu(this@HomeActivity, it) }
+
         return super.onCreateOptionsMenu(menu)
     }
 
     // Handle general item clicks in the menu
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+            }
             R.id.website -> {
                 startActivity(
                     Intent(
@@ -244,5 +313,22 @@ class HomeActivity : AppCompatActivity() {
             adapter = repositoriesAdapter
             layoutManager = LinearLayoutManager(this@HomeActivity)
         }
+    }
+
+    private fun filter(text: String) {
+        if (text.isEmpty()) {
+            repositoriesAdapter.differ.submitList(viewModel.userRepos.value!!)
+            return
+        }
+        val temp = RepoModel()
+        for (d in viewModel.userRepos.value!!) {
+            // or use .equal(text) with you want equal match
+            // use .toLowerCase() for better matches
+            if (d.name!!.lowercase().contains(text.lowercase())) {
+                temp.add(d)
+            }
+        }
+        // update recyclerview
+        repositoriesAdapter.differ.submitList(temp)
     }
 }

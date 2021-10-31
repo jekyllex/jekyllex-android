@@ -33,10 +33,12 @@ class ContentActivity : AppCompatActivity() {
         setContentView(contentBinding.root)
         setSupportActionBar(contentBinding.toolbarContent)
         supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         contentBinding.toolbarContent.setNavigationIcon(R.drawable.ic_back)
         contentBinding.toolbarContent.setNavigationOnClickListener {
             onBackPressed()
         }
+        contentBinding.toolbarContent.applyFont()
 
         // if there is some data passed to this activity,
         // try extracting the id of the content to be shown.

@@ -31,7 +31,7 @@
     android:layout_height="match_parent"
     android:theme="@style/Theme.JekyllEx"
     tools:background="@color/white"
-    tools:context=".ui.profile.ProfileActivity">
+    tools:context=".ui.content.ContentActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -41,7 +41,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.github.gouravkhunger.fontize.FontizeToolbar
             android:id="@+id/toolbarContent"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -59,7 +59,7 @@
                 android:textSize="24sp"
                 tools:text="Content" />
 
-        </androidx.appcompat.widget.Toolbar>
+        </com.github.gouravkhunger.fontize.FontizeToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -71,7 +71,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
 
-        <TextView
+        <com.github.gouravkhunger.fontize.FontizeTextView
             android:id="@+id/contentTv"
             android:layout_width="match_parent"
             android:layout_height="0dp"

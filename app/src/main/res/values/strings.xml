@@ -49,7 +49,10 @@
     <string name="go_back">Go Back</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="markdown_editor">Markdown Editor</string>
-    <string name="select_repo_message">Here\'s the list of your repositories, choose one that has your jekyll blog in it</string>
+    <string name="select_repo_message">
+        Here\'s the list of your repositories, choose one or search
+        for the repository that has your jekyll blog in it.
+    </string>
     <string name="posts">Posts</string>
     <string name="login_msg">Please log-in with your GitHub account to start using JekyllEx</string>
     <string name="no_posts_found">No \"_posts\" folder found in this repository</string>
@@ -275,4 +278,19 @@ If you have any questions or suggestions about my Terms and Conditions, do not h
 contact me at [gouravkhunger18@gmail.com](mailto:gouravkhunger18@gmail.com).
 ]]>
     </string>
+
+    <string name="load_header">Repositories per page</string>
+    <string name="load_summary">Number of github repositories to load per page</string>
+    <string name="font_header">App Font</string>
+    <string name="colour_header">Colour Settings</string>
+
+    <string name="font_title">Default Font</string>
+
+    <string name="primary_app_color_title">Primary App Color</string>
+    <string name="primary_text_color_title">Primary Text Color</string>
+
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="enter_repo_name">Enter repo name</string>
+    <string name="settings">Settings</string>
 </resources>

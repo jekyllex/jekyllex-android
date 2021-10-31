@@ -26,7 +26,10 @@ package com.github.gouravkhunger.jekyllex.ui.editor
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.SpannableStringBuilder
@@ -64,6 +67,7 @@ class MarkdownEditor : AppCompatActivity() {
     private lateinit var fileSha: String
     private lateinit var currentRepo: String
     private lateinit var path: String
+    private lateinit var prefs: SharedPreferences
     lateinit var viewModel: EditorViewModel
     private var isNew = false
     private var accessToken = ""
@@ -109,10 +113,10 @@ class MarkdownEditor : AppCompatActivity() {
         val repository = GithubContentRepository()
         val factory = EditorViewModelFactory(repository)
         viewModel =
-            ViewModelProvider(this, factory).get(EditorViewModel::class.java)
+            ViewModelProvider(this, factory)[EditorViewModel::class.java]
 
         // get required data from the share-preferences.
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        prefs = PreferenceManager.getDefaultSharedPreferences(this)
         currentRepo = prefs.getString("current_repo", "") ?: ""
         accessToken = prefs.getString("access_token", "") ?: ""
 
@@ -123,10 +127,12 @@ class MarkdownEditor : AppCompatActivity() {
         // set the custom toolbar as the action bar.
         setSupportActionBar(mdEditorBinding.toolbarEditor)
         supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         mdEditorBinding.toolbarEditor.setNavigationIcon(R.drawable.ic_back)
         mdEditorBinding.toolbarEditor.setNavigationOnClickListener {
             onBackPressed()
         }
+        mdEditorBinding.toolbarEditor.applyFont()
 
         val extras = intent.extras
 
@@ -136,6 +142,7 @@ class MarkdownEditor : AppCompatActivity() {
             fileSha = extras.getString("sha", "")
             isNew = extras.getBoolean("isNew")
             if (!isNew) viewModel.getContent(currentRepo, path, "Bearer $accessToken")
+            else viewModel.setOriginalText("")
         } else {
             Toast.makeText(this, "No post to be edited!", Toast.LENGTH_SHORT).show()
             onBackPressed()
@@ -144,7 +151,7 @@ class MarkdownEditor : AppCompatActivity() {
         // if an existing post is edited, get its content and set it to the edittest.
         // and the preview text view.
         viewModel.originalContent.observe(this, {
-            if (!it.isNullOrEmpty()) {
+            if (it != null) {
                 showEditorArea()
                 viewModel.setNewText(it)
             } else {
@@ -179,6 +186,8 @@ class MarkdownEditor : AppCompatActivity() {
             }
         }.attach()
 
+        mdEditorBinding.editorTabLayout.formatTextViews()
+
         if (isNew) showEditorArea()
     }
 
@@ -210,8 +219,14 @@ class MarkdownEditor : AppCompatActivity() {
         val inflater: MenuInflater = menuInflater
         inflater.inflate(R.menu.menu_editor, menu)
 
+        val tint = prefs.getString("primaryTextColor", "#ffffff")
+
         val uploadPostMenuItem = menu.findItem(R.id.uploadPostMenuItem)
         uploadPostMenuItem.isVisible = viewModel.isTextUpdated.value ?: false
+        uploadPostMenuItem.icon.colorFilter = PorterDuffColorFilter(Color.parseColor(tint), PorterDuff.Mode.SRC_IN)
+
+        val editMetaDataMenuItem = menu.findItem(R.id.editMetaData)
+        editMetaDataMenuItem.icon.colorFilter = PorterDuffColorFilter(Color.parseColor(tint), PorterDuff.Mode.SRC_IN)
 
         return super.onCreateOptionsMenu(menu)
     }
@@ -235,15 +250,22 @@ class MarkdownEditor : AppCompatActivity() {
                 val saveMetaDataBtn = dialogView.findViewById<View>(R.id.saveMetaData) as Button
                 val closeMetaDataBtn =
                     dialogView.findViewById<View>(R.id.closeMetaDataDialog) as Button
-                val editText = dialogView.findViewById<View>(R.id.metaDataEt) as EditText
+                val metaDataEt = dialogView.findViewById<View>(R.id.metaDataEt) as EditText
+
+                metaDataEt.setOnFocusChangeListener { view, hasFocus ->
+                    if (!hasFocus) {
+                        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                        imm?.hideSoftInputFromWindow(view.windowToken, 0)
+                    }
+                }
 
                 // if meta data is already present, set it to the edit text
                 if (!viewModel.postMetaData.value.isNullOrEmpty()) {
-                    editText.text = SpannableStringBuilder(viewModel.postMetaData.value)
+                    metaDataEt.text = SpannableStringBuilder(viewModel.postMetaData.value)
                 }
 
                 saveMetaDataBtn.setOnClickListener {
-                    viewModel.saveMetaData(editText.text.toString())
+                    viewModel.saveMetaData(metaDataEt.text.toString())
                     alertDialog.dismiss()
                 }
                 closeMetaDataBtn.setOnClickListener {
@@ -266,14 +288,21 @@ class MarkdownEditor : AppCompatActivity() {
                 val uploadPostBtn = dialogView.findViewById<Button>(R.id.uploadPostBtn)
                 val closeCommitMsgBtn =
                     dialogView.findViewById<Button>(R.id.closeCommitMessageDialog)
-                val metaDataEt = dialogView.findViewById<TextInputEditText>(R.id.commitMessageEt)
+                val commitMessageEt = dialogView.findViewById<TextInputEditText>(R.id.commitMessageEt)
                 val commitMsgParent =
                     dialogView.findViewById<LinearLayout>(R.id.commitMessageParent)
                 val progressGroup =
                     dialogView.findViewById<LinearLayout>(R.id.postUploadingProgressParent)
 
+                commitMessageEt.setOnFocusChangeListener { view, hasFocus ->
+                    if (!hasFocus) {
+                        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                        imm?.hideSoftInputFromWindow(view.windowToken, 0)
+                    }
+                }
+
                 uploadPostBtn.setOnClickListener {
-                    val commitMessage = metaDataEt.text.toString()
+                    val commitMessage = commitMessageEt.text.toString()
                     val postContent = viewModel.text.value ?: ""
                     val postMetaData = viewModel.postMetaData.value ?: ""
 

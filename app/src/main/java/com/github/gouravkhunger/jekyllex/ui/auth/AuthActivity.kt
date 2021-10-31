@@ -44,6 +44,7 @@ import com.auth0.android.provider.WebAuthProvider
 import com.auth0.android.provider.WebAuthProvider.resume
 import com.auth0.android.result.Credentials
 import com.auth0.android.result.UserProfile
+import com.github.gouravkhunger.fontize.Fontize
 import com.github.gouravkhunger.jekyllex.BuildConfig
 import com.github.gouravkhunger.jekyllex.R
 import com.github.gouravkhunger.jekyllex.databinding.ActivityAuthBinding
@@ -52,6 +53,10 @@ import com.github.gouravkhunger.jekyllex.db.userdb.UserDataBase
 import com.github.gouravkhunger.jekyllex.repositories.UserRepository
 import com.github.gouravkhunger.jekyllex.ui.home.HomeActivity
 import com.github.gouravkhunger.jekyllex.util.preActivityStartChecks
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class AuthActivity : AppCompatActivity() {
 
@@ -65,6 +70,9 @@ class AuthActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Fontize
+        Fontize(this).setDefaultFont(R.font.josefinsans)
 
         // initialise the view bindings required for this class
         authBinding = ActivityAuthBinding.inflate(layoutInflater)
@@ -95,7 +103,7 @@ class AuthActivity : AppCompatActivity() {
 
         val userRepository = UserRepository(UserDataBase(this))
         val factory = AuthViewModelFactory(userRepository)
-        viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory)[AuthViewModel::class.java]
 
         account = Auth0(
             BuildConfig.Auth0ClientId,
@@ -172,6 +180,13 @@ class AuthActivity : AppCompatActivity() {
                 goToHome()
             }
         })
+
+        // workaround to apply icon tint to login button
+        // after 100ms as it is not detected on inflation
+        CoroutineScope(context = Dispatchers.Main).launch {
+            delay(100)
+            authBinding.loginBtn.changeDrawableTint(true)
+        }
     }
 
     // Function to extract saved credentials frm auth0 client

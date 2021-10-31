@@ -24,6 +24,7 @@
 
 package com.github.gouravkhunger.jekyllex.ui.home
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,10 +40,36 @@ class HomeViewModel(
     // Live data representing the list of repositories owned by the user
     val userRepos: MutableLiveData<RepoModel> by lazy { MutableLiveData() }
 
+    // Live data representing the current page of repositories user is viewing.
+    val hasNext: MutableLiveData<Boolean> by lazy { MutableLiveData(false) }
+
+    private var last = 1
+
     // function to get the list of repositories owned by the user, from the
-    // Gitub api.
-    fun getUserRepositories(accessToken: String) = viewModelScope.launch {
-        val response = repoModel.getUserRepositories(accessToken)
+    // GitHub api.
+    fun getUserRepositories(pg: Int, per_page: Int, accessToken: String) = viewModelScope.launch {
+        userRepos.postValue(RepoModel())
+        val response = repoModel.getUserRepositories(pg, per_page, accessToken)
+
+        val paginationHeaders = response.headers()["link"]
+        val splitList = paginationHeaders?.split(",")
+
+        Log.d("Split list", splitList.toString())
+
+        var found = false
+
+        run loop@{
+            splitList?.forEach {
+                if ("next" in it) {
+                    hasNext.postValue(true)
+                    found = true
+                    return@loop
+                }
+            }
+        }
+
+        if (!found) hasNext.postValue(false)
+
         userRepos.postValue(response.body())
     }
 }

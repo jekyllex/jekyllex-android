@@ -101,6 +101,6 @@ class PostsViewModel(
         path: String,
         accessToken: String
     ) = viewModelScope.launch {
-        val response = repository.deleteFile(commitModel, repo, path, accessToken)
+        repository.deleteFile(commitModel, repo, path, accessToken)
     }
 }

@@ -24,8 +24,12 @@
 
 package com.github.gouravkhunger.jekyllex.ui.posts
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
@@ -33,6 +37,7 @@ import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -64,6 +69,7 @@ class PostsActivity : AppCompatActivity() {
     private lateinit var noInternetBinding: OtherNoInternetBinding
 
     // Other variables
+    private lateinit var prefs: SharedPreferences
     private lateinit var accessToken: String
     private lateinit var currentRepo: String
     private lateinit var viewModel: PostsViewModel
@@ -108,23 +114,25 @@ class PostsActivity : AppCompatActivity() {
         }
 
         // Get saved access token
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        prefs = PreferenceManager.getDefaultSharedPreferences(this)
         accessToken = prefs.getString("access_token", "") ?: ""
 
         // Initialise the view-model with the required dependencies.
         val repository = GithubContentRepository()
         val factory = PostsViewModelFactory(repository)
-        viewModel = ViewModelProvider(this, factory).get(PostsViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory)[PostsViewModel::class.java]
 
         // Once all variables are set, show the UI to the user.
         setTheme(R.style.Theme_JekyllEx)
         setContentView(postsBinding.root)
         setSupportActionBar(postsBinding.toolbarPosts)
         supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         postsBinding.toolbarPosts.setNavigationIcon(R.drawable.ic_back)
         postsBinding.toolbarPosts.setNavigationOnClickListener {
             onBackPressed()
         }
+        postsBinding.toolbarPosts.applyFont()
 
         val extras = intent.extras
 
@@ -154,7 +162,7 @@ class PostsActivity : AppCompatActivity() {
                 val repoName = extras!!.getString("repo_name") ?: ""
                 viewModel.getContentFromPath(true, repoName, "_posts", "Bearer $accessToken")
             } else {
-                // If it is not a jekyll blog, show it to the user.
+                // If it is not a jekyll blog, inform the user.
                 postsBinding.rvPosts.visibility = View.GONE
                 postsBinding.postsProgressParent.visibility = View.GONE
                 postsBinding.noPosts.visibility = View.VISIBLE
@@ -162,6 +170,7 @@ class PostsActivity : AppCompatActivity() {
                     onBackPressed()
                 }
             }
+            invalidateOptionsMenu()
         })
 
         // once the github api returns the post inside the "_post" folder of
@@ -218,6 +227,15 @@ class PostsActivity : AppCompatActivity() {
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_posts, menu)
 
+        val newPostItem = menu?.findItem(R.id.newPostMenuItem)
+        if (newPostItem != null) {
+            val tint = prefs.getString("primaryTextColor", "#ffffff")
+            newPostItem.icon.colorFilter =
+                PorterDuffColorFilter(Color.parseColor(tint), PorterDuff.Mode.SRC_IN)
+        }
+
+        newPostItem?.isVisible = viewModel.hasPosts.value ?: false
+
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -241,6 +259,13 @@ class PostsActivity : AppCompatActivity() {
             val createPost = dialogView.findViewById<Button>(R.id.createNewPostBtn)
             val fileNameEt = dialogView.findViewById<EditText>(R.id.newPostEt)
             val etParent = dialogView.findViewById<TextInputLayout>(R.id.newPostEtLayout)
+
+            fileNameEt.setOnFocusChangeListener { view, hasFocus ->
+                if (!hasFocus) {
+                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                    imm?.hideSoftInputFromWindow(view.windowToken, 0)
+                }
+            }
 
             exampleTv.text = HtmlCompat.fromHtml(
                 getString(R.string.file_name_example),

@@ -30,14 +30,18 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.github.gouravkhunger.fontize.Fontize
 import com.github.gouravkhunger.jekyllex.R
 import com.github.gouravkhunger.jekyllex.databinding.OtherRepositoryItemBinding
 import com.github.gouravkhunger.jekyllex.models.repository.RepoItemModel
 import com.github.gouravkhunger.jekyllex.ui.posts.PostsActivity
+import com.github.gouravkhunger.jekyllex.util.getAllChildren
 
 // Adapter of RecyclerView present in Home Activity
 class RepositoriesAdapter(private val activity: Activity) :
@@ -82,6 +86,9 @@ class RepositoriesAdapter(private val activity: Activity) :
         val repo = differ.currentList[position]
         holder.binding.apply {
             rvRepoTitle.text = repo.name
+
+            rvRepofullName.text = repo.full_name
+
             rvRepoDescription.text = repo.description
             rvRepoDescription.visibility =
                 if (rvRepoDescription.text.isEmpty()) View.GONE else View.VISIBLE
@@ -120,6 +127,17 @@ class RepositoriesAdapter(private val activity: Activity) :
 
             openRepoInBrowser.setOnClickListener {
                 activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(repo.html_url)))
+            }
+
+            val currentFont = Fontize(activity).getCurrentFontId()
+            val typeface = ResourcesCompat.getFont(activity, currentFont)
+            val list = rvRepositoryCard.getAllChildren()
+
+            for (i in list.indices) {
+                if (list[i] is TextView) {
+                    val textView = (list[i] as TextView)
+                    textView.typeface = typeface
+                }
             }
         }
     }

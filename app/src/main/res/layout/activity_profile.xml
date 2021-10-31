@@ -41,7 +41,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.github.gouravkhunger.fontize.FontizeToolbar
             android:id="@+id/toolbarProfile"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -58,7 +58,7 @@
                 android:textColor="@color/white"
                 android:textSize="24sp" />
 
-        </androidx.appcompat.widget.Toolbar>
+        </com.github.gouravkhunger.fontize.FontizeToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -95,7 +95,7 @@
                 android:contentDescription="@string/profile_picture"
                 tools:src="@drawable/ic_user" />
 
-            <TextView
+            <com.github.gouravkhunger.fontize.FontizeTextView
                 android:id="@+id/userName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -105,7 +105,7 @@
                 android:textSize="24sp"
                 tools:text="John Doe" />
 
-            <TextView
+            <com.github.gouravkhunger.fontize.FontizeTextView
                 android:id="@+id/userBio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -128,14 +128,14 @@
                     android:gravity="center"
                     android:orientation="vertical">
 
-                    <TextView
+                    <com.github.gouravkhunger.fontize.FontizeTextView
                         android:id="@+id/followersTv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="24sp"
                         tools:text="24" />
 
-                    <TextView
+                    <com.github.gouravkhunger.fontize.FontizeTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/followers"
@@ -158,14 +158,14 @@
                     android:gravity="center"
                     android:orientation="vertical">
 
-                    <TextView
+                    <com.github.gouravkhunger.fontize.FontizeTextView
                         android:id="@+id/followingTv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="24sp"
                         tools:text="19" />
 
-                    <TextView
+                    <com.github.gouravkhunger.fontize.FontizeTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/following"
@@ -210,7 +210,7 @@
                             android:src="@drawable/ic_github"
                             app:tint="@color/black" />
 
-                        <TextView
+                        <com.github.gouravkhunger.fontize.FontizeTextView
                             android:id="@+id/userGithub"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -247,7 +247,7 @@
                             android:src="@drawable/ic_twitter"
                             app:tint="@color/black" />
 
-                        <TextView
+                        <com.github.gouravkhunger.fontize.FontizeTextView
                             android:id="@+id/userTwitter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -284,7 +284,7 @@
                             android:src="@drawable/ic_location"
                             app:tint="@color/black" />
 
-                        <TextView
+                        <com.github.gouravkhunger.fontize.FontizeTextView
                             android:id="@+id/userLocation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -320,7 +320,7 @@
                             android:contentDescription="@string/email"
                             android:src="@drawable/ic_link" />
 
-                        <TextView
+                        <com.github.gouravkhunger.fontize.FontizeTextView
                             android:id="@+id/userBlog"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -356,7 +356,7 @@
                             android:contentDescription="@string/email"
                             android:src="@drawable/ic_mail" />
 
-                        <TextView
+                        <com.github.gouravkhunger.fontize.FontizeTextView
                             android:id="@+id/userEmail"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -372,7 +372,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <TextView
+            <com.github.gouravkhunger.fontize.FontizeTextView
                 android:id="@+id/userId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

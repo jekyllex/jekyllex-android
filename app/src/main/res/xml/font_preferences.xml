@@ -1,0 +1,14 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:textAppearance="?android:attr/textAppearanceListItemSmall"
+        app:defaultValue="josefin"
+        app:entries="@array/font_values"
+        app:entryValues="@array/font_entries"
+        app:key="font"
+        app:title="@string/font_title"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false"/>
+
+</PreferenceScreen>
