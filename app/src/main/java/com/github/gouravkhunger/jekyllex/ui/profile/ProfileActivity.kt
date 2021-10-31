@@ -134,6 +134,7 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(profileBinding.root)
         setSupportActionBar(profileBinding.toolbarProfile)
         supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         profileBinding.toolbarProfile.setNavigationIcon(R.drawable.ic_back)
         profileBinding.toolbarProfile.setNavigationOnClickListener {
             onBackPressed()

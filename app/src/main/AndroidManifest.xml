@@ -14,31 +14,36 @@
         android:supportsRtl="true"
         android:theme="@style/SplashScreenTheme"
         tools:replace="android:allowBackup">
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/app_name" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@android:color/transparent" />
+
         <activity
             android:name=".ui.settings.SettingsActivity"
             android:exported="false"
-            android:label=""
             android:parentActivityName=".ui.home.HomeActivity" />
         <activity
             android:name=".ui.content.ContentActivity"
-            android:exported="true"
-            android:label="" />
+            android:exported="true" />
         <activity
             android:name=".ui.posts.PostsActivity"
-            android:label=""
             android:parentActivityName=".ui.home.HomeActivity" />
         <activity
             android:name=".ui.editor.MarkdownEditor"
-            android:label=""
             android:parentActivityName=".ui.posts.PostsActivity" />
         <activity
             android:name=".ui.profile.ProfileActivity"
-            android:label=""
             android:parentActivityName=".ui.home.HomeActivity" />
         <activity
             android:name=".ui.home.HomeActivity"
-            android:exported="true"
-            android:label="">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

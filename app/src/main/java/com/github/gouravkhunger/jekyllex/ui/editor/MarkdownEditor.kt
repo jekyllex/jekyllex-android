@@ -127,6 +127,7 @@ class MarkdownEditor : AppCompatActivity() {
         // set the custom toolbar as the action bar.
         setSupportActionBar(mdEditorBinding.toolbarEditor)
         supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         mdEditorBinding.toolbarEditor.setNavigationIcon(R.drawable.ic_back)
         mdEditorBinding.toolbarEditor.setNavigationOnClickListener {
             onBackPressed()

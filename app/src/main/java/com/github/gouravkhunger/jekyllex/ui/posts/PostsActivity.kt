@@ -127,6 +127,7 @@ class PostsActivity : AppCompatActivity() {
         setContentView(postsBinding.root)
         setSupportActionBar(postsBinding.toolbarPosts)
         supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         postsBinding.toolbarPosts.setNavigationIcon(R.drawable.ic_back)
         postsBinding.toolbarPosts.setNavigationOnClickListener {
             onBackPressed()

@@ -33,6 +33,7 @@ class ContentActivity : AppCompatActivity() {
         setContentView(contentBinding.root)
         setSupportActionBar(contentBinding.toolbarContent)
         supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         contentBinding.toolbarContent.setNavigationIcon(R.drawable.ic_back)
         contentBinding.toolbarContent.setNavigationOnClickListener {
             onBackPressed()

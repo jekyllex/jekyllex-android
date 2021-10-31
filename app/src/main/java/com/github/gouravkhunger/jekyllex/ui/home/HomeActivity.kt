@@ -53,6 +53,7 @@ import com.github.gouravkhunger.jekyllex.ui.profile.ProfileActivity
 import com.github.gouravkhunger.jekyllex.ui.settings.SettingsActivity
 import com.github.gouravkhunger.jekyllex.util.preActivityStartChecks
 import com.github.javiersantos.appupdater.AppUpdater
+import com.github.javiersantos.appupdater.enums.Display
 import com.github.javiersantos.appupdater.enums.UpdateFrom
 
 class HomeActivity : AppCompatActivity() {
@@ -118,6 +119,7 @@ class HomeActivity : AppCompatActivity() {
         setContentView(homeBinding.root)
         setSupportActionBar(homeBinding.toolbarHome)
         homeBinding.toolbarHome.applyFont()
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         // set up the recycler view that will hold 4
         setupRecyclerView()
@@ -215,6 +217,7 @@ class HomeActivity : AppCompatActivity() {
         // At the end, look for app updates, if available...
         AppUpdater(this).setUpdateFrom(UpdateFrom.GITHUB)
             .setGitHubUserAndRepo("jekyllex", "jekyllex-android")
+            .setDisplay(Display.SNACKBAR)
             .start()
     }
 

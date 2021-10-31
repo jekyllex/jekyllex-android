@@ -50,9 +50,10 @@ class SettingsActivity :
 
         setSupportActionBar(settingsBinding.toolbarSettings)
         supportActionBar?.setHomeButtonEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
         settingsBinding.toolbarSettings.setNavigationIcon(R.drawable.ic_back)
         settingsBinding.toolbarSettings.setNavigationOnClickListener {
-            onBackPressed()
+            onSupportNavigateUp()
         }
         settingsBinding.toolbarSettings.applyFont()
     }
@@ -69,10 +70,12 @@ class SettingsActivity :
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        if (supportFragmentManager.popBackStackImmediate()) {
-            return true
+        return if (supportFragmentManager.popBackStackImmediate()) {
+            true
+        } else {
+            onBackPressed()
+            false
         }
-        return super.onSupportNavigateUp()
     }
 
     override fun onPreferenceStartFragment(
