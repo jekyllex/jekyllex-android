@@ -40,6 +40,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.github.gouravkhunger.fontize.FontizeMenu
 import com.github.gouravkhunger.jekyllex.R
 import com.github.gouravkhunger.jekyllex.databinding.ActivityHomeBinding
 import com.github.gouravkhunger.jekyllex.databinding.OtherNoInternetBinding
@@ -217,10 +218,19 @@ class HomeActivity : AppCompatActivity() {
             .start()
     }
 
+    override fun onBackPressed() {
+        if (homeBinding.nameEditText.hasFocus()) {
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            imm?.hideSoftInputFromWindow(homeBinding.nameEditText.windowToken, 0)
+        } else super.onBackPressed()
+    }
+
     // inflates the options menu
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_home, menu)
+
+        menu?.let { FontizeMenu(this@HomeActivity, it) }
 
         return super.onCreateOptionsMenu(menu)
     }
@@ -230,6 +240,7 @@ class HomeActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.settings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
             }
             R.id.website -> {
                 startActivity(

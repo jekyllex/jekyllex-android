@@ -249,15 +249,22 @@ class MarkdownEditor : AppCompatActivity() {
                 val saveMetaDataBtn = dialogView.findViewById<View>(R.id.saveMetaData) as Button
                 val closeMetaDataBtn =
                     dialogView.findViewById<View>(R.id.closeMetaDataDialog) as Button
-                val editText = dialogView.findViewById<View>(R.id.metaDataEt) as EditText
+                val metaDataEt = dialogView.findViewById<View>(R.id.metaDataEt) as EditText
+
+                metaDataEt.setOnFocusChangeListener { view, hasFocus ->
+                    if (!hasFocus) {
+                        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                        imm?.hideSoftInputFromWindow(view.windowToken, 0)
+                    }
+                }
 
                 // if meta data is already present, set it to the edit text
                 if (!viewModel.postMetaData.value.isNullOrEmpty()) {
-                    editText.text = SpannableStringBuilder(viewModel.postMetaData.value)
+                    metaDataEt.text = SpannableStringBuilder(viewModel.postMetaData.value)
                 }
 
                 saveMetaDataBtn.setOnClickListener {
-                    viewModel.saveMetaData(editText.text.toString())
+                    viewModel.saveMetaData(metaDataEt.text.toString())
                     alertDialog.dismiss()
                 }
                 closeMetaDataBtn.setOnClickListener {
@@ -280,14 +287,21 @@ class MarkdownEditor : AppCompatActivity() {
                 val uploadPostBtn = dialogView.findViewById<Button>(R.id.uploadPostBtn)
                 val closeCommitMsgBtn =
                     dialogView.findViewById<Button>(R.id.closeCommitMessageDialog)
-                val metaDataEt = dialogView.findViewById<TextInputEditText>(R.id.commitMessageEt)
+                val commitMessageEt = dialogView.findViewById<TextInputEditText>(R.id.commitMessageEt)
                 val commitMsgParent =
                     dialogView.findViewById<LinearLayout>(R.id.commitMessageParent)
                 val progressGroup =
                     dialogView.findViewById<LinearLayout>(R.id.postUploadingProgressParent)
 
+                commitMessageEt.setOnFocusChangeListener { view, hasFocus ->
+                    if (!hasFocus) {
+                        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                        imm?.hideSoftInputFromWindow(view.windowToken, 0)
+                    }
+                }
+
                 uploadPostBtn.setOnClickListener {
-                    val commitMessage = metaDataEt.text.toString()
+                    val commitMessage = commitMessageEt.text.toString()
                     val postContent = viewModel.text.value ?: ""
                     val postMetaData = viewModel.postMetaData.value ?: ""
 

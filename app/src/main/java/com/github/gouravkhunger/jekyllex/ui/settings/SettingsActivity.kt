@@ -10,6 +10,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import androidx.preference.SeekBarPreference
 import com.github.gouravkhunger.fontize.Fontize
+import com.github.gouravkhunger.fontize.changeFont
 import com.github.gouravkhunger.jekyllex.R
 import com.github.gouravkhunger.jekyllex.databinding.ActivitySettingsBinding
 import com.github.gouravkhunger.jekyllex.ui.auth.AuthActivity
@@ -54,6 +55,11 @@ class SettingsActivity :
             onBackPressed()
         }
         settingsBinding.toolbarSettings.applyFont()
+    }
+
+    override fun onBackPressed() {
+        finish()
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -126,11 +132,6 @@ class SettingsActivity :
 
             fontPref.setOnPreferenceChangeListener { _, newValue ->
                 if (newValue != oldValue) {
-                    when (newValue) {
-                        "josefin" -> Fontize(requireContext()).updateFont(R.font.josefinsans)
-                        "libre" -> Fontize(requireContext()).updateFont(R.font.libre_baskerville)
-                    }
-
                     Snackbar.make(
                         requireActivity().findViewById(R.id.settingsActivityRoot),
                         "Restart the app to apply changes.",
@@ -138,7 +139,14 @@ class SettingsActivity :
                     ).setAction("Restart") {
                         requireActivity().finishAffinity()
                         startActivity(Intent(requireActivity(), AuthActivity::class.java))
+                    }.also {
+                        it.changeFont(requireContext())
                     }.show()
+
+                    when (newValue) {
+                        "josefin" -> Fontize(requireContext()).updateFont(R.font.josefinsans)
+                        "libre" -> Fontize(requireContext()).updateFont(R.font.libre_baskerville)
+                    }
                 }
 
                 oldValue = newValue.toString()
@@ -184,6 +192,8 @@ class SettingsActivity :
                             ).setAction("Restart") {
                                 requireActivity().finishAffinity()
                                 startActivity(Intent(requireActivity(), AuthActivity::class.java))
+                            }.also {
+                                it.changeFont(requireContext())
                             }.show()
                         }
                     }
@@ -216,6 +226,8 @@ class SettingsActivity :
                             ).setAction("Restart") {
                                 requireActivity().finishAffinity()
                                 startActivity(Intent(requireActivity(), AuthActivity::class.java))
+                            }.also {
+                                it.changeFont(requireContext())
                             }.show()
                         }
                     }

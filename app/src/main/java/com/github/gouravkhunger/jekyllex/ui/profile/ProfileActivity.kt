@@ -43,6 +43,7 @@ import com.auth0.android.authentication.storage.SharedPreferencesStorage
 import com.auth0.android.callback.Callback
 import com.auth0.android.provider.WebAuthProvider
 import com.bumptech.glide.Glide
+import com.github.gouravkhunger.fontize.FontizeMenu
 import com.github.gouravkhunger.jekyllex.BuildConfig
 import com.github.gouravkhunger.jekyllex.R
 import com.github.gouravkhunger.jekyllex.databinding.ActivityProfileBinding
@@ -236,6 +237,8 @@ class ProfileActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.menu_profile, menu)
+
+        menu?.let { FontizeMenu(this@ProfileActivity, it) }
 
         return super.onCreateOptionsMenu(menu)
     }

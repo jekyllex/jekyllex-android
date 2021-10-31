@@ -32,7 +32,7 @@ import androidx.preference.PreferenceManager
 
 class FontizeTextView(
     context: Context,
-    attrs: AttributeSet
+    attrs: AttributeSet?
 ) : AppCompatTextView(context, attrs) {
 
     private val prefs = PreferenceManager.getDefaultSharedPreferences(context)

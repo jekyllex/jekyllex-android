@@ -30,7 +30,10 @@
     android:layout_height="match_parent"
     android:background="@drawable/rounded_corners"
     android:orientation="vertical"
-    android:theme="@style/Theme.JekyllEx">
+    android:theme="@style/Theme.JekyllEx"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
 
     <com.github.gouravkhunger.fontize.FontizeTextView
         android:layout_width="wrap_content"
