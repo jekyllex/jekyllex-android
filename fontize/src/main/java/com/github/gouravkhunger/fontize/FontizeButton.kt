@@ -39,14 +39,14 @@ class FontizeButton(
 ) : MaterialButton(context, attrs) {
 
     private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    private val fontId = prefs.getInt("fontFamily", ResourcesCompat.ID_NULL)
     private val tint = prefs.getString("primaryAppColor", "#000000")
-    val textColor = prefs.getString("primaryTextColor", "#ffffff")
+    private val textColor = prefs.getString("primaryTextColor", "#ffffff")
 
     init {
         this.setBackgroundColor(Color.parseColor(tint))
         this.setTextColor(Color.parseColor(textColor))
 
-        val fontId = prefs.getInt("fontFamily", ResourcesCompat.ID_NULL)
         if (fontId != ResourcesCompat.ID_NULL) {
             val typeface = ResourcesCompat.getFont(context, fontId)
             this.typeface = typeface

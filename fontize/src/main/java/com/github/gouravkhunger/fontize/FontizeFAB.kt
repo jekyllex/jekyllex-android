@@ -35,13 +35,13 @@ class FontizeFAB(
     context: Context,
     attrs: AttributeSet
 ) : FloatingActionButton(context, attrs) {
+
+    private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    private val bgColor = prefs.getString("primaryAppColor", "#000000")
+    private val icontTint = prefs.getString("primaryTextColor", "#ffffff")
+
     init {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
-        val bgColor = prefs.getString("primaryAppColor", "#000000")
         this.backgroundTintList = ColorStateList.valueOf(Color.parseColor(bgColor))
-
-        val icontTint = prefs.getString("primaryTextColor", "#ffffff")
         this.imageTintList = ColorStateList.valueOf(Color.parseColor(icontTint))
     }
 }

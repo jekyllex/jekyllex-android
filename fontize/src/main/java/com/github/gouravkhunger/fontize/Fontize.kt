@@ -31,11 +31,9 @@ import androidx.preference.PreferenceManager
 class Fontize(private val context: Context) {
 
     private val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
+    private val fontId = sharedPref.getInt("fontFamily", ResourcesCompat.ID_NULL)
 
     fun setDefaultFont(resourceId: Int) {
-
-        val fontId = sharedPref.getInt("fontFamily", ResourcesCompat.ID_NULL)
-
         if (fontId == ResourcesCompat.ID_NULL) {
             sharedPref.edit()
                 .putInt("fontFamily", resourceId)

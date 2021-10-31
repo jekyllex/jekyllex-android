@@ -36,10 +36,9 @@ class FontizeTextView(
 ) : AppCompatTextView(context, attrs) {
 
     private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    private val fontId = prefs.getInt("fontFamily", ResourcesCompat.ID_NULL)
 
     init {
-        val fontId = prefs.getInt("fontFamily", ResourcesCompat.ID_NULL)
-
         if (fontId != ResourcesCompat.ID_NULL) {
             val typeface = ResourcesCompat.getFont(context, fontId)
             this.typeface = typeface

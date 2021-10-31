@@ -53,7 +53,10 @@ import com.github.gouravkhunger.jekyllex.db.userdb.UserDataBase
 import com.github.gouravkhunger.jekyllex.repositories.UserRepository
 import com.github.gouravkhunger.jekyllex.ui.home.HomeActivity
 import com.github.gouravkhunger.jekyllex.util.preActivityStartChecks
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class AuthActivity : AppCompatActivity() {
 
@@ -180,11 +183,9 @@ class AuthActivity : AppCompatActivity() {
 
         // workaround to apply icon tint to login button
         // after 100ms as it is not detected on inflation
-        CoroutineScope(context = Dispatchers.Default).launch {
+        CoroutineScope(context = Dispatchers.Main).launch {
             delay(100)
-            withContext(Dispatchers.Main) {
-                authBinding.loginBtn.changeDrawableTint(true)
-            }
+            authBinding.loginBtn.changeDrawableTint(true)
         }
     }
 

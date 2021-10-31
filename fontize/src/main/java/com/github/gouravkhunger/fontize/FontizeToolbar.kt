@@ -28,9 +28,7 @@ import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.preference.PreferenceManager
 
@@ -44,7 +42,6 @@ class FontizeToolbar(
     private val color = prefs.getString("primaryTextColor", "#ffffff")
 
     init {
-
         this.setBackgroundColor(Color.parseColor(bgColor))
     }
 
