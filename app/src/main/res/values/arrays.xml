@@ -1,0 +1,10 @@
+<resources>
+    <string-array name="font_entries">
+        <item>josefin</item>
+        <item>libre</item>
+    </string-array>
+    <string-array name="font_values">
+        <item>Josefin Sans</item>
+        <item>Libre Baskerville</item>
+    </string-array>
+</resources>

@@ -279,14 +279,13 @@ contact me at [gouravkhunger18@gmail.com](mailto:gouravkhunger18@gmail.com).
 ]]>
     </string>
 
-    <!-- Preference Titles -->
+    <string name="load_header">Repositories per page</string>
+    <string name="load_summary">Number of github repositories to load per page</string>
     <string name="font_header">App Font</string>
     <string name="colour_header">Colour Settings</string>
 
-    <!-- Font Preferences -->
     <string name="font_title">Default Font</string>
 
-    <!-- Color Preferences -->
     <string name="primary_app_color_title">Primary App Color</string>
     <string name="primary_text_color_title">Primary Text Color</string>
 

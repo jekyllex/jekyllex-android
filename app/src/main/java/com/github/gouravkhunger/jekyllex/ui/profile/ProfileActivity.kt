@@ -291,7 +291,10 @@ class ProfileActivity : AppCompatActivity() {
         PreferenceManager
             .getDefaultSharedPreferences(this)
             .edit()
-            .clear()
+            .remove("username")
+            .remove("user_id")
+            .remove("pic_url")
+            .remove("access_token")
             .apply()
 
         if (user != null) {

@@ -53,6 +53,7 @@ import com.github.gouravkhunger.jekyllex.db.userdb.UserDataBase
 import com.github.gouravkhunger.jekyllex.repositories.UserRepository
 import com.github.gouravkhunger.jekyllex.ui.home.HomeActivity
 import com.github.gouravkhunger.jekyllex.util.preActivityStartChecks
+import kotlinx.coroutines.*
 
 class AuthActivity : AppCompatActivity() {
 
@@ -176,6 +177,15 @@ class AuthActivity : AppCompatActivity() {
                 goToHome()
             }
         })
+
+        // workaround to apply icon tint to login button
+        // after 100ms as it is not detected on inflation
+        CoroutineScope(context = Dispatchers.Default).launch {
+            delay(100)
+            withContext(Dispatchers.Main) {
+                authBinding.loginBtn.changeDrawableTint(true)
+            }
+        }
     }
 
     // Function to extract saved credentials frm auth0 client

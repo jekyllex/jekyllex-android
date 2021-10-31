@@ -105,7 +105,7 @@ class HomeActivity : AppCompatActivity() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         picUrl = prefs.getString("pic_url", "") ?: ""
         accessToken = prefs.getString("access_token", "") ?: ""
-        perPage = prefs.getInt("per_page", 10)
+        perPage = prefs.getInt("default_load_count", 10)
 
         // Initialise view model with the required dependencies.
         val repository = GithubContentRepository()
@@ -150,6 +150,12 @@ class HomeActivity : AppCompatActivity() {
         viewModel.hasNext.observe(this, {
             homeBinding.prevPage.isEnabled = curPage != 1
             homeBinding.nextPage.isEnabled = it
+
+            if (!it && curPage == 1) {
+                homeBinding.paginationButtons.visibility = View.GONE
+            } else {
+                homeBinding.paginationButtons.visibility = View.VISIBLE
+            }
         })
 
         viewModel.userRepos.observe(this, {
@@ -158,13 +164,11 @@ class HomeActivity : AppCompatActivity() {
                 repositoriesAdapter.differ.submitList(it)
                 homeBinding.loadingMessageParent.visibility = View.GONE
                 homeBinding.repositoriesParent.visibility = View.VISIBLE
-                homeBinding.paginationButtons.visibility = View.VISIBLE
                 homeBinding.selectRepoTv.visibility = View.VISIBLE
                 homeBinding.repositoriesParent.scrollTo(0, 0)
             } else {
                 homeBinding.loadingMessageParent.visibility = View.VISIBLE
                 homeBinding.repositoriesParent.visibility = View.GONE
-                homeBinding.paginationButtons.visibility = View.GONE
                 homeBinding.selectRepoTv.visibility = View.GONE
             }
         })

@@ -72,8 +72,10 @@ class EditingFragment : Fragment() {
         viewModel.isTextUpdated.observe(viewLifecycleOwner, {
             if (it) {
                 editorBinding.previewBtnParent.visibility = View.VISIBLE
+                editorBinding.previewBtn.changeDrawableTint(true)
             } else {
                 editorBinding.previewBtnParent.visibility = View.GONE
+                editorBinding.previewBtn.changeDrawableTint(false)
             }
         })
 

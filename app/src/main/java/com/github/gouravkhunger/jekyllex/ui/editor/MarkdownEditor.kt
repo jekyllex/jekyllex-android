@@ -185,6 +185,8 @@ class MarkdownEditor : AppCompatActivity() {
             }
         }.attach()
 
+        mdEditorBinding.editorTabLayout.formatTextViews()
+
         if (isNew) showEditorArea()
     }
 

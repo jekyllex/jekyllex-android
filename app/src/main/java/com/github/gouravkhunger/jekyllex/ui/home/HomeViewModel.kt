@@ -51,15 +51,15 @@ class HomeViewModel(
         userRepos.postValue(RepoModel())
         val response = repoModel.getUserRepositories(pg, per_page, accessToken)
 
-        val paginationHeaders = response.headers()["link"]!!
-        val splitList = paginationHeaders.split(",")
+        val paginationHeaders = response.headers()["link"]
+        val splitList = paginationHeaders?.split(",")
 
         Log.d("Split list", splitList.toString())
 
         var found = false
 
         run loop@{
-            splitList.forEach {
+            splitList?.forEach {
                 if ("next" in it) {
                     hasNext.postValue(true)
                     found = true

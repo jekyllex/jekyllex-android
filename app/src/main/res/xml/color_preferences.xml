@@ -1,0 +1,15 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Preference
+        app:key="primaryAppColor"
+        app:title="@string/primary_app_color_title"
+        app:iconSpaceReserved="false"
+        app:defaultValue="#000000" />
+
+    <Preference
+        app:key="primaryTextColor"
+        app:title="@string/primary_text_color_title"
+        app:iconSpaceReserved="false"
+        app:defaultValue="#ffffff" />
+
+</PreferenceScreen>
