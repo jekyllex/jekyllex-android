@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.api.ApkVariantOutputImpl
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -6,17 +8,24 @@ plugins {
 android {
     namespace = "xyz.jekyllex"
     compileSdk = 34
+    ndkVersion = "24.0.8215888"
 
     defaultConfig {
         applicationId = "xyz.jekyllex"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        externalNativeBuild {
+            ndkBuild {
+                cFlags += listOf("-std=c11", "-Wall", "-Wextra", "-Werror", "-Os", "-fno-stack-protector", "-Wl,--gc-sections")
+            }
         }
     }
 
@@ -50,6 +59,32 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
+            isUniversalApk = true
+        }
+    }
+
+    applicationVariants.configureEach {
+        val archMap = mapOf(
+            "x86" to "i686",
+            "x86_64" to "x86_64",
+            "armeabi-v7a" to "arm",
+            "arm64-v8a" to "aarch64"
+        )
+
+        // rename the output APK file
+        outputs.configureEach {
+            (this as? ApkVariantOutputImpl)?.outputFileName =
+                "${rootProject.name.lowercase()}-${
+                    archMap[filters.find {it.filterType == "ABI" }?.identifier] ?: "universal"
+                }${if (buildType.name == "debug") "-debug" else ""}.apk"
         }
     }
 }
