@@ -127,6 +127,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -136,6 +139,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
+// Adapted from https://github.com/termux/termux-app/blob/android-10/app/build.gradle#L84
 fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
     val digest = MessageDigest.getInstance("SHA-256")
     val zipDownloadFile = File(project.rootDir, "bootstraps/ruby-${arch}.zip")
