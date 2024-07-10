@@ -48,6 +48,7 @@ import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.activities.home.HomeActivity
 import xyz.jekyllex.ui.theme.JekyllExTheme
+import xyz.jekyllex.utils.Constants.Companion.FILES_DIR
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Constants.Companion.USR_DIR
 import java.io.BufferedReader
@@ -130,6 +131,9 @@ class BootstrapInstaller : ComponentActivity() {
                 File(newPath).delete()
                 Os.symlink(oldPath, newPath)
             }
+
+            NativeUtils.ensureDirectoryExists(File(USR_DIR, "tmp"))
+            NativeUtils.ensureDirectoryExists(File(FILES_DIR, "home"))
 
             Log.d(LOG_TAG, "Bootstrap installation complete!")
             withContext(Dispatchers.Main) {

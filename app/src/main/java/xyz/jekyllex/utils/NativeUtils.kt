@@ -54,7 +54,7 @@ class NativeUtils {
 
             val command = "$BIN_DIR/$binary $versionFlag"
 
-            try{
+            try {
                 exec(command)
             } catch (e: Exception) {
                 Log.d(LOG_TAG, "Error while executing $command: $e")
@@ -72,7 +72,7 @@ class NativeUtils {
         }
 
         fun ensureDirectoryExists(directory: File?) {
-            if (directory !== null && !directory.exists() && !directory.mkdirs())  {
+            if (directory !== null && !directory.exists() && !directory.mkdirs()) {
                 throw RuntimeException("Unable to create directory: " + directory.absolutePath)
             }
         }
