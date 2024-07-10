@@ -35,7 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import xyz.jekyllex.ui.theme.JekyllExTheme
-import xyz.jekyllex.utils.BinaryUtils
+import xyz.jekyllex.utils.NativeUtils
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,8 +57,8 @@ class HomeActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
 
-        if (!BinaryUtils.isUsable("jekyll"))
-            BinaryUtils.launchInstaller(this)
+        if (!NativeUtils.isUsable("jekyll"))
+            NativeUtils.launchInstaller(this)
     }
 }
 

@@ -48,7 +48,7 @@ import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.activities.home.HomeActivity
 import xyz.jekyllex.ui.theme.JekyllExTheme
-import xyz.jekyllex.utils.BinaryUtils
+import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Constants.Companion.USR_DIR
 import java.io.BufferedReader
 import java.io.File
@@ -88,7 +88,7 @@ class BootstrapInstaller : ComponentActivity() {
     override fun onStart() {
         super.onStart()
 
-        if (BinaryUtils.isUsable(listOf("git", "ruby", "gem", "bundler", "jekyll"))) {
+        if (NativeUtils.isUsable(listOf("git", "ruby", "gem", "bundler", "jekyll"))) {
             Log.d(LOG_TAG, "Required tools already set up. Aborting re-installation...")
             finish()
             return
@@ -108,7 +108,7 @@ class BootstrapInstaller : ComponentActivity() {
                 val oldPath = applicationInfo.nativeLibraryDir + "/" + parts[0]
                 val newPath = "$USR_DIR/${parts[1]}"
 
-                BinaryUtils.ensureDirectoryExists(File(newPath).parentFile)
+                NativeUtils.ensureDirectoryExists(File(newPath).parentFile)
 
                 Log.d(LOG_TAG, "About to setup link: $oldPath ← $newPath")
                 File(newPath).delete()
@@ -124,7 +124,7 @@ class BootstrapInstaller : ComponentActivity() {
                 val oldPath = parts[0]
                 val newPath = "$USR_DIR/${parts[1]}"
 
-                BinaryUtils.ensureDirectoryExists(File(newPath).parentFile)
+                NativeUtils.ensureDirectoryExists(File(newPath).parentFile)
 
                 Log.d(LOG_TAG, "About to setup link: $oldPath ← $newPath")
                 File(newPath).delete()

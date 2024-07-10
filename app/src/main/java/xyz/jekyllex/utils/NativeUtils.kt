@@ -31,9 +31,9 @@ import android.util.Log
 import xyz.jekyllex.ui.activities.installer.BootstrapInstaller
 import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
 
-class BinaryUtils {
+class NativeUtils {
     companion object {
-        const val LOG_TAG = "BinaryUtils"
+        const val LOG_TAG = "NativeUtils"
 
         fun launchInstaller(context: Activity) {
             Log.d(LOG_TAG, "Launching bootstrap installer activity")
