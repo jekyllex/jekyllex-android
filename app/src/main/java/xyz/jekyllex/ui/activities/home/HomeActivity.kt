@@ -24,7 +24,6 @@
 
 package xyz.jekyllex.ui.activities.home
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -35,7 +34,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.NativeUtils
 
@@ -62,8 +60,6 @@ class HomeActivity : ComponentActivity() {
 
         if (!NativeUtils.isUsable("jekyll"))
             NativeUtils.launchInstaller(this)
-        else
-            startService(Intent(this, ProcessService::class.java))
     }
 }
 

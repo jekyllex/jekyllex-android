@@ -88,8 +88,7 @@ class ProcessService : Service() {
     }
 
     private fun createNotification(): Notification {
-        val notifyIntent = Intent(this, HomeActivity::class.java)
-        notifyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val notifyIntent = Intent()
         val pendingIntent = PendingIntent.getActivity(
             this,0,
             notifyIntent,
