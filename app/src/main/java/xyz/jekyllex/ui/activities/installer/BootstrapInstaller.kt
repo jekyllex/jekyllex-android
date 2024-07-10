@@ -88,7 +88,7 @@ class BootstrapInstaller : ComponentActivity() {
     override fun onStart() {
         super.onStart()
 
-        if (NativeUtils.isUsable(listOf("git", "ruby", "gem", "bundler", "jekyll"))) {
+        if (NativeUtils.isUsable("git", "ruby", "gem", "bundler", "jekyll")) {
             Log.d(LOG_TAG, "Required tools already set up. Aborting re-installation...")
             finish()
             return

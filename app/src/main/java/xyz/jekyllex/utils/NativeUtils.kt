@@ -55,9 +55,7 @@ class NativeUtils {
             val command = "$BIN_DIR/$binary $versionFlag"
 
             try{
-                val exec = Runtime.getRuntime().exec(command)
-                val output = exec.inputStream.bufferedReader().readText()
-                Log.d(LOG_TAG, "Output for command \"$command\": $output")
+                exec(command)
             } catch (e: Exception) {
                 Log.d(LOG_TAG, "Error while executing $command: $e")
                 return false
@@ -66,7 +64,7 @@ class NativeUtils {
             return true
         }
 
-        fun isUsable(binaries: List<String>): Boolean {
+        fun isUsable(vararg binaries: String): Boolean {
             for (binary in binaries) {
                 if (!isUsable(binary)) return false
             }
@@ -77,6 +75,26 @@ class NativeUtils {
             if (directory !== null && !directory.exists() && !directory.mkdirs())  {
                 throw RuntimeException("Unable to create directory: " + directory.absolutePath)
             }
+        }
+
+        fun exec(command: String): String {
+            val process = Runtime.getRuntime().exec(command)
+            val output = process.inputStream.bufferedReader().readText()
+            Log.d(LOG_TAG, "Output for command \"$command\": $output")
+            return output
+        }
+
+        fun exec(vararg commands: String): List<String?> {
+            val outputs = mutableListOf<String?>()
+            for (command in commands) {
+                try {
+                    outputs += exec(command).trim()
+                } catch (e: Exception) {
+                    Log.d(LOG_TAG, "Error while executing $command: $e")
+                    outputs += null
+                }
+            }
+            return outputs.toList()
         }
     }
 }

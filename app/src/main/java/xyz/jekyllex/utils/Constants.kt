@@ -29,6 +29,7 @@ class Constants {
         const val APP_PACKAGE = "xyz.jekyllex"
         const val PREFIX = "/data/data/$APP_PACKAGE"
         const val FILES_DIR = "$PREFIX/files"
+        const val HOME_DIR = "$FILES_DIR/home"
         const val USR_DIR = "$FILES_DIR/usr"
         const val BIN_DIR = "$USR_DIR/bin"
     }
