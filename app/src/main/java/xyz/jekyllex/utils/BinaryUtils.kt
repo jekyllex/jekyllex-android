@@ -28,7 +28,7 @@ import android.app.Activity
 import android.content.Intent
 import java.io.File
 import android.util.Log
-import xyz.jekyllex.activities.BootstrapInstaller
+import xyz.jekyllex.ui.activities.installer.BootstrapInstaller
 import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
 
 class BinaryUtils {
@@ -63,6 +63,13 @@ class BinaryUtils {
                 return false
             }
 
+            return true
+        }
+
+        fun isUsable(binaries: List<String>): Boolean {
+            for (binary in binaries) {
+                if (!isUsable(binary)) return false
+            }
             return true
         }
 

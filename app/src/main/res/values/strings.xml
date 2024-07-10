@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">JekyllEx</string>
+    <string name="back_button">Go back</string>
+
+    <string name="installer_title">Installing bootstrap archive…</string>
+    <string name="installer_subtitle">
+        This may take a few minutes.
+        You can close the app and come back later
+        but please don\'t remove the app from history.
+    </string>
 </resources>

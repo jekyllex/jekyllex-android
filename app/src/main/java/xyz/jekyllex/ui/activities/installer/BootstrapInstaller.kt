@@ -22,15 +22,32 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.activities
+package xyz.jekyllex.ui.activities.installer
 
+import android.content.Intent
 import android.os.Bundle
 import android.system.Os
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import xyz.jekyllex.R
+import xyz.jekyllex.ui.activities.home.HomeActivity
+import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.BinaryUtils
 import xyz.jekyllex.utils.Constants.Companion.USR_DIR
 import java.io.BufferedReader
@@ -45,12 +62,46 @@ class BootstrapInstaller : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        setContent {
+            JekyllExTheme {
+                Column (
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize(),
+                ){
+                    Text(
+                        getString(R.string.installer_title),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        getString(R.string.installer_subtitle),
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    LinearProgressIndicator(modifier = Modifier.padding(16.dp))
+                }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        if (BinaryUtils.isUsable(listOf("git", "ruby", "gem", "bundler", "jekyll"))) {
+            Log.d(LOG_TAG, "Required tools already set up. Aborting re-installation...")
+            finish()
+            return
+        }
+
         // Adapted from
         // https://github.com/termux/termux-app/blob/android-10/app/src/main/java/com/termux/app/TermuxPackageInstaller.java#L45
         CoroutineScope(Dispatchers.IO).launch {
+            Log.d(LOG_TAG, "Starting bootstrap installation...")
             val filesMapping = File(applicationInfo.nativeLibraryDir, "libfiles.so")
             var reader = BufferedReader(FileReader(filesMapping))
             var line: String?
+
             while (reader.readLine().also { line = it } != null) {
                 val parts = line?.split("←") ?: listOf()
                 if (parts.size != 2) continue
@@ -81,6 +132,12 @@ class BootstrapInstaller : ComponentActivity() {
             }
 
             Log.d(LOG_TAG, "Bootstrap installation complete!")
+            withContext(Dispatchers.Main) {
+                startActivity(
+                    Intent(this@BootstrapInstaller, HomeActivity::class.java)
+                )
+                finish()
+            }
         }
     }
 }
