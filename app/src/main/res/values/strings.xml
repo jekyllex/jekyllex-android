@@ -2,6 +2,11 @@
     <string name="app_name">JekyllEx</string>
     <string name="back_button">Go back</string>
 
+    <string name="process_notifications">Process notifications</string>
+    <string name="process_notifications_id">process_notifications</string>
+    <string name="process_notifications_desc">Native process service notifications</string>
+    <string name="notification_action_destroy">Destroy</string>
+
     <string name="installer_title">Installing bootstrap archive…</string>
     <string name="installer_subtitle">
         This may take a few minutes.
