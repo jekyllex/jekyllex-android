@@ -52,7 +52,7 @@ class NativeUtils {
             val file = File("$BIN_DIR/$binary")
             if (!file.exists()) return false
 
-            val command = "$BIN_DIR/$binary $versionFlag"
+            val command = arrayOf(binary, versionFlag)
 
             try {
                 exec(command)
@@ -68,33 +68,25 @@ class NativeUtils {
             for (binary in binaries) {
                 if (!isUsable(binary)) return false
             }
+
             return true
         }
 
         fun ensureDirectoryExists(directory: File?) {
-            if (directory !== null && !directory.exists() && !directory.mkdirs()) {
-                throw RuntimeException("Unable to create directory: " + directory.absolutePath)
-            }
+            if (directory !== null && (directory.exists() || directory.mkdirs())) return
+            throw RuntimeException("Unable to create directory: ${directory?.absolutePath}")
         }
 
-        fun exec(command: String): String {
-            val process = Runtime.getRuntime().exec(command)
+        fun exec(command: Array<String>): String {
+            val process = Runtime.getRuntime().exec(
+                if (command[0].contains("/bin")) command
+                else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1).toTypedArray())
+            )
+
             val output = process.inputStream.bufferedReader().readText()
-            Log.d(LOG_TAG, "Output for command \"$command\": $output")
-            return output
-        }
+            Log.d(LOG_TAG, "Output for command \"${command.toList()}\": $output")
 
-        fun exec(vararg commands: String): List<String?> {
-            val outputs = mutableListOf<String?>()
-            for (command in commands) {
-                try {
-                    outputs += exec(command).trim()
-                } catch (e: Exception) {
-                    Log.d(LOG_TAG, "Error while executing $command: $e")
-                    outputs += null
-                }
-            }
-            return outputs.toList()
+            return output.trim()
         }
     }
 }

@@ -48,6 +48,6 @@ fun JekyllExAppBar(
         navigationIcon = navigationIcon,
         title = title,
         actions = actions,
-        modifier = modifier
+        modifier = modifier,
     )
 }

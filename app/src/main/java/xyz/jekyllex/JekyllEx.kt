@@ -27,30 +27,12 @@ package xyz.jekyllex
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.os.Build
-import android.os.IBinder
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.utils.NativeUtils
 
 class JekyllEx : Application() {
-    private val connection = object : ServiceConnection {
-        private lateinit var service: ProcessService
-        private var isBound: Boolean = false
-
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            val binder = service as ProcessService.LocalBinder
-            this.service = binder.service
-            isBound = true
-        }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            isBound = false
-        }
-    }
 
     override fun onCreate() {
         super.onCreate()
@@ -64,14 +46,13 @@ class JekyllEx : Application() {
             getString(R.string.process_notifications),
             importance
         )
+
         channel.description = getString(R.string.process_notifications_desc)
         val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         manager.createNotificationChannel(channel)
 
         if (!NativeUtils.isUsable("jekyll")) return
 
-        Intent(this, ProcessService::class.java).also { intent ->
-            bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        }
+        startService(Intent(this, ProcessService::class.java))
     }
 }

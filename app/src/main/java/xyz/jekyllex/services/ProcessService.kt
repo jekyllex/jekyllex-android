@@ -30,26 +30,35 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import xyz.jekyllex.R
-import xyz.jekyllex.ui.activities.home.HomeActivity
+import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import java.io.BufferedReader
-import java.io.BufferedWriter
 import java.io.File
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
 
 class ProcessService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 420
+        private const val LOG_TAG = "ProcessService"
         private const val ACTION_STOP_SERVICE = "xyz.jekyllex.process_service_stop"
-        private const val ACTION_EXECUTE_COMMAND = "xyz.jekyllex.process_service_execute"
+        private const val ACTION_STOP_PROCESS = "xyz.jekyllex.process_service_kill"
     }
 
+    private var isRunning = false
     private lateinit var process: Process
-    private lateinit var processWriter: BufferedWriter
-    private lateinit var processReader: BufferedReader
+    private lateinit var outputReader: BufferedReader
+    private lateinit var errorReader: BufferedReader
+
+    private val _events = MutableStateFlow("")
+    val events: Flow<String> = _events.asStateFlow()
 
     inner class LocalBinder : Binder() {
         val service: ProcessService = this@ProcessService
@@ -64,33 +73,76 @@ class ProcessService : Service() {
     override fun onCreate() {
         super.onCreate()
         startForeground(NOTIFICATION_ID, createNotification())
+    }
 
-        // Start the process
-        val processBuilder = ProcessBuilder("/system/bin/sh")
-        processBuilder.directory(File(HOME_DIR))
-        process = processBuilder.start()
-        processReader = BufferedReader(InputStreamReader(process.inputStream))
-        processWriter = BufferedWriter(OutputStreamWriter(process.outputStream))
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (::process.isInitialized) process.destroy()
+        if (::errorReader.isInitialized) errorReader.close()
+        if (::outputReader.isInitialized) outputReader.close()
+
+        Log.d(LOG_TAG, "Service destroyed")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
 
+        Log.d(LOG_TAG, "Received action: $action")
         if (action == ACTION_STOP_SERVICE) {
             stopSelf()
-        }
-
-        else if (action == ACTION_EXECUTE_COMMAND){
-            TODO()
         }
 
         return START_NOT_STICKY
     }
 
+    fun exec(command: Array<String>, dir: String = HOME_DIR) {
+        if (isRunning) {
+            _events.value = "Process is already running"
+            return
+        }
+        // Start the process
+        try {
+            isRunning = true
+            Log.d(LOG_TAG, "Starting process with command:\n\"${command.toList()}\"")
+            process = Runtime.getRuntime().exec(
+                if (command[0].contains("/bin")) command
+                else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1).toTypedArray()),
+                null,
+                File(dir)
+            )
+            outputReader = process.inputStream.bufferedReader()
+            errorReader = process.errorStream.bufferedReader()
+
+            CoroutineScope(Dispatchers.IO).launch {
+                var out: String? = outputReader.readLine()
+                while (out != null) {
+                    _events.value = out
+                    out = outputReader.readLine()
+                }
+            }
+
+            CoroutineScope(Dispatchers.IO).launch {
+                var err: String? = errorReader.readLine()
+                while (err != null) {
+                    _events.value = err
+                    err = errorReader.readLine()
+                }
+            }
+
+            val exitCode = process.waitFor()
+            _events.value = "Process exited with code $exitCode"
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error while starting process: $e")
+        } finally {
+            isRunning = false
+        }
+    }
+
     private fun createNotification(): Notification {
         val notifyIntent = Intent()
         val pendingIntent = PendingIntent.getActivity(
-            this,0,
+            this, 0,
             notifyIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
@@ -109,12 +161,11 @@ class ProcessService : Service() {
         // Background color for small notification icon:
         builder.setColor(-0x9f8275)
 
-        val res = resources
         val exitIntent = Intent(this, ProcessService::class.java)
             .setAction(ACTION_STOP_SERVICE)
         builder.addAction(
             android.R.drawable.ic_delete,
-            res.getString(R.string.notification_action_destroy),
+            resources.getString(R.string.notification_action_destroy),
             PendingIntent.getService(
                 this,
                 0,

@@ -24,57 +24,175 @@
 
 package xyz.jekyllex.ui.activities.home
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import xyz.jekyllex.services.ProcessService
+import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.theme.JekyllExTheme
+import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
+import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
+import xyz.jekyllex.utils.Constants.Companion.USR_DIR
 import xyz.jekyllex.utils.NativeUtils
 
+private var isBound: Boolean = false
+private lateinit var service: ProcessService
 
 class HomeActivity : ComponentActivity() {
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, binder: IBinder) {
+            service = (binder as ProcessService.LocalBinder).service
+            isBound = true
+            lifecycleScope.launch {
+                service.events.collect {
+                    if (it.isNotBlank()) Log.d("HomeActivity", it)
+                }
+            }
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            isBound = false
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val viewModel: HomeViewModel by viewModels()
+
+        if (!NativeUtils.isUsable("jekyll")) NativeUtils.launchInstaller(this)
+
+        Intent(this, ProcessService::class.java).also { intent ->
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+
         setContent {
             JekyllExTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Greeting("Android")
-                }
+                HomeScreen(viewModel)
             }
         }
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(connection)
+    }
+}
 
-        if (!NativeUtils.isUsable("jekyll"))
-            NativeUtils.launchInstaller(this)
+private fun create(callBack: () -> Unit = {}) {
+    Log.d("JekyllEx", isBound.toString())
+
+    if (isBound) {
+        CoroutineScope(Dispatchers.IO).launch {
+            service.exec(arrayOf("jekyll", "new", "test"))
+            callBack()
+        }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun HomeScreen(
+    homeViewModel: HomeViewModel = viewModel()
+) {
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+        JekyllExAppBar(title = { Text(text = "Home") }, actions = {
+            if (homeViewModel.cwd.value != HOME_DIR)
+                IconButton(onClick = { homeViewModel.cd(HOME_DIR) }) {
+                    Icon(Icons.Default.Home, "Create new project")
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    JekyllExTheme {
-        Greeting("Android")
+                }
+            if (homeViewModel.cwd.value == HOME_DIR)
+                IconButton(onClick = {
+                    create { homeViewModel.refresh() }
+                }) {
+                    Icon(Icons.Default.AddCircle, "Create new project")
+                }
+            else if (homeViewModel.cwd.value.contains(HOME_DIR)) {
+                IconButton(onClick = {
+                    NativeUtils.exec(arrayOf("rm", "-rf", homeViewModel.cwd.value))
+                    homeViewModel.cd("..")
+                }) {
+                    Icon(Icons.Default.Delete, "Delete this project")
+                }
+            }
+        })
+    }) { padding ->
+        val folders = homeViewModel.availableFolders.value
+
+        Column(
+            modifier = Modifier.padding(top = padding.calculateTopPadding())
+        ) {
+            Text(
+                text = homeViewModel.cwd.value,
+                modifier = Modifier.padding(vertical = 16.dp, horizontal = 8.dp),
+                style = MaterialTheme.typography.bodySmall
+            )
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                if (homeViewModel.cwd.value == HOME_DIR && folders.isEmpty())
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .wrapContentHeight(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = "No projects found!")
+                        Button(onClick = { create { homeViewModel.refresh() } }) {
+                            Text(text = "Create")
+                        }
+                    }
+                else LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    item {
+                        Button(onClick = {
+                            homeViewModel.cd("..")
+                        }) { Text(text = "..") }
+                    }
+
+                    items(folders.size) {
+                        Button(onClick = {
+                            homeViewModel.cd(folders[it])
+                        }) { Text(text = folders[it]) }
+                    }
+                }
+            }
+        }
     }
 }
