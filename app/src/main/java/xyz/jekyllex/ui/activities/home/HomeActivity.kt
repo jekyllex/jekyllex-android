@@ -43,6 +43,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,18 +54,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.theme.JekyllExTheme
-import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
-import xyz.jekyllex.utils.Constants.Companion.USR_DIR
 import xyz.jekyllex.utils.NativeUtils
 
 private var isBound: Boolean = false
@@ -113,13 +112,8 @@ class HomeActivity : ComponentActivity() {
 
 private fun create(callBack: () -> Unit = {}) {
     Log.d("JekyllEx", isBound.toString())
-
-    if (isBound) {
-        CoroutineScope(Dispatchers.IO).launch {
-            service.exec(arrayOf("jekyll", "new", "test"))
-            callBack()
-        }
-    }
+    if (!isBound) return
+    service.exec(arrayOf("jekyll", "new", "test"), callBack = callBack)
 }
 
 @Composable
@@ -140,6 +134,18 @@ fun HomeScreen(
                     Icon(Icons.Default.AddCircle, "Create new project")
                 }
             else if (homeViewModel.cwd.value.contains(HOME_DIR)) {
+                IconButton(onClick = {
+                    if (!isBound) return@IconButton
+                    if(!service.isRunning)
+                        service.exec(arrayOf("jekyll", "serve"), homeViewModel.cwd.value)
+                    else
+                        service.killProcess()
+                }) {
+                    if(!service.isRunning)
+                        Icon(Icons.Default.PlayArrow, "Delete this project")
+                    else
+                        Icon(painterResource(R.drawable.stop), "Delete this project")
+                }
                 IconButton(onClick = {
                     NativeUtils.exec(arrayOf("rm", "-rf", homeViewModel.cwd.value))
                     homeViewModel.cd("..")

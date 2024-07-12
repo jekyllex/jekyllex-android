@@ -24,16 +24,21 @@
 
 package xyz.jekyllex.services
 
+import android.annotation.SuppressLint
 import android.app.Notification
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -48,14 +53,20 @@ class ProcessService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 420
         private const val LOG_TAG = "ProcessService"
-        private const val ACTION_STOP_SERVICE = "xyz.jekyllex.process_service_stop"
-        private const val ACTION_STOP_PROCESS = "xyz.jekyllex.process_service_kill"
+        private const val ACTION_KILL_PROCESS = "xyz.jekyllex.process_service_kill"
     }
 
-    private var isRunning = false
+    var runningCommand = ""
+    var _isRunning = mutableStateOf(false)
+
+    val isRunning
+        get() = _isRunning.value
+
     private lateinit var process: Process
     private lateinit var outputReader: BufferedReader
     private lateinit var errorReader: BufferedReader
+    private lateinit var notifBuilder: NotificationCompat.Builder
+    private var job: Job? = null
 
     private val _events = MutableStateFlow("")
     val events: Flow<String> = _events.asStateFlow()
@@ -87,93 +98,130 @@ class ProcessService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
-
         Log.d(LOG_TAG, "Received action: $action")
-        if (action == ACTION_STOP_SERVICE) {
-            stopSelf()
+
+        if (action == ACTION_KILL_PROCESS) {
+            killProcess()
         }
 
         return START_NOT_STICKY
     }
 
-    fun exec(command: Array<String>, dir: String = HOME_DIR) {
-        if (isRunning) {
-            _events.value = "Process is already running"
-            return
-        }
-        // Start the process
-        try {
-            isRunning = true
-            Log.d(LOG_TAG, "Starting process with command:\n\"${command.toList()}\"")
-            process = Runtime.getRuntime().exec(
-                if (command[0].contains("/bin")) command
-                else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1).toTypedArray()),
-                null,
-                File(dir)
-            )
-            outputReader = process.inputStream.bufferedReader()
-            errorReader = process.errorStream.bufferedReader()
-
-            CoroutineScope(Dispatchers.IO).launch {
-                var out: String? = outputReader.readLine()
-                while (out != null) {
-                    _events.value = out
-                    out = outputReader.readLine()
-                }
+    fun exec(command: Array<String>, dir: String = HOME_DIR, callBack: () -> Unit = {}) {
+        job = CoroutineScope(Dispatchers.IO).launch {
+            if (_isRunning.value) {
+                _events.value = "Process is already running"
+                return@launch
             }
+            // Start the process
+            try {
+                _isRunning.value = true
+                runningCommand = command.joinToString(" ")
+                updateKillActionOnNotif()
 
-            CoroutineScope(Dispatchers.IO).launch {
-                var err: String? = errorReader.readLine()
-                while (err != null) {
-                    _events.value = err
-                    err = errorReader.readLine()
+                Log.d(LOG_TAG, "Starting process with command:\n\"${command.toList()}\"")
+
+                process = Runtime.getRuntime().exec(
+                    if (command[0].contains("/bin")) command
+                    else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1).toTypedArray()),
+                    null,
+                    File(dir)
+                )
+
+                outputReader = process.inputStream.bufferedReader()
+                errorReader = process.errorStream.bufferedReader()
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        var out: String? = outputReader.readLine()
+                        while (out != null) {
+                            _events.value = out
+                            out = outputReader.readLine()
+                        }
+                    } catch (e: Exception) {
+                        Log.d(LOG_TAG, "Exception while reading output: $e")
+                    }
                 }
-            }
 
-            val exitCode = process.waitFor()
-            _events.value = "Process exited with code $exitCode"
-        } catch (e: Exception) {
-            Log.e(LOG_TAG, "Error while starting process: $e")
-        } finally {
-            isRunning = false
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        var err: String? = errorReader.readLine()
+                        while (err != null) {
+                            _events.value = err
+                            err = errorReader.readLine()
+                        }
+                    } catch (e: Exception) {
+                        Log.d(LOG_TAG, "Exception while reading error: $e")
+                    }
+                }
+
+                val exitCode = process.waitFor()
+                _events.value = "Process exited with code $exitCode"
+
+                killProcess()
+                callBack()
+            } catch (e: Exception) {
+                Log.e(LOG_TAG, "Error while starting process: $e")
+            }
         }
     }
 
+    fun killProcess() {
+        if (!_isRunning.value) {
+            _events.value = "No process is running"
+            return
+        }
+        job?.cancelChildren()
+        job?.cancel()
+        process.destroy()
+        val exitCode = process.waitFor()
+        _events.value = "Process exited with code $exitCode"
+        _isRunning.value = false
+        runningCommand = ""
+        updateKillActionOnNotif()
+    }
+
     private fun createNotification(): Notification {
-        val notifyIntent = Intent()
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0,
-            notifyIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        val builder = NotificationCompat
+        notifBuilder = NotificationCompat
             .Builder(this, getString(R.string.process_notifications_id))
-        builder.setContentTitle(getText(R.string.app_name))
-        builder.setContentText("contentText")
-        builder.setSmallIcon(android.R.drawable.ic_delete)
-        builder.setContentIntent(pendingIntent)
-        builder.setOngoing(true)
+            .setContentTitle(getText(R.string.notification_text_title))
+            .setContentText(getText(R.string.notification_text_waiting))
+            .setSmallIcon(android.R.drawable.ic_delete)
+            .setOngoing(true)
+            .setShowWhen(false)
+            .setColor(-0x9f8275)
 
-        // No need to show a timestamp:
-        builder.setShowWhen(false)
+        return notifBuilder.build()
+    }
 
-        // Background color for small notification icon:
-        builder.setColor(-0x9f8275)
+    @SuppressLint("RestrictedApi")
+    fun updateKillActionOnNotif() {
+        if(!::notifBuilder.isInitialized) return
+        Log.d(LOG_TAG, "Updating notification")
 
-        val exitIntent = Intent(this, ProcessService::class.java)
-            .setAction(ACTION_STOP_SERVICE)
-        builder.addAction(
-            android.R.drawable.ic_delete,
-            resources.getString(R.string.notification_action_destroy),
-            PendingIntent.getService(
-                this,
-                0,
-                exitIntent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        notifBuilder.mActions.clear()
+
+        if (_isRunning.value) {
+            val exitIntent = Intent(this, ProcessService::class.java)
+                .setAction(ACTION_KILL_PROCESS)
+
+            notifBuilder.setContentText("Currently running:\n$runningCommand")
+
+            notifBuilder.addAction(
+                android.R.drawable.ic_delete,
+                getString(R.string.notification_action_kill),
+                PendingIntent.getService(
+                    this,
+                    0,
+                    exitIntent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
             )
-        )
+        } else {
+            notifBuilder.setContentText(getText(R.string.notification_text_waiting))
+        }
 
-        return builder.build()
+        val notifManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notifManager.notify(NOTIFICATION_ID, notifBuilder.build())
     }
 }
