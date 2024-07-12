@@ -38,7 +38,6 @@ import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -171,13 +170,16 @@ class ProcessService : Service() {
             _events.value = "No process is running"
             return
         }
-        job?.cancelChildren()
+
         job?.cancel()
         process.destroy()
+
         val exitCode = process.waitFor()
         _events.value = "Process exited with code $exitCode"
+
         _isRunning.value = false
         runningCommand = ""
+
         updateKillActionOnNotif()
     }
 
