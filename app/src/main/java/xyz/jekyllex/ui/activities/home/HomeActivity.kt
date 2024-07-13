@@ -31,6 +31,7 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.webkit.URLUtil
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -38,21 +39,27 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,6 +71,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.capitalize
 import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
@@ -120,10 +129,19 @@ class HomeActivity : ComponentActivity() {
     }
 }
 
-private fun create(callBack: () -> Unit = {}) {
+private fun create(input: String, callBack: () -> Unit = {}) {
     Log.d("JekyllEx", isBound.toString())
     if (!isBound) return
-    service.exec(git("clone", "https://github.com/samdishakhunger/blog", "--depth=1"), callBack = callBack)
+
+    val command: Array<String> =
+        if (input.startsWith("git "))
+            input.split(" ").toTypedArray()
+        else when (URLUtil.isValidUrl(input)) {
+            true -> git("clone", input, "--progress")
+            false -> jekyll("new", input)
+        }
+
+    service.exec(command, callBack = callBack)
 }
 
 @Composable
@@ -131,7 +149,11 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel()
 ) {
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        JekyllExAppBar(title = { Text(text = "Home") }, actions = {
+        JekyllExAppBar(title = {
+            Text(
+                text = homeViewModel.cwd.value.substringAfterLast("/")
+            )
+        }, actions = {
             DropDownMenu(homeViewModel)
         })
     }) { padding ->
@@ -158,8 +180,18 @@ fun HomeScreen(
                             .wrapContentHeight(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "No projects found!")
-                        Button(onClick = { create { homeViewModel.refresh() } }) {
+                        Text(
+                            text = "No projects found!",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = "Let's start by creating a 'test' project:",
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        Button(
+                            onClick = { create("test") { homeViewModel.refresh() } },
+                            modifier = Modifier.padding(top = 16.dp)
+                        ) {
                             Text(text = "Create")
                         }
                     }
@@ -186,6 +218,31 @@ fun HomeScreen(
 @Composable
 fun DropDownMenu(homeViewModel: HomeViewModel) {
     var expanded by remember { mutableStateOf(false) }
+    val openDeleteDialog = remember { mutableStateOf(false) }
+    val openCreateDialog = remember { mutableStateOf(false) }
+
+    if (openCreateDialog.value) {
+        CreateDialog(
+            onDismissRequest = { openCreateDialog.value = false },
+            onConfirmation = { input ->
+                create(input) { homeViewModel.refresh() }
+                openCreateDialog.value = false
+            },
+        )
+    }
+
+    if (openDeleteDialog.value) DeleteDialog(
+        onDismissRequest = { openDeleteDialog.value = false },
+        onConfirmation = {
+            if (service.isRunning) service.killProcess()
+            NativeUtils.exec(rmDir(homeViewModel.cwd.value))
+            homeViewModel.cd("..")
+            openDeleteDialog.value = false
+        },
+        dialogTitle = "Delete",
+        dialogText = "Are you sure you want to delete the current directory?",
+        icon = Icons.Default.Delete
+    )
 
     if (homeViewModel.cwd.value != HOME_DIR)
         IconButton(onClick = { homeViewModel.cd(HOME_DIR) }) {
@@ -194,7 +251,7 @@ fun DropDownMenu(homeViewModel: HomeViewModel) {
         }
     if (homeViewModel.cwd.value == HOME_DIR)
         IconButton(onClick = {
-            create { homeViewModel.refresh() }
+            openCreateDialog.value = true
         }) {
             Icon(Icons.Default.AddCircle, "Create new project")
         }
@@ -212,9 +269,9 @@ fun DropDownMenu(homeViewModel: HomeViewModel) {
                 service.killProcess()
         }) {
             if (!service.isRunning)
-                Icon(Icons.Default.PlayArrow, "Delete this project")
+                Icon(Icons.Default.PlayArrow, "Start server")
             else
-                Icon(painterResource(R.drawable.stop), "Delete this project")
+                Icon(painterResource(R.drawable.stop), "Stop server")
         }
 
         IconButton(onClick = { expanded = !expanded }) {
@@ -231,18 +288,107 @@ fun DropDownMenu(homeViewModel: HomeViewModel) {
             DropdownMenuItem(
                 text = { Text("Bundler") },
                 onClick = {
+                    expanded = !expanded
                     if (!isBound) return@DropdownMenuItem
                     service.exec(bundle("install"), homeViewModel.cwd.value)
                 }
             )
             DropdownMenuItem(
-                text = { Text("Delete") },
+                text = { Text("Delete dir") },
                 onClick = {
-                    if (service.isRunning) service.killProcess()
-                    NativeUtils.exec(rmDir(homeViewModel.cwd.value))
-                    homeViewModel.cd("..")
+                    expanded = !expanded
+                    openDeleteDialog.value = true
                 },
             )
         }
     }
+}
+
+@Composable
+fun CreateDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmation: (input: String) -> Unit,
+) {
+    var text by remember { mutableStateOf("") }
+
+    BasicAlertDialog(
+        onDismissRequest = onDismissRequest,
+    ) {
+        Surface(
+            modifier = Modifier
+                .wrapContentWidth()
+                .wrapContentHeight(),
+            shape = MaterialTheme.shapes.large
+        ) {
+            Column(modifier = Modifier.padding(18.dp)) {
+                Text(text = "Create project", style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    text = "Enter the name of the project, " +
+                            "a remote repository's valid https:// URL or a " +
+                            "custom git clone command",
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(top = 6.dp)
+                )
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text(text = "Name / URL / git command") },
+                    modifier = Modifier.padding(top = 16.dp),
+                    textStyle = MaterialTheme.typography.bodySmall
+                )
+                Button(
+                    onClick = {
+                        onConfirmation(text)
+                    },
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .align(Alignment.End)
+                ) {
+                    Text(text = "Create")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DeleteDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    dialogTitle: String,
+    dialogText: String,
+    icon: ImageVector,
+) {
+    AlertDialog(
+        icon = {
+            Icon(icon, contentDescription = "Example Icon")
+        },
+        title = {
+            Text(text = dialogTitle)
+        },
+        text = {
+            Text(text = dialogText)
+        },
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirmation()
+                }
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                }
+            ) {
+                Text("Dismiss")
+            }
+        }
+    )
 }

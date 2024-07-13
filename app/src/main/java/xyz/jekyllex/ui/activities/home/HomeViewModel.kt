@@ -46,7 +46,7 @@ class HomeViewModel : ViewModel() {
         get() = _availableFolders
     val project: String?
         get() = _cwd.value.let {
-            if (!it.contains(HOME_DIR)) return null
+            if (!it.contains("$HOME_DIR/")) return null
             return it
                 .replace(
                     it.substringAfter("$HOME_DIR/"),
