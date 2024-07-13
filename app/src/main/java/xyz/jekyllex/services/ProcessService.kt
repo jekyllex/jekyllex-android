@@ -45,6 +45,7 @@ import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
+import xyz.jekyllex.utils.NativeUtils.Companion.buildEnvironment
 import java.io.BufferedReader
 import java.io.File
 
@@ -123,7 +124,7 @@ class ProcessService : Service() {
                 process = Runtime.getRuntime().exec(
                     if (command[0].contains("/bin")) command
                     else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1).toTypedArray()),
-                    null,
+                    buildEnvironment(dir),
                     File(dir)
                 )
 

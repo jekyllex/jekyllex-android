@@ -30,6 +30,9 @@ import java.io.File
 import android.util.Log
 import xyz.jekyllex.ui.activities.installer.BootstrapInstaller
 import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
+import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
+import xyz.jekyllex.utils.Constants.Companion.PREFIX
+import xyz.jekyllex.utils.Constants.Companion.USR_DIR
 
 class NativeUtils {
     companion object {
@@ -80,13 +83,27 @@ class NativeUtils {
         fun exec(command: Array<String>): String {
             val process = Runtime.getRuntime().exec(
                 if (command[0].contains("/bin")) command
-                else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1).toTypedArray())
+                else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1).toTypedArray()),
+                buildEnvironment(HOME_DIR)
             )
 
             val output = process.inputStream.bufferedReader().readText()
             Log.d(LOG_TAG, "Output for command \"${command.toList()}\": $output")
 
             return output.trim()
+        }
+
+        fun buildEnvironment(cwd: String): Array<String> {
+            ensureDirectoryExists(File(HOME_DIR))
+
+            val environment: Array<String> = ArrayList<String>().apply {
+                add("PWD=$cwd")
+                add("HOME=$HOME_DIR")
+                add("PREFIX=$PREFIX")
+                add("PATH=$BIN_DIR:${System.getenv("PATH")}")
+            }.toTypedArray()
+
+            return environment
         }
     }
 }

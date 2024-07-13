@@ -27,6 +27,7 @@ package xyz.jekyllex.ui.activities.home
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import xyz.jekyllex.utils.Commands.Companion.shell
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.USR_DIR
 import xyz.jekyllex.utils.NativeUtils
@@ -43,6 +44,15 @@ class HomeViewModel : ViewModel() {
         get() = _cwd
     val availableFolders
         get() = _availableFolders
+    val project: String?
+        get() = _cwd.value.let {
+            if (!it.contains(HOME_DIR)) return null
+            return it
+                .replace(
+                    it.substringAfter("$HOME_DIR/"),
+                    it.substringAfter("$HOME_DIR/").substringBefore('/')
+                ).replace("$HOME_DIR/", "")
+        }
 
     init {
         cd(HOME_DIR)
@@ -62,7 +72,7 @@ class HomeViewModel : ViewModel() {
     fun refresh() {
         try {
             val folders = NativeUtils
-                .exec(arrayOf("/bin/sh", "-c", "ls -d ${_cwd.value}/*/"))
+                .exec(shell("ls -d ${_cwd.value}/*/"))
                 .split("\n")
                 .map {
                     it.replace(_cwd.value, "")
