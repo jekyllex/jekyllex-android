@@ -61,11 +61,11 @@ class ProcessService : Service() {
     val isRunning
         get() = _isRunning.value
 
+    private var job: Job? = null
     private lateinit var process: Process
     private lateinit var outputReader: BufferedReader
     private lateinit var errorReader: BufferedReader
     private lateinit var notifBuilder: NotificationCompat.Builder
-    private var job: Job? = null
 
     private val _events = MutableStateFlow("")
     val events: Flow<String> = _events.asStateFlow()
@@ -177,8 +177,8 @@ class ProcessService : Service() {
         val exitCode = process.waitFor()
         _events.value = "Process exited with code $exitCode"
 
-        _isRunning.value = false
         runningCommand = ""
+        _isRunning.value = false
 
         updateKillActionOnNotif()
     }

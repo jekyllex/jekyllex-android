@@ -147,6 +147,7 @@ fun HomeScreen(
                         Icon(painterResource(R.drawable.stop), "Delete this project")
                 }
                 IconButton(onClick = {
+                    if(service.isRunning) service.killProcess()
                     NativeUtils.exec(arrayOf("rm", "-rf", homeViewModel.cwd.value))
                     homeViewModel.cd("..")
                 }) {
