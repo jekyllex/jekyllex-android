@@ -225,7 +225,7 @@ fun DropDownMenu(homeViewModel: HomeViewModel) {
         CreateDialog(
             onDismissRequest = { openCreateDialog.value = false },
             onConfirmation = { input ->
-                create(input) { homeViewModel.refresh() }
+                if (input.isNotBlank()) create(input) { homeViewModel.refresh() }
                 openCreateDialog.value = false
             },
         )
