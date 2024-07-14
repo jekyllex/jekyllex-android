@@ -61,6 +61,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -72,11 +73,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.capitalize
 import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.components.JekyllExAppBar
+import xyz.jekyllex.ui.components.ProjectButton
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.Commands.Companion.bundle
 import xyz.jekyllex.utils.Commands.Companion.git
@@ -157,7 +158,7 @@ fun HomeScreen(
             DropDownMenu(homeViewModel)
         })
     }) { padding ->
-        val folders = homeViewModel.availableFolders.value
+        val folders = homeViewModel.availableFolders.collectAsState().value
 
         Column(
             modifier = Modifier.padding(top = padding.calculateTopPadding())
@@ -171,7 +172,6 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 8.dp),
-                color = MaterialTheme.colorScheme.background
             ) {
                 if (homeViewModel.cwd.value == HOME_DIR && folders.isEmpty())
                     Column(
@@ -206,11 +206,13 @@ fun HomeScreen(
                         }
 
                     items(folders.size) {
-                        Button(onClick = {
-                            homeViewModel.cd(folders[it].dir)
-                        }) {
-                            Text(text = folders[it].dir)
-                        }
+                        ProjectButton(
+                            project = folders[it],
+                            modifier = Modifier.padding(8.dp),
+                            onClick = {
+                                homeViewModel.cd(folders[it].dir)
+                            }
+                        )
                     }
                 }
             }

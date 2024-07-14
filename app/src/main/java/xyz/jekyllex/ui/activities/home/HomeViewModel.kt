@@ -30,7 +30,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import xyz.jekyllex.models.Project
 import xyz.jekyllex.utils.Commands.Companion.getFromYAML
@@ -45,7 +45,7 @@ class HomeViewModel : ViewModel() {
 
     private lateinit var statsJob: Job
     private var _cwd = mutableStateOf("")
-    private val _availableFolders = mutableStateOf(listOf<Project>())
+    private val _availableFolders = MutableStateFlow(listOf<Project>())
 
     val cwd
         get() = _cwd
@@ -112,7 +112,7 @@ class HomeViewModel : ViewModel() {
                             "echo -n \"\$s,\"; " +
                             "stat -c \"%y\" ${it.dir} | " +
                             "cut -d' ' -f1,2 | " + // read only the date and time
-                            "{ read d; date -d \"\$d\" +\"%H:%M %d-%m-%Y\"; }; " + // format
+                            "{ read d; date -d \"\$d\" +\"%I:%M %p %d-%m-%Y\"; }; " + // format
                             "}"
                 )
             ).split(",")
@@ -120,16 +120,16 @@ class HomeViewModel : ViewModel() {
             val properties = NativeUtils.exec(
                 getFromYAML(
                     "${it.dir}/_config.yml",
-                    "url", "title", "description"
+                    "title", "description", "url", "baseurl"
                 )
-            ).split("\n")
+            ).split("\n").map { prop -> prop.drop(1).dropLast(1) }
 
             it.copy(
                 folderSize = stats[0],
                 lastModified = stats[1],
-                url = properties[0],
-                title = properties[1],
-                description = properties[2],
+                title = properties[0],
+                description = properties[1],
+                url = properties[2] + properties[3],
             )
         }
     }
