@@ -73,6 +73,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
@@ -152,7 +153,9 @@ fun HomeScreen(
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         JekyllExAppBar(title = {
             Text(
-                text = homeViewModel.cwd.value.substringAfterLast("/")
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                text = homeViewModel.cwd.value.substringAfterLast("/"),
             )
         }, actions = {
             DropDownMenu(homeViewModel)
@@ -164,8 +167,9 @@ fun HomeScreen(
             modifier = Modifier.padding(top = padding.calculateTopPadding())
         ) {
             Text(
-                text = homeViewModel.cwd.value,
-                modifier = Modifier.padding(vertical = 16.dp, horizontal = 8.dp),
+                text = homeViewModel.cwd.value
+                    .replace(HOME_DIR, "~").replace("/", " / "),
+                modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp),
                 style = MaterialTheme.typography.bodySmall
             )
             Surface(

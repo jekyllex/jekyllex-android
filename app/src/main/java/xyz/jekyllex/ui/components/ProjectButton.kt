@@ -74,14 +74,16 @@ fun ProjectButton(
         shape = RoundedCornerShape(16.dp),
     ) {
         Surface {
-            Column{
+            Column {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp, bottom = 8.dp)
                 ) {
                     Text(
-                        text = project.dir,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        text = project.title ?: project.dir,
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Start,
                         modifier = Modifier
@@ -105,7 +107,6 @@ fun ProjectButton(
                             )
                         }
                 }
-
                 AnimatedContent(
                     targetState = project.description,
                     transitionSpec = {
@@ -115,27 +116,33 @@ fun ProjectButton(
                 ) { description ->
                     if (description == null) return@AnimatedContent
                     Text(
-                        // desc to be max 2 lines, add ellipses else
-                        maxLines = 2,
+                        maxLines = 3,
                         text = description,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(vertical = 6.dp),
                     )
                 }
+                if (project.title != null)
+                    Text(
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        text = "./${project.dir}",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                if (project.folderSize != null || project.lastModified != null) {
+                    val text = "Size: ${project.folderSize ?: "-"}" +
+                            "  •  " +
+                            "Last modified: ${project.lastModified ?: "-"}"
 
-                if (project.folderSize != null || project.lastModified != null)
-                    Row {
-                        val text = "Size: ${project.folderSize ?: "-"}" +
-                                "  •  " +
-                                "Last modified: ${project.lastModified ?: "-"}"
-
-                        Text(
-                            text = text,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
-                        )
-                    }
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
             }
         }
     }
