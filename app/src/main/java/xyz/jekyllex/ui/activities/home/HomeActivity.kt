@@ -198,16 +198,19 @@ fun HomeScreen(
                 else LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    item {
-                        Button(onClick = {
-                            homeViewModel.cd("..")
-                        }) { Text(text = "..") }
-                    }
+                    if (homeViewModel.cwd.value.contains("$HOME_DIR/"))
+                        item {
+                            Button(onClick = {
+                                homeViewModel.cd("..")
+                            }) { Text(text = "..") }
+                        }
 
                     items(folders.size) {
                         Button(onClick = {
-                            homeViewModel.cd(folders[it])
-                        }) { Text(text = folders[it]) }
+                            homeViewModel.cd(folders[it].dir)
+                        }) {
+                            Text(text = folders[it].dir)
+                        }
                     }
                 }
             }

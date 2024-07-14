@@ -30,6 +30,7 @@ import java.io.File
 import android.util.Log
 import xyz.jekyllex.ui.activities.installer.BootstrapInstaller
 import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
+import xyz.jekyllex.utils.Constants.Companion.GEM_DIR
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.PREFIX
 import xyz.jekyllex.utils.Constants.Companion.USR_DIR
@@ -80,11 +81,12 @@ class NativeUtils {
             throw RuntimeException("Unable to create directory: ${directory?.absolutePath}")
         }
 
-        fun exec(command: Array<String>): String {
+        fun exec(command: Array<String>, dir: String = HOME_DIR): String {
             val process = Runtime.getRuntime().exec(
                 if (command[0].contains("/bin")) command
                 else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1).toTypedArray()),
-                buildEnvironment(HOME_DIR)
+                buildEnvironment(dir),
+                File(dir)
             )
 
             val output = process.inputStream.bufferedReader().readText()
@@ -100,6 +102,8 @@ class NativeUtils {
                 add("PWD=$cwd")
                 add("HOME=$HOME_DIR")
                 add("PREFIX=$PREFIX")
+                add("GEM_HOME=$GEM_DIR")
+                add("GEM_PATH=$GEM_DIR")
                 add("PATH=$BIN_DIR:${System.getenv("PATH")}")
             }.toTypedArray()
 

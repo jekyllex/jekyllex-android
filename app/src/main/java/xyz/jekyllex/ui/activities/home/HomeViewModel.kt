@@ -27,9 +27,15 @@ package xyz.jekyllex.ui.activities.home
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import xyz.jekyllex.models.Project
+import xyz.jekyllex.utils.Commands.Companion.getFromYAML
 import xyz.jekyllex.utils.Commands.Companion.shell
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
-import xyz.jekyllex.utils.Constants.Companion.USR_DIR
 import xyz.jekyllex.utils.NativeUtils
 
 class HomeViewModel : ViewModel() {
@@ -37,8 +43,9 @@ class HomeViewModel : ViewModel() {
         const val LOG_TAG = "HomeViewModel"
     }
 
+    private lateinit var statsJob: Job
     private var _cwd = mutableStateOf("")
-    private val _availableFolders = mutableStateOf(listOf<String>())
+    private val _availableFolders = mutableStateOf(listOf<Project>())
 
     val cwd
         get() = _cwd
@@ -80,11 +87,50 @@ class HomeViewModel : ViewModel() {
                 }
                 .filter { it.isNotBlank() }
 
-            _availableFolders.value = folders
+            _availableFolders.value = folders.map { Project(it) }
+
+            if (_cwd.value == HOME_DIR)
+                statsJob = viewModelScope.launch(Dispatchers.IO) { fetchStats() }
+            else
+                ::statsJob.isInitialized.takeIf { it && statsJob.isActive }?.let {
+                    statsJob.cancel()
+                    Log.d(LOG_TAG, "Fetch project stats job cancelled")
+                }
 
             Log.d(LOG_TAG, "Available files in ${_cwd.value}: $folders")
         } catch (e: Exception) {
             Log.d(LOG_TAG, "Error while listing files in ${_cwd.value}: $e")
+        }
+    }
+
+    fun fetchStats() {
+        _availableFolders.value = _availableFolders.value.map {
+            val stats = NativeUtils.exec(
+                shell(
+                    "du -sh ${it.dir} | { " +
+                            "read s _; " + // read only the size
+                            "echo -n \"\$s,\"; " +
+                            "stat -c \"%y\" ${it.dir} | " +
+                            "cut -d' ' -f1,2 | " + // read only the date and time
+                            "{ read d; date -d \"\$d\" +\"%H:%M %d-%m-%Y\"; }; " + // format
+                            "}"
+                )
+            ).split(",")
+
+            val properties = NativeUtils.exec(
+                getFromYAML(
+                    "${it.dir}/_config.yml",
+                    "url", "title", "description"
+                )
+            ).split("\n")
+
+            it.copy(
+                folderSize = stats[0],
+                lastModified = stats[1],
+                url = properties[0],
+                title = properties[1],
+                description = properties[2],
+            )
         }
     }
 }

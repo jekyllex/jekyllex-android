@@ -32,5 +32,7 @@ class Constants {
         const val HOME_DIR = "$FILES_DIR/home"
         const val USR_DIR = "$FILES_DIR/usr"
         const val BIN_DIR = "$USR_DIR/bin"
+        const val LIB_DIR = "$USR_DIR/lib"
+        const val GEM_DIR = "$LIB_DIR/ruby/gems/3.3.0"
     }
 }

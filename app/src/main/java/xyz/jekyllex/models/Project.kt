@@ -22,25 +22,13 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.utils
+package xyz.jekyllex.models
 
-class Commands {
-    companion object {
-        fun rm(vararg files: String): Array<String> = arrayOf("rm", *files)
-        fun rmDir(vararg dirs: String): Array<String> = arrayOf("rm", "-rf", *dirs)
-        fun stat(vararg command: String): Array<String> = arrayOf("stat", *command)
-        fun shell(vararg command: String): Array<String> = arrayOf("/bin/sh", "-c", *command)
-
-        fun git(vararg command: String): Array<String> = arrayOf("git", *command)
-        fun gem(vararg command: String): Array<String> = arrayOf("gem", *command)
-        fun ruby(vararg command: String): Array<String> = arrayOf("ruby", *command)
-        fun jekyll(vararg command: String): Array<String> = arrayOf("jekyll", *command)
-        fun bundle(vararg command: String): Array<String> = arrayOf("bundle", *command)
-
-        fun getFromYAML(file: String, vararg properties: String): Array<String> = ruby(
-            "-e", "require 'safe_yaml';_=SafeYAML.load_file('${file}');p ${
-                properties.map { "_['${it}']" }.joinToString(", ")
-            };"
-        )
-    }
-}
+data class Project(
+    val dir: String,
+    val url: String? = null,
+    val title: String? = null,
+    val folderSize: String? = null,
+    val description: String? = null,
+    val lastModified: String? = null,
+)
