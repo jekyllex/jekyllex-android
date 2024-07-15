@@ -45,12 +45,16 @@ class HomeViewModel : ViewModel() {
 
     private lateinit var statsJob: Job
     private var _cwd = mutableStateOf("")
-    private val _availableFolders = MutableStateFlow(listOf<Project>())
+    private val _availableFiles = MutableStateFlow(listOf<Project>())
+
+    private val lsCmd
+        get() = (_cwd.value == HOME_DIR)
+            .let { if (it) "ls -d */" else "ls ${_cwd.value}" }
 
     val cwd
         get() = _cwd
-    val availableFolders
-        get() = _availableFolders
+    val availableFiles
+        get() = _availableFiles
     val project: String?
         get() = _cwd.value.let {
             if (!it.contains("$HOME_DIR/")) return null
@@ -78,8 +82,8 @@ class HomeViewModel : ViewModel() {
 
     fun refresh() {
         try {
-            val folders = NativeUtils
-                .exec(shell("ls -d ${_cwd.value}/*/"))
+            val files = NativeUtils
+                .exec(shell(lsCmd))
                 .split("\n")
                 .map {
                     it.replace(_cwd.value, "")
@@ -87,7 +91,7 @@ class HomeViewModel : ViewModel() {
                 }
                 .filter { it.isNotBlank() }
 
-            _availableFolders.value = folders.map { Project(it) }
+            _availableFiles.value = files.map { Project(it) }
 
             if (_cwd.value == HOME_DIR)
                 statsJob = viewModelScope.launch(Dispatchers.IO) { fetchStats() }
@@ -97,14 +101,14 @@ class HomeViewModel : ViewModel() {
                     Log.d(LOG_TAG, "Fetch project stats job cancelled")
                 }
 
-            Log.d(LOG_TAG, "Available files in ${_cwd.value}: $folders")
+            Log.d(LOG_TAG, "Available files in ${_cwd.value}: $files")
         } catch (e: Exception) {
             Log.d(LOG_TAG, "Error while listing files in ${_cwd.value}: $e")
         }
     }
 
     fun fetchStats() {
-        _availableFolders.value = _availableFolders.value.map {
+        _availableFiles.value = _availableFiles.value.map {
             val stats = NativeUtils.exec(
                 shell(
                     "du -sh ${it.dir} | { " +

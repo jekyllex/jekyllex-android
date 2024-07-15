@@ -36,6 +36,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -161,7 +162,7 @@ fun HomeScreen(
             DropDownMenu(homeViewModel)
         })
     }) { padding ->
-        val folders = homeViewModel.availableFolders.collectAsState().value
+        val files = homeViewModel.availableFiles.collectAsState().value
 
         Column(
             modifier = Modifier.padding(top = padding.calculateTopPadding())
@@ -177,7 +178,7 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(horizontal = 8.dp),
             ) {
-                if (homeViewModel.cwd.value == HOME_DIR && folders.isEmpty())
+                if (homeViewModel.cwd.value == HOME_DIR && files.isEmpty())
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -209,14 +210,18 @@ fun HomeScreen(
                             }) { Text(text = "..") }
                         }
 
-                    items(folders.size) {
+                    items(files.size) {
                         ProjectButton(
-                            project = folders[it],
+                            project = files[it],
                             modifier = Modifier.padding(8.dp),
                             onClick = {
-                                homeViewModel.cd(folders[it].dir)
+                                homeViewModel.cd(files[it].dir)
                             }
                         )
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.padding(8.dp))
                     }
                 }
             }
