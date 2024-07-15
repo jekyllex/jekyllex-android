@@ -24,24 +24,7 @@
 
 package xyz.jekyllex.utils
 
-class Commands {
-    companion object {
-        fun rm(vararg files: String): Array<String> = arrayOf("rm", *files)
-        fun rmDir(vararg dirs: String): Array<String> = arrayOf("rm", "-rf", *dirs)
-        fun stat(vararg command: String): Array<String> = arrayOf("stat", *command)
-        fun echo(vararg command: String): Array<String> = arrayOf("echo", *command)
-        fun shell(vararg command: String): Array<String> = arrayOf("/bin/sh", "-c", *command)
+import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 
-        fun git(vararg command: String): Array<String> = arrayOf("git", *command)
-        fun gem(vararg command: String): Array<String> = arrayOf("gem", *command)
-        fun ruby(vararg command: String): Array<String> = arrayOf("ruby", *command)
-        fun jekyll(vararg command: String): Array<String> = arrayOf("jekyll", *command)
-        fun bundle(vararg command: String): Array<String> = arrayOf("bundle", *command)
-
-        fun getFromYAML(file: String, vararg properties: String): Array<String> = ruby(
-            "-e", "require 'safe_yaml';_=SafeYAML.load_file('${file}');p ${
-                properties.joinToString(", ") { "_['${it}']" }
-            };"
-        )
-    }
-}
+fun String.formatDir(separator: String): String =
+    this.replace(HOME_DIR, "~").replace("/", separator)

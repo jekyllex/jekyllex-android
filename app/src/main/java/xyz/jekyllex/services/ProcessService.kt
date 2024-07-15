@@ -46,6 +46,7 @@ import xyz.jekyllex.R
 import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils.Companion.buildEnvironment
+import xyz.jekyllex.utils.formatDir
 import java.io.BufferedReader
 import java.io.File
 
@@ -110,7 +111,7 @@ class ProcessService : Service() {
     fun exec(command: Array<String>, dir: String = HOME_DIR, callBack: () -> Unit = {}) {
         job = CoroutineScope(Dispatchers.IO).launch {
             if (_isRunning.value) {
-                _events.value = "Process is already running"
+                _events.value = "\nProcess is already running\n"
                 return@launch
             }
             // Start the process
@@ -119,6 +120,7 @@ class ProcessService : Service() {
                 runningCommand = command.joinToString(" ")
                 updateKillActionOnNotif()
 
+                _events.value = "${dir.formatDir("/")} $ $runningCommand"
                 Log.d(LOG_TAG, "Starting process with command:\n\"${command.toList()}\"")
 
                 process = Runtime.getRuntime().exec(
@@ -155,8 +157,7 @@ class ProcessService : Service() {
                     }
                 }
 
-                val exitCode = process.waitFor()
-                _events.value = "Process exited with code $exitCode"
+                process.waitFor()
 
                 killProcess()
                 callBack()
@@ -176,7 +177,7 @@ class ProcessService : Service() {
         process.destroy()
 
         val exitCode = process.waitFor()
-        _events.value = "Process exited with code $exitCode"
+        if (exitCode != 0) _events.value = "Process exited with code $exitCode"
 
         runningCommand = ""
         _isRunning.value = false

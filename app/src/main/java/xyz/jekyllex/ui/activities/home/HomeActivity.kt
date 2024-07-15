@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
@@ -51,8 +52,12 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -80,27 +85,37 @@ import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.ProjectButton
+import xyz.jekyllex.ui.components.TerminalSheet
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.Commands.Companion.bundle
+import xyz.jekyllex.utils.Commands.Companion.echo
 import xyz.jekyllex.utils.Commands.Companion.git
 import xyz.jekyllex.utils.Commands.Companion.jekyll
 import xyz.jekyllex.utils.Commands.Companion.rmDir
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.formatDir
 
 private var isBound: Boolean = false
 private lateinit var service: ProcessService
 
 class HomeActivity : ComponentActivity() {
+    companion object {
+        private const val LOG_TAG = "HomeActivity"
+    }
+
+    private lateinit var viewModel: HomeViewModel
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
-            service = (binder as ProcessService.LocalBinder).service
             isBound = true
+            service = (binder as ProcessService.LocalBinder).service
             lifecycleScope.launch {
                 service.events.collect {
-                    if (it.isNotBlank()) Log.d("HomeActivity", it)
+                    if (::viewModel.isInitialized && it.isNotEmpty())
+                        viewModel.appendLog(it)
                 }
             }
+            service.exec(echo("Welcome to JekyllEx!"))
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -111,7 +126,7 @@ class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val viewModel: HomeViewModel by viewModels()
+        viewModel = viewModels<HomeViewModel>().value
 
         if (!NativeUtils.isUsable("jekyll")) NativeUtils.launchInstaller(this)
 
@@ -151,25 +166,41 @@ private fun create(input: String, callBack: () -> Unit = {}) {
 fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel()
 ) {
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        JekyllExAppBar(title = {
-            Text(
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                text = homeViewModel.cwd.value.substringAfterLast("/"),
-            )
-        }, actions = {
-            DropDownMenu(homeViewModel)
-        })
-    }) { padding ->
+    var showTerminalSheet by remember { mutableStateOf(false) }
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            JekyllExAppBar(title = {
+                Text(
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    text = homeViewModel.cwd.value.substringAfterLast("/"),
+                )
+            }, actions = {
+                DropDownMenu(homeViewModel)
+            })
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                shape = CircleShape,
+                onClick = { showTerminalSheet = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 4.dp
+                )
+            ) {
+                Icon(painterResource(R.drawable.terminal), "Open terminal")
+            }
+        }
+    ) { padding ->
         val files = homeViewModel.availableFiles.collectAsState().value
 
         Column(
             modifier = Modifier.padding(top = padding.calculateTopPadding())
         ) {
             Text(
-                text = homeViewModel.cwd.value
-                    .replace(HOME_DIR, "~").replace("/", " / "),
+                text = homeViewModel.cwd.value.formatDir(" / "),
                 modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp),
                 style = MaterialTheme.typography.bodySmall
             )
@@ -195,7 +226,10 @@ fun HomeScreen(
                         )
                         Button(
                             onClick = { create("test") { homeViewModel.refresh() } },
-                            modifier = Modifier.padding(top = 16.dp)
+                            modifier = Modifier.padding(top = 16.dp),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 4.dp
+                            )
                         ) {
                             Text(text = "Create")
                         }
@@ -226,6 +260,14 @@ fun HomeScreen(
                 }
             }
         }
+
+        if (showTerminalSheet) {
+            TerminalSheet(
+                onDismiss = { showTerminalSheet = false },
+                clearLogs = { homeViewModel.clearLogs() },
+                logs = homeViewModel.logs.collectAsState().value,
+            )
+        }
     }
 }
 
@@ -249,8 +291,12 @@ fun DropDownMenu(homeViewModel: HomeViewModel) {
         onDismissRequest = { openDeleteDialog.value = false },
         onConfirmation = {
             if (service.isRunning) service.killProcess()
-            NativeUtils.exec(rmDir(homeViewModel.cwd.value))
+            val folder = homeViewModel.cwd.value
+            NativeUtils.exec(rmDir(folder))
             homeViewModel.cd("..")
+            homeViewModel.appendLog(
+                "${homeViewModel.cwd.value.formatDir("/")}$ rm -rf ${folder}"
+            )
             openDeleteDialog.value = false
         },
         dialogTitle = "Delete",

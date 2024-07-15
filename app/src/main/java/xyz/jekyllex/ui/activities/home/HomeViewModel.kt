@@ -37,6 +37,7 @@ import xyz.jekyllex.utils.Commands.Companion.getFromYAML
 import xyz.jekyllex.utils.Commands.Companion.shell
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.formatDir
 
 class HomeViewModel : ViewModel() {
     companion object {
@@ -46,6 +47,7 @@ class HomeViewModel : ViewModel() {
     private lateinit var statsJob: Job
     private var _cwd = mutableStateOf("")
     private val _availableFiles = MutableStateFlow(listOf<Project>())
+    private val _logs = MutableStateFlow(listOf<String>())
 
     private val lsCmd
         get() = (_cwd.value == HOME_DIR)
@@ -53,6 +55,8 @@ class HomeViewModel : ViewModel() {
 
     val cwd
         get() = _cwd
+    val logs
+        get() = _logs
     val availableFiles
         get() = _availableFiles
     val project: String?
@@ -69,7 +73,17 @@ class HomeViewModel : ViewModel() {
         cd(HOME_DIR)
     }
 
+    fun appendLog(log: String) {
+        _logs.value += log
+    }
+
+    fun clearLogs() {
+        _logs.value = listOf()
+    }
+
     fun cd(dir: String) {
+        appendLog("${_cwd.value.formatDir("/")}$ cd ${dir.formatDir("/")}")
+
         if (dir == "..")
             _cwd.value = _cwd.value.substringBeforeLast('/')
         else if (dir[0] == '/')
@@ -78,6 +92,7 @@ class HomeViewModel : ViewModel() {
             _cwd.value += "/$dir"
 
         refresh()
+        appendLog("${_cwd.value.formatDir("/")}$")
     }
 
     fun refresh() {
@@ -129,11 +144,11 @@ class HomeViewModel : ViewModel() {
             ).split("\n").map { prop -> prop.drop(1).dropLast(1) }
 
             it.copy(
-                folderSize = stats[0],
-                lastModified = stats[1],
-                title = properties[0],
-                description = properties[1],
-                url = properties[2] + properties[3],
+                folderSize = stats.getOrNull(0),
+                lastModified = stats.getOrNull(1),
+                title = properties.getOrNull(0),
+                description = properties.getOrNull(1),
+                url = properties.getOrNull(2) + properties.getOrNull(3),
             )
         }
     }
