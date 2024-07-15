@@ -39,7 +39,7 @@ class Commands {
 
         fun getFromYAML(file: String, vararg properties: String): Array<String> = ruby(
             "-e", "require 'safe_yaml';_=SafeYAML.load_file('${file}');p ${
-                properties.map { "_['${it}']" }.joinToString(", ")
+                properties.joinToString(", ") { "_['${it}']" }
             };"
         )
     }
