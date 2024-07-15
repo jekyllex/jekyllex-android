@@ -33,3 +33,7 @@ fun String.extractProject(): String? =
     if (this.contains("$HOME_DIR/"))
         this.replace("$HOME_DIR/", "").substringBefore("/")
     else null
+
+fun String.getFilesInDir(dir: String): List<String> = this.split("\n").map {
+        it.replace(dir, "").replace("/", "")
+    }.filter { it.isNotBlank() }

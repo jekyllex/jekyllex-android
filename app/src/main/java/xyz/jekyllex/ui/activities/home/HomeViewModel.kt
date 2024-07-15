@@ -39,6 +39,7 @@ import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.extractProject
 import xyz.jekyllex.utils.formatDir
+import xyz.jekyllex.utils.getFilesInDir
 
 class HomeViewModel : ViewModel() {
     companion object {
@@ -93,12 +94,7 @@ class HomeViewModel : ViewModel() {
         try {
             val files = NativeUtils
                 .exec(shell(lsCmd))
-                .split("\n")
-                .map {
-                    it.replace(_cwd.value, "")
-                        .replace("/", "")
-                }
-                .filter { it.isNotBlank() }
+                .getFilesInDir(_cwd.value)
 
             _availableFiles.value = files.map { Project(it) }
 
