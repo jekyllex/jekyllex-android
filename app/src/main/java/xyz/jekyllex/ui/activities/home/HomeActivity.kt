@@ -263,9 +263,14 @@ fun HomeScreen(
 
         if (showTerminalSheet) {
             TerminalSheet(
+                isServiceBound = isBound,
+                isRunning = service.isRunning,
                 onDismiss = { showTerminalSheet = false },
                 clearLogs = { homeViewModel.clearLogs() },
                 logs = homeViewModel.logs.collectAsState().value,
+                exec = { command: Array<String> ->
+                    service.exec(command, homeViewModel.cwd.value)
+                },
             )
         }
     }

@@ -47,6 +47,7 @@ import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils.Companion.buildEnvironment
 import xyz.jekyllex.utils.formatDir
+import xyz.jekyllex.utils.isDenied
 import java.io.BufferedReader
 import java.io.File
 
@@ -109,9 +110,16 @@ class ProcessService : Service() {
     }
 
     fun exec(command: Array<String>, dir: String = HOME_DIR, callBack: () -> Unit = {}) {
+        _events.value = "${dir.formatDir("/")} $ ${command.joinToString(" ")}"
+
+        if (command.isDenied()) {
+            _events.value = "Command not allowed!"
+            return
+        }
+
         job = CoroutineScope(Dispatchers.IO).launch {
             if (_isRunning.value) {
-                _events.value = "\nProcess is already running\n"
+                _events.value = "\nSome other process is already running\n"
                 return@launch
             }
             // Start the process
@@ -120,7 +128,6 @@ class ProcessService : Service() {
                 runningCommand = command.joinToString(" ")
                 updateKillActionOnNotif()
 
-                _events.value = "${dir.formatDir("/")} $ $runningCommand"
                 Log.d(LOG_TAG, "Starting process with command:\n\"${command.toList()}\"")
 
                 process = Runtime.getRuntime().exec(
@@ -162,12 +169,13 @@ class ProcessService : Service() {
                 killProcess()
                 callBack()
             } catch (e: Exception) {
+                killProcess(e)
                 Log.e(LOG_TAG, "Error while starting process: $e")
             }
         }
     }
 
-    fun killProcess() {
+    fun killProcess(e: Exception? = null) {
         if (!_isRunning.value) {
             _events.value = "No process is running"
             return
@@ -176,8 +184,11 @@ class ProcessService : Service() {
         job?.cancel()
         process.destroy()
 
-        val exitCode = process.waitFor()
-        if (exitCode != 0) _events.value = "Process exited with code $exitCode"
+        if (e != null) _events.value = "${e.cause}"
+        else {
+            val exitCode = process.waitFor()
+            if (exitCode != 0) _events.value = "Process exited with code $exitCode"
+        }
 
         runningCommand = ""
         _isRunning.value = false

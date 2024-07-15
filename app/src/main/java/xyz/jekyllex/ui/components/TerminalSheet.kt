@@ -24,32 +24,55 @@
 
 package xyz.jekyllex.ui.components
 
+import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun TerminalSheet(
+    exec: (Array<String>) -> Unit = {},
     logs: List<String> = listOf(),
     clearLogs: () -> Unit = {},
-    onDismiss: () -> Unit = {}
+    onDismiss: () -> Unit = {},
+    isServiceBound: Boolean = false,
+    isRunning: Boolean = false,
 ) {
+    val context = LocalContext.current
+    val listState = rememberLazyListState()
+    var text by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(logs.size) {
+        listState.animateScrollToItem(logs.size)
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
@@ -75,8 +98,9 @@ fun TerminalSheet(
                 }
             }
             LazyColumn(
+                state = listState,
                 modifier = Modifier
-                    .heightIn(0.dp, 250.dp)
+                    .heightIn(0.dp, 1000.dp)
                     .fillMaxWidth()
             ) {
                 items(logs.size) {
@@ -87,6 +111,37 @@ fun TerminalSheet(
                     )
                 }
             }
+            if (isServiceBound)
+                Row(
+                    modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = text,
+                        singleLine = true,
+                        onValueChange = { text = it },
+                        placeholder = { Text("Enter a command") },
+                        modifier = Modifier
+                            .weight(1.0f)
+                            .padding(end = 8.dp),
+                    )
+                    TextButton(
+                        enabled = text.isNotBlank(),
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically),
+                        onClick = run@{
+                            if (isRunning) {
+                                Toast.makeText(
+                                    context,
+                                    "A process is already running",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@run
+                            }
+                            exec(text.split(" ").toTypedArray())
+                            text = ""
+                        },
+                    ) { Text(text = "Run") }
+                }
             Spacer(modifier = Modifier.navigationBarsPadding())
         }
     }
