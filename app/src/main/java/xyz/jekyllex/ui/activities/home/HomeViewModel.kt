@@ -37,6 +37,7 @@ import xyz.jekyllex.utils.Commands.Companion.getFromYAML
 import xyz.jekyllex.utils.Commands.Companion.shell
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.extractProject
 import xyz.jekyllex.utils.formatDir
 
 class HomeViewModel : ViewModel() {
@@ -60,14 +61,7 @@ class HomeViewModel : ViewModel() {
     val availableFiles
         get() = _availableFiles
     val project: String?
-        get() = _cwd.value.let {
-            if (!it.contains("$HOME_DIR/")) return null
-            return it
-                .replace(
-                    it.substringAfter("$HOME_DIR/"),
-                    it.substringAfter("$HOME_DIR/").substringBefore('/')
-                ).replace("$HOME_DIR/", "")
-        }
+        get() = _cwd.value.extractProject()
 
     init {
         cd(HOME_DIR)

@@ -28,3 +28,8 @@ import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 
 fun String.formatDir(separator: String): String =
     this.replace(HOME_DIR, "~").replace("/", separator)
+
+fun String.extractProject(): String? =
+    if (this.contains("$HOME_DIR/"))
+        this.replace("$HOME_DIR/", "").substringBefore("/")
+    else null
