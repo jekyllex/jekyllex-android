@@ -25,6 +25,7 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse" />
+
         <activity
             android:name=".ui.activities.installer.BootstrapInstaller"
             android:exported="false"
@@ -40,6 +41,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:exported="false"
+            android:label="@string/title_activity_editor"
+            android:theme="@style/Theme.JekyllEx"
+            android:name=".ui.activities.editor.EditorActivity"
+            android:parentActivityName=".ui.activities.home.HomeActivity" />
     </application>
 
 </manifest>

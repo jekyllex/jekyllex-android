@@ -15,4 +15,5 @@
         You can close the app and come back later
         but please don\'t remove the app from history.
     </string>
+    <string name="title_activity_editor">EditorActivity</string>
 </resources>
