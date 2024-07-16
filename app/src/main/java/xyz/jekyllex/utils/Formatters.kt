@@ -37,10 +37,10 @@ fun String.getExtension(): String = this
     .substringAfterLast("/")
     .let {
         if (defaultExtensions.contains(it)) defaultExtensions[it]!!
-        else ""
+        else if (it.contains(".")) it.substringAfter(".")
+        else "txt"
     }
-    .ifBlank { this.substringAfterLast(".") }
-    .let { aliasExtensions[it] ?: it.ifBlank { "txt" } }
+    .let { aliasExtensions[it] ?: it}
 
 fun String.trimQuotes(level: Int): String = this.drop(level).dropLast(level)
 
