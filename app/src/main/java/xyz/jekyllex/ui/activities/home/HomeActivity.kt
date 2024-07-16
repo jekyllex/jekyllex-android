@@ -62,7 +62,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -87,16 +86,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.core.content.ContextCompat.startActivity
 import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
+import xyz.jekyllex.ui.activities.editor.EditorActivity
 import xyz.jekyllex.ui.components.JekyllExAppBar
-import xyz.jekyllex.ui.components.ProjectButton
+import xyz.jekyllex.ui.components.FileButton
 import xyz.jekyllex.ui.components.TerminalSheet
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.Commands.Companion.bundle
@@ -183,6 +184,7 @@ private fun create(input: String, callBack: () -> Unit = {}) {
 fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     var showTerminalSheet by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -269,11 +271,19 @@ fun HomeScreen(
                         }
 
                     items(files.size) {
-                        ProjectButton(
-                            project = files[it],
+                        FileButton(
+                            file = files[it],
                             modifier = Modifier.padding(8.dp),
                             onClick = {
-                                homeViewModel.cd(files[it].dir)
+                                if (files[it].isDir == true)
+                                    homeViewModel.cd(files[it].path)
+                                else {
+                                    val file = "${homeViewModel.cwd.value}/${files[it].name}"
+                                    context.startActivity(
+                                        Intent(context, EditorActivity::class.java)
+                                            .putExtra("file", file)
+                                    )
+                                }
                             }
                         )
                     }

@@ -37,3 +37,7 @@ fun String.extractProject(): String? =
 fun String.getFilesInDir(dir: String): List<String> = this.split("\n").map {
         it.replace(dir, "").replace("/", "")
     }.filter { it.isNotBlank() }
+
+fun buildStatsString(size: String?, lastMod: String?): String? =
+    if (size == null || lastMod == null) null
+    else "Size: $size  •  Last modified: $lastMod"

@@ -24,11 +24,12 @@
 
 package xyz.jekyllex.models
 
-data class Project(
-    val dir: String,
+data class File(
+    val path: String,
     val url: String? = null,
-    val title: String? = null,
-    val folderSize: String? = null,
+    val size: String? = null,
+    val name: String? = null,
+    val isDir: Boolean? = null,
     val description: String? = null,
     val lastModified: String? = null,
 )

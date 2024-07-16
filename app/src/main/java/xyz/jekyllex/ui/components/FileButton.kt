@@ -40,6 +40,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,13 +58,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import xyz.jekyllex.R
-import xyz.jekyllex.models.Project
+import xyz.jekyllex.models.File
+import xyz.jekyllex.utils.buildStatsString
 
 @Preview
 @Composable
-fun ProjectButton(
+fun FileButton(
     modifier: Modifier = Modifier,
-    project: Project = Project("test"),
+    file: File = File("test"),
     onClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -83,21 +86,21 @@ fun ProjectButton(
                     Text(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        text = project.title ?: project.dir,
+                        text = file.name ?: file.path,
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Start,
                         modifier = Modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically)
                     )
-                    if (URLUtil.isValidUrl(project.url ?: ""))
+                    if (URLUtil.isValidUrl(file.url ?: ""))
                         IconButton(
                             modifier = Modifier
                                 .size(24.dp)
                                 .align(Alignment.CenterVertically),
                             onClick = {
                                 context.startActivity(
-                                    Intent(Intent.ACTION_VIEW, Uri.parse(project.url))
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(file.url))
                                 )
                             }
                         ) {
@@ -108,7 +111,8 @@ fun ProjectButton(
                         }
                 }
                 AnimatedContent(
-                    targetState = project.description,
+                    label = "Description animation",
+                    targetState = file.description,
                     transitionSpec = {
                         fadeIn() + slideInVertically(animationSpec = tween(400)) togetherWith
                                 fadeOut(animationSpec = tween(200))
@@ -123,22 +127,26 @@ fun ProjectButton(
                         modifier = Modifier.padding(vertical = 6.dp),
                     )
                 }
-                if (project.title != null)
+                if (file.name != null)
                     Text(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        text = "./${project.dir}",
+                        text = "./${file.path}",
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Start,
                         modifier = Modifier.padding(top = 8.dp)
                     )
-                if (project.folderSize != null || project.lastModified != null) {
-                    val text = "Size: ${project.folderSize ?: "-"}" +
-                            "  •  " +
-                            "Last modified: ${project.lastModified ?: "-"}"
-
+                AnimatedContent(
+                    label = "Stats animation",
+                    targetState = buildStatsString(file.size, file.lastModified),
+                    transitionSpec = {
+                        fadeIn() + slideInVertically(animationSpec = tween(400)) togetherWith
+                                fadeOut(animationSpec = tween(200))
+                    }
+                ) { description ->
+                    if (description == null) return@AnimatedContent
                     Text(
-                        text = text,
+                        text = description,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
