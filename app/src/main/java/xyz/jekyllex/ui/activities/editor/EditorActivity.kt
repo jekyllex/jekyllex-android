@@ -93,7 +93,7 @@ fun EditorView (file: String = "") {
                 }
             }
             when (tabIndex) {
-                0 -> Editor()
+                0 -> Editor(file)
                 1 -> Preview()
             }
         }

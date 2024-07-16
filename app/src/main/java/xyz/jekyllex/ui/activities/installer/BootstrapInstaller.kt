@@ -48,7 +48,6 @@ import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.activities.home.HomeActivity
 import xyz.jekyllex.ui.theme.JekyllExTheme
-import xyz.jekyllex.utils.Commands.Companion.rmDir
 import xyz.jekyllex.utils.Commands.Companion.shell
 import xyz.jekyllex.utils.Constants.Companion.FILES_DIR
 import xyz.jekyllex.utils.NativeUtils
@@ -92,7 +91,7 @@ class BootstrapInstaller : ComponentActivity() {
     override fun onStart() {
         super.onStart()
 
-        if (NativeUtils.isUsable(requiredBinaries)) {
+        if (NativeUtils.areUsable(requiredBinaries)) {
             Log.d(LOG_TAG, "Required tools already set up. Aborting re-installation...")
             finish()
             return

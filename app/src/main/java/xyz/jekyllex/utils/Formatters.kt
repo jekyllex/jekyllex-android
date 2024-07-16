@@ -26,10 +26,30 @@ package xyz.jekyllex.utils
 
 import android.icu.text.SimpleDateFormat
 import android.icu.util.TimeZone
+import android.util.Base64
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
+import xyz.jekyllex.utils.Constants.Companion.aliasExtensions
+import xyz.jekyllex.utils.Constants.Companion.defaultExtensions
+import java.net.URLEncoder
 import java.util.Locale
 
+fun String.getExtension(): String = this
+    .substringAfterLast("/")
+    .let {
+        if (defaultExtensions.contains(it)) defaultExtensions[it]!!
+        else ""
+    }
+    .ifBlank { this.substringAfterLast(".") }
+    .let { aliasExtensions[it] ?: it.ifBlank { "txt" } }
+
 fun String.trimQuotes(level: Int): String = this.drop(level).dropLast(level)
+
+fun String.toBase64(): String = Base64.encodeToString(
+    this.toByteArray(charset("UTF-8")),
+    Base64.NO_WRAP
+)
+
+fun String.encodeURIComponent(): String = URLEncoder.encode(this, "UTF-8")
 
 fun mergeCommands(vararg commands: Array<String>): String =
     commands.joinToString(";") { cmd -> cmd.joinToString(" ") }

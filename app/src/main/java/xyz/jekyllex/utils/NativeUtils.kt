@@ -33,7 +33,6 @@ import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
 import xyz.jekyllex.utils.Constants.Companion.GEM_DIR
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.PREFIX
-import xyz.jekyllex.utils.Constants.Companion.USR_DIR
 
 class NativeUtils {
     companion object {
@@ -68,7 +67,7 @@ class NativeUtils {
             return true
         }
 
-        fun isUsable(binaries: Array<String>): Boolean {
+        fun areUsable(binaries: Array<String>): Boolean {
             for (binary in binaries) {
                 if (!isUsable(binary)) return false
             }

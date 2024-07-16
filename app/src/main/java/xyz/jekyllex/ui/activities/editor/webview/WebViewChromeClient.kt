@@ -22,31 +22,14 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.utils
+package xyz.jekyllex.ui.activities.editor.webview
 
-class Constants {
-    companion object{
-        const val APP_PACKAGE = "xyz.jekyllex"
-        const val PREFIX = "/data/data/$APP_PACKAGE"
-        const val FILES_DIR = "$PREFIX/files"
-        const val HOME_DIR = "$FILES_DIR/home"
-        const val USR_DIR = "$FILES_DIR/usr"
-        const val BIN_DIR = "$USR_DIR/bin"
-        const val LIB_DIR = "$USR_DIR/lib"
-        const val GEM_DIR = "$LIB_DIR/ruby/gems/3.3.0"
-        const val EDITOR_URL = "https://editor.jekyllex.xyz"
+import android.webkit.ConsoleMessage
+import android.webkit.WebChromeClient
+import android.webkit.WebView
 
-        val requiredBinaries = arrayOf("ruby", "gem", "bundler", "jekyll")
+class WebViewChromeClient: WebChromeClient() {
+    override fun onCloseWindow(window: WebView) {}
 
-        val defaultExtensions = mapOf(
-            "Gemfile" to "rb",
-            "Rakefile" to "rb",
-            "Gemfile.lock" to "rb",
-        )
-
-        val aliasExtensions = mapOf(
-            "htm" to "md",
-            "html" to "md",
-        )
-    }
+    override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean = true
 }

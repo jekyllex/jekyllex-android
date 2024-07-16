@@ -26,6 +26,7 @@ package xyz.jekyllex.utils
 
 class Commands {
     companion object {
+        fun cat(vararg file: String): Array<String> = arrayOf("cat", *file)
         fun rm(vararg files: String): Array<String> = arrayOf("rm", *files)
         fun rmDir(vararg dirs: String): Array<String> = arrayOf("rm", "-rf", *dirs)
         fun stat(vararg command: String): Array<String> = arrayOf("stat", *command)

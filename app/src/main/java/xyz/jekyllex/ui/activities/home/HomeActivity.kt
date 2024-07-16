@@ -140,7 +140,7 @@ class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!NativeUtils.isUsable(requiredBinaries)) NativeUtils.launchInstaller(this)
+        if (!NativeUtils.areUsable(requiredBinaries)) NativeUtils.launchInstaller(this)
 
         Intent(this, ProcessService::class.java).also { intent ->
             bindService(intent, connection, Context.BIND_AUTO_CREATE)

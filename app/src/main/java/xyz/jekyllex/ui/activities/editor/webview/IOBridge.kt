@@ -22,31 +22,20 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.utils
+package xyz.jekyllex.ui.activities.editor.webview
 
-class Constants {
-    companion object{
-        const val APP_PACKAGE = "xyz.jekyllex"
-        const val PREFIX = "/data/data/$APP_PACKAGE"
-        const val FILES_DIR = "$PREFIX/files"
-        const val HOME_DIR = "$FILES_DIR/home"
-        const val USR_DIR = "$FILES_DIR/usr"
-        const val BIN_DIR = "$USR_DIR/bin"
-        const val LIB_DIR = "$USR_DIR/lib"
-        const val GEM_DIR = "$LIB_DIR/ruby/gems/3.3.0"
-        const val EDITOR_URL = "https://editor.jekyllex.xyz"
+import android.content.Context
+import android.util.Log
+import android.webkit.JavascriptInterface
 
-        val requiredBinaries = arrayOf("ruby", "gem", "bundler", "jekyll")
+class IOBridge(val context: Context) {
+    companion object {
+        const val LOG_TAG = "IOBridge"
+    }
 
-        val defaultExtensions = mapOf(
-            "Gemfile" to "rb",
-            "Rakefile" to "rb",
-            "Gemfile.lock" to "rb",
-        )
-
-        val aliasExtensions = mapOf(
-            "htm" to "md",
-            "html" to "md",
-        )
+    @JavascriptInterface
+    fun saveFile(content: String) {
+        // Save file to local storage
+        Log.d(LOG_TAG, "Saving file: $content")
     }
 }

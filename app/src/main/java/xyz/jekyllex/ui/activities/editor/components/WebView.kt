@@ -24,23 +24,39 @@
 
 package xyz.jekyllex.ui.activities.editor.components
 
-import android.util.Log
-import androidx.compose.material3.Surface
+import android.view.ViewGroup
+import androidx.compose.foundation.layout.fillMaxSize
+import android.webkit.WebView as AndroidWebView
 import androidx.compose.runtime.Composable
-import xyz.jekyllex.utils.Commands.Companion.cat
-import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
-import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.encodeURIComponent
-import xyz.jekyllex.utils.getExtension
-import xyz.jekyllex.utils.toBase64
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import xyz.jekyllex.ui.activities.editor.webview.IOBridge
+import xyz.jekyllex.ui.activities.editor.webview.WebViewChromeClient
+import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
 
 @Composable
-fun Editor(file: String) {
-    val text = NativeUtils.exec(cat(file)).toBase64().encodeURIComponent()
+fun WebView(url: String) {
+    val context = LocalContext.current
 
-    Log.d("Editor", "${file.getExtension()}: $text")
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = {
+            AndroidWebView(it).apply {
+                this.layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
 
-    Surface {
-        WebView("$EDITOR_URL/?lang=${file.getExtension()}&text=$text")
-    }
+                webViewClient = WebViewClient()
+                webChromeClient = WebViewChromeClient()
+
+                settings.javaScriptEnabled = true
+
+                addJavascriptInterface(IOBridge(context), "IOBridge")
+            }
+        }, update = {
+            it.loadUrl(url)
+        }
+    )
 }
