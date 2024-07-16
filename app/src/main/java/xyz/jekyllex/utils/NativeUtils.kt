@@ -68,7 +68,7 @@ class NativeUtils {
             return true
         }
 
-        fun isUsable(vararg binaries: String): Boolean {
+        fun isUsable(binaries: Array<String>): Boolean {
             for (binary in binaries) {
                 if (!isUsable(binary)) return false
             }

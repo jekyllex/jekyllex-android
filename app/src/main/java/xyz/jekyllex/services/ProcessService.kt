@@ -169,8 +169,8 @@ class ProcessService : Service() {
                 killProcess()
                 callBack()
             } catch (e: Exception) {
-                killProcess(e)
                 Log.e(LOG_TAG, "Error while starting process: $e")
+                killProcess(e)
             }
         }
     }
@@ -182,10 +182,10 @@ class ProcessService : Service() {
         }
 
         job?.cancel()
-        process.destroy()
 
         if (e != null) _events.value = "${e.cause}"
-        else {
+        if (::process.isInitialized) {
+            process.destroy()
             val exitCode = process.waitFor()
             if (exitCode != 0) _events.value = "Process exited with code $exitCode"
         }

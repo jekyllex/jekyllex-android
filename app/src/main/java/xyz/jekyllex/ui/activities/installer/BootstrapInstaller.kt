@@ -48,9 +48,12 @@ import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.activities.home.HomeActivity
 import xyz.jekyllex.ui.theme.JekyllExTheme
+import xyz.jekyllex.utils.Commands.Companion.rmDir
+import xyz.jekyllex.utils.Commands.Companion.shell
 import xyz.jekyllex.utils.Constants.Companion.FILES_DIR
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Constants.Companion.USR_DIR
+import xyz.jekyllex.utils.Constants.Companion.requiredBinaries
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -89,7 +92,7 @@ class BootstrapInstaller : ComponentActivity() {
     override fun onStart() {
         super.onStart()
 
-        if (NativeUtils.isUsable("git", "ruby", "gem", "bundler", "jekyll")) {
+        if (NativeUtils.isUsable(requiredBinaries)) {
             Log.d(LOG_TAG, "Required tools already set up. Aborting re-installation...")
             finish()
             return
@@ -98,7 +101,10 @@ class BootstrapInstaller : ComponentActivity() {
         // Adapted from
         // https://github.com/termux/termux-app/blob/android-10/app/src/main/java/com/termux/app/TermuxPackageInstaller.java#L45
         CoroutineScope(Dispatchers.IO).launch {
+            NativeUtils.exec(shell("rm -rf $USR_DIR"))
+
             Log.d(LOG_TAG, "Starting bootstrap installation...")
+
             val filesMapping = File(applicationInfo.nativeLibraryDir, "libfiles.so")
             var reader = BufferedReader(FileReader(filesMapping))
             var line: String?
@@ -111,7 +117,7 @@ class BootstrapInstaller : ComponentActivity() {
 
                 NativeUtils.ensureDirectoryExists(File(newPath).parentFile)
 
-                Log.d(LOG_TAG, "About to setup link: $oldPath ← $newPath")
+//                Log.d(LOG_TAG, "About to setup link: $oldPath ← $newPath")
                 File(newPath).delete()
                 Os.symlink(oldPath, newPath)
             }
@@ -127,7 +133,7 @@ class BootstrapInstaller : ComponentActivity() {
 
                 NativeUtils.ensureDirectoryExists(File(newPath).parentFile)
 
-                Log.d(LOG_TAG, "About to setup link: $oldPath ← $newPath")
+//                Log.d(LOG_TAG, "About to setup link: $oldPath ← $newPath")
                 File(newPath).delete()
                 Os.symlink(oldPath, newPath)
             }

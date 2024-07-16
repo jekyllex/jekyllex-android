@@ -35,14 +35,20 @@ import android.webkit.URLUtil
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
@@ -53,6 +59,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -78,7 +85,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.coroutines.launch
 import xyz.jekyllex.R
@@ -93,11 +105,13 @@ import xyz.jekyllex.utils.Commands.Companion.git
 import xyz.jekyllex.utils.Commands.Companion.jekyll
 import xyz.jekyllex.utils.Commands.Companion.rmDir
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
+import xyz.jekyllex.utils.Constants.Companion.requiredBinaries
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.formatDir
 
 private var isBound: Boolean = false
 private lateinit var service: ProcessService
+private var isCreating = mutableStateOf(false)
 
 class HomeActivity : ComponentActivity() {
     companion object {
@@ -126,13 +140,13 @@ class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel = viewModels<HomeViewModel>().value
-
-        if (!NativeUtils.isUsable("jekyll")) NativeUtils.launchInstaller(this)
+        if (!NativeUtils.isUsable(requiredBinaries)) NativeUtils.launchInstaller(this)
 
         Intent(this, ProcessService::class.java).also { intent ->
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
+
+        viewModel = viewModels<HomeViewModel>().value
 
         setContent {
             JekyllExTheme {
@@ -148,6 +162,9 @@ class HomeActivity : ComponentActivity() {
 }
 
 private fun create(input: String, callBack: () -> Unit = {}) {
+    if (isCreating.value) return
+
+    isCreating.value = true
     Log.d("JekyllEx", isBound.toString())
     if (!isBound) return
 
@@ -159,7 +176,7 @@ private fun create(input: String, callBack: () -> Unit = {}) {
             false -> jekyll("new", input)
         }
 
-    service.exec(command, callBack = callBack)
+    service.exec(command, callBack = { isCreating.value = false; callBack() })
 }
 
 @Composable
@@ -231,7 +248,14 @@ fun HomeScreen(
                                 defaultElevation = 4.dp
                             )
                         ) {
-                            Text(text = "Create")
+                            if (isCreating.value)
+                                CircularProgressIndicator(
+                                    strokeWidth = 2.dp,
+                                    color = Color.White,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            else
+                                Text(text = "Create")
                         }
                     }
                 else LazyColumn(
@@ -284,11 +308,14 @@ fun DropDownMenu(homeViewModel: HomeViewModel) {
 
     if (openCreateDialog.value) {
         CreateDialog(
+            isCreating = isCreating.value,
             onDismissRequest = { openCreateDialog.value = false },
             onConfirmation = { input ->
-                if (input.isNotBlank()) create(input) { homeViewModel.refresh() }
-                openCreateDialog.value = false
-            },
+                if (input.isNotBlank()) create(input) {
+                    openCreateDialog.value = false
+                    homeViewModel.refresh()
+                }
+            }
         )
     }
 
@@ -311,13 +338,14 @@ fun DropDownMenu(homeViewModel: HomeViewModel) {
 
     if (homeViewModel.cwd.value != HOME_DIR)
         IconButton(onClick = { homeViewModel.cd(HOME_DIR) }) {
-            Icon(Icons.Default.Home, "Create new project")
+            Icon(Icons.Default.Home, "Go back to home")
 
         }
     if (homeViewModel.cwd.value == HOME_DIR)
-        IconButton(onClick = {
-            openCreateDialog.value = true
-        }) {
+        IconButton(
+            enabled = !isCreating.value,
+            onClick = { openCreateDialog.value = true }
+        ) {
             Icon(Icons.Default.AddCircle, "Create new project")
         }
     else if (homeViewModel.cwd.value.contains(HOME_DIR)) {
@@ -371,14 +399,20 @@ fun DropDownMenu(homeViewModel: HomeViewModel) {
 
 @Composable
 fun CreateDialog(
+    isCreating: Boolean,
     onDismissRequest: () -> Unit,
     onConfirmation: (input: String) -> Unit,
 ) {
-    var text by remember { mutableStateOf("") }
+    BasicAlertDialog(onDismissRequest = { }) {
+        var text by remember { mutableStateOf("") }
+        val keyboardController = LocalSoftwareKeyboardController.current
 
-    BasicAlertDialog(
-        onDismissRequest = onDismissRequest,
-    ) {
+        val onDone: () -> Unit = {
+            keyboardController?.hide()
+            onConfirmation(text.trim())
+            text = ""
+        }
+
         Surface(
             modifier = Modifier
                 .wrapContentWidth()
@@ -394,22 +428,44 @@ fun CreateDialog(
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 6.dp)
                 )
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    label = { Text(text = "Name / URL / git command") },
-                    modifier = Modifier.padding(top = 16.dp),
-                    textStyle = MaterialTheme.typography.bodySmall
-                )
-                Button(
-                    onClick = {
-                        onConfirmation(text)
-                    },
+                if (!isCreating)
+                    OutlinedTextField(
+                        value = text,
+                        singleLine = true,
+                        onValueChange = { text = it },
+                        label = { Text(text = "Name / URL / git command") },
+                        modifier = Modifier.padding(top = 16.dp),
+                        textStyle = MaterialTheme.typography.bodySmall,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(onDone = { onDone() }),
+                    )
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .padding(top = 16.dp)
-                        .align(Alignment.End)
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
                 ) {
-                    Text(text = "Create")
+                    TextButton(
+                        enabled = !isCreating,
+                        onClick = onDismissRequest,
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Text(text = "Cancel")
+                    }
+                    Button(onClick = onDone) {
+                        if (isCreating)
+                            CircularProgressIndicator(
+                                strokeWidth = 2.dp,
+                                color = Color.White,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        else
+                            Text(text = "Create")
+                    }
                 }
             }
         }
