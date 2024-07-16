@@ -24,14 +24,11 @@
 
 package xyz.jekyllex.ui.activities.home
 
-import android.icu.text.SimpleDateFormat
-import android.icu.util.TimeZone
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import xyz.jekyllex.models.File
@@ -39,12 +36,15 @@ import xyz.jekyllex.utils.Commands.Companion.diskUsage
 import xyz.jekyllex.utils.Commands.Companion.getFromYAML
 import xyz.jekyllex.utils.Commands.Companion.shell
 import xyz.jekyllex.utils.Commands.Companion.stat
+import xyz.jekyllex.utils.Commands.Companion.test
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.extractProject
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getFilesInDir
-import java.util.Locale
+import xyz.jekyllex.utils.mergeCommands
+import xyz.jekyllex.utils.toDate
+import xyz.jekyllex.utils.trimQuotes
 
 class HomeViewModel : ViewModel() {
     companion object {
@@ -114,11 +114,11 @@ class HomeViewModel : ViewModel() {
         _availableFiles.value = _availableFiles.value.map {
             val stats = NativeUtils.exec(
                 shell(
-                    listOf(
+                    mergeCommands(
                         diskUsage("-sh", it.path),
                         stat("-c", "%Y", it.path),
-                        arrayOf("test", "-d", it.path, "&&", "echo", "1", "||", "echo", "0"),
-                    ).joinToString(";") { cmd -> cmd.joinToString(" ") }
+                        test("-d", it.path, "&&", "echo", "1", "||", "echo", "0"),
+                    )
                 ),
                 _cwd.value
             ).split("\n")
@@ -129,20 +129,15 @@ class HomeViewModel : ViewModel() {
                         "${it.path}/_config.yml",
                         "title", "description", "url", "baseurl"
                     )
-                ).split("\n").map { prop -> prop.drop(1).dropLast(1) }
+                ).split("\n").map { prop -> prop.trimQuotes(1) }
                 else listOf()
 
             it.copy(
-                size = stats.getOrNull(0)?.split("\t")?.first(),
                 name = properties.getOrNull(0),
-                lastModified = stats.getOrNull(1)?.let { epoch ->
-                    // %I:%M %p %d-%m-%Y
-                    val dateFormat = SimpleDateFormat("hh:mm a yyyy-MM-dd", Locale.getDefault())
-                    dateFormat.timeZone = TimeZone.getDefault()
-                    dateFormat.format(epoch.toLong() * 1000)
-                },
                 isDir = stats.getOrNull(2) == "1",
                 description = properties.getOrNull(1),
+                lastModified = stats.getOrNull(1)?.toDate(),
+                size = stats.getOrNull(0)?.split("\t")?.first(),
                 url = properties.getOrNull(2) + properties.getOrNull(3),
             )
         }

@@ -95,20 +95,6 @@ class NativeUtils {
             return output.trim()
         }
 
-//        fun exec (command: List<Array<String>>, dir: String = HOME_DIR): String {
-//            val process = Runtime.getRuntime().exec(
-//                command.joinToString(" && ") { it.joinToString(" ") },
-//                buildEnvironment(dir),
-//                File(dir)
-//            )
-//
-//            val output = process.inputStream.bufferedReader().readText().trim()
-//
-//            Log.d(LOG_TAG, "Output for commands \"${command.joinToString(" && ") { it.joinToString(" ") }}\": $output")
-//
-//            return output
-//        }
-
         fun buildEnvironment(cwd: String): Array<String> {
             ensureDirectoryExists(File(HOME_DIR))
 

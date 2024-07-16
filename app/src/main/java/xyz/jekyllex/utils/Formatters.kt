@@ -24,7 +24,15 @@
 
 package xyz.jekyllex.utils
 
+import android.icu.text.SimpleDateFormat
+import android.icu.util.TimeZone
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
+import java.util.Locale
+
+fun String.trimQuotes(level: Int): String = this.drop(level).dropLast(level)
+
+fun mergeCommands(vararg commands: Array<String>): String =
+    commands.joinToString(";") { cmd -> cmd.joinToString(" ") }
 
 fun String.formatDir(separator: String): String =
     this.replace(HOME_DIR, "~").replace("/", separator)
@@ -37,6 +45,12 @@ fun String.extractProject(): String? =
 fun String.getFilesInDir(dir: String): List<String> = this.split("\n").map {
         it.replace(dir, "").replace("/", "")
     }.filter { it.isNotBlank() }
+
+fun String.toDate(): String {
+    val dateFormat = SimpleDateFormat("hh:mm a yyyy-MM-dd", Locale.getDefault())
+    dateFormat.timeZone = TimeZone.getDefault()
+    return dateFormat.format(this.toLong() * 1000)
+}
 
 fun buildStatsString(size: String?, lastMod: String?): String? =
     if (size == null || lastMod == null) null
