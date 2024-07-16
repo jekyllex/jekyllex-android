@@ -40,8 +40,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -86,7 +84,7 @@ fun FileButton(
                     Text(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        text = file.name ?: file.path,
+                        text = file.title ?: file.name,
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Start,
                         modifier = Modifier
@@ -127,11 +125,11 @@ fun FileButton(
                         modifier = Modifier.padding(vertical = 6.dp),
                     )
                 }
-                if (file.name != null)
+                if (file.title != null)
                     Text(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        text = "./${file.path}",
+                        text = "./${file.name}",
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Start,
                         modifier = Modifier.padding(top = 8.dp)

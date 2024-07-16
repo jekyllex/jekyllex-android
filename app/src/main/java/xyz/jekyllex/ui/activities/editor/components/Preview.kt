@@ -22,14 +22,9 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.models
+package xyz.jekyllex.ui.activities.editor.components
 
-data class File(
-    val name: String,
-    val url: String? = null,
-    val size: String? = null,
-    val title: String? = null,
-    val isDir: Boolean? = null,
-    val description: String? = null,
-    val lastModified: String? = null,
-)
+import androidx.compose.runtime.Composable
+
+@Composable
+fun Preview() {}

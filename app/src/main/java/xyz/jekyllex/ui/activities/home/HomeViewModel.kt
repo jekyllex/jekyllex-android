@@ -115,9 +115,9 @@ class HomeViewModel : ViewModel() {
             val stats = NativeUtils.exec(
                 shell(
                     mergeCommands(
-                        diskUsage("-sh", it.path),
-                        stat("-c", "%Y", it.path),
-                        test("-d", it.path, "&&", "echo", "1", "||", "echo", "0"),
+                        diskUsage("-sh", it.name),
+                        stat("-c", "%Y", it.name),
+                        test("-d", it.name, "&&", "echo", "1", "||", "echo", "0"),
                     )
                 ),
                 _cwd.value
@@ -126,14 +126,14 @@ class HomeViewModel : ViewModel() {
             val properties =
                 if (_cwd.value == HOME_DIR) NativeUtils.exec(
                     getFromYAML(
-                        "${it.path}/_config.yml",
+                        "${it.name}/_config.yml",
                         "title", "description", "url", "baseurl"
                     )
                 ).split("\n").map { prop -> prop.trimQuotes(1) }
                 else listOf()
 
             it.copy(
-                name = properties.getOrNull(0),
+                title = properties.getOrNull(0),
                 isDir = stats.getOrNull(2) == "1",
                 description = properties.getOrNull(1),
                 lastModified = stats.getOrNull(1)?.toDate(),

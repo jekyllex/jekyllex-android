@@ -91,7 +91,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.core.content.ContextCompat.startActivity
 import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
@@ -276,7 +275,7 @@ fun HomeScreen(
                             modifier = Modifier.padding(8.dp),
                             onClick = {
                                 if (files[it].isDir == true)
-                                    homeViewModel.cd(files[it].path)
+                                    homeViewModel.cd(files[it].name)
                                 else {
                                     val file = "${homeViewModel.cwd.value}/${files[it].name}"
                                     context.startActivity(

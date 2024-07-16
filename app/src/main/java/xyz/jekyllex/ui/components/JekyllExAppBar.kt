@@ -55,13 +55,7 @@ fun JekyllExAppBar(
             navigationIcon = navigationIcon,
             title = title,
             actions = actions,
-            modifier = modifier
-                .padding(bottom = 8.dp)
-                .shadow(
-                    elevation = 8.dp,
-                    spotColor = Color.Black,
-//                    shape = RoundedCornerShape(16.dp)
-                ),
+            modifier = modifier,
         )
     }
 }
