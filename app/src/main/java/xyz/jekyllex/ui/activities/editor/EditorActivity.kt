@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -59,12 +60,23 @@ fun EditorView (file: String = "") {
         topBar = {
             JekyllExAppBar(
                 title = {
-                    Text(
-                        maxLines = 1,
-                        fontSize = 20.sp,
-                        overflow = TextOverflow.Ellipsis,
-                        text = file.formatDir("/"),
-                    )
+                    Column {
+                        Text(
+                            maxLines = 1,
+                            fontSize = 20.sp,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(0.dp),
+                            text = file.substringAfterLast("/"),
+                        )
+                        Text(
+                            maxLines = 1,
+                            fontSize = 14.sp,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(0.dp),
+                            text = file.formatDir("/"),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = { context.finish() }) {
