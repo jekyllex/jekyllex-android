@@ -29,16 +29,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import android.webkit.WebView as AndroidWebView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import xyz.jekyllex.ui.activities.editor.webview.IOBridge
 import xyz.jekyllex.ui.activities.editor.webview.WebViewChromeClient
 import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
+import xyz.jekyllex.utils.buildEditorURL
 
 @Composable
-fun WebView(url: String) {
-    val context = LocalContext.current
-
+fun WebView(file:String) {
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = {
@@ -53,10 +51,10 @@ fun WebView(url: String) {
 
                 settings.javaScriptEnabled = true
 
-                addJavascriptInterface(IOBridge(context), "IOBridge")
+                addJavascriptInterface(IOBridge(file), "IOBridge")
             }
         }, update = {
-            it.loadUrl(url)
+            it.loadUrl(file.buildEditorURL())
         }
     )
 }

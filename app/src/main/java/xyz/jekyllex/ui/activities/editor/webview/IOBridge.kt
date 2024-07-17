@@ -24,18 +24,20 @@
 
 package xyz.jekyllex.ui.activities.editor.webview
 
-import android.content.Context
-import android.util.Log
+import java.io.File
 import android.webkit.JavascriptInterface
+import xyz.jekyllex.utils.fromBase64
 
-class IOBridge(val context: Context) {
-    companion object {
-        const val LOG_TAG = "IOBridge"
-    }
+class IOBridge(val path: String) {
+    private val file = File(path)
+    private val isSymlink
+        get() = file.let { it.canonicalPath != it.absolutePath }
 
     @JavascriptInterface
-    fun saveFile(content: String) {
-        // Save file to local storage
-        Log.d(LOG_TAG, "Saving file: $content")
+    fun saveText(content: String) {
+        file.apply {
+            if (isSymlink) { delete(); createNewFile(); }
+            writeText(content.fromBase64())
+        }
     }
 }

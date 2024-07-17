@@ -27,6 +27,8 @@ package xyz.jekyllex.utils
 import android.icu.text.SimpleDateFormat
 import android.icu.util.TimeZone
 import android.util.Base64
+import xyz.jekyllex.utils.Commands.Companion.cat
+import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.extensionAliases
 import xyz.jekyllex.utils.Constants.Companion.defaultExtensions
@@ -47,6 +49,8 @@ fun String.toBase64(): String = Base64.encodeToString(
     this.toByteArray(charset("UTF-8")),
     Base64.NO_WRAP
 )
+
+fun String.fromBase64(): String = String(Base64.decode(this, Base64.NO_WRAP))
 
 fun String.encodeURIComponent(): String = URLEncoder.encode(this, "UTF-8")
 
@@ -74,3 +78,8 @@ fun String.toDate(): String {
 fun buildStatsString(size: String?, lastMod: String?): String? =
     if (size == null || lastMod == null) null
     else "Size: $size  •  Last modified: $lastMod"
+
+fun String.buildEditorURL(): String =
+    "$EDITOR_URL/?lang=${this.getExtension()}&text=${
+        NativeUtils.exec(cat(this)).toBase64().encodeURIComponent()
+    }"

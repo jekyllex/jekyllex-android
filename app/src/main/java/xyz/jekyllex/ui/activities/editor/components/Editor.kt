@@ -24,23 +24,12 @@
 
 package xyz.jekyllex.ui.activities.editor.components
 
-import android.util.Log
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import xyz.jekyllex.utils.Commands.Companion.cat
-import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
-import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.encodeURIComponent
-import xyz.jekyllex.utils.getExtension
-import xyz.jekyllex.utils.toBase64
 
 @Composable
 fun Editor(file: String) {
-    val text = NativeUtils.exec(cat(file)).toBase64().encodeURIComponent()
-
-    Log.d("Editor", "${file.getExtension()}: $text")
-
     Surface {
-        WebView("$EDITOR_URL/?lang=${file.getExtension()}&text=$text")
+        WebView(file)
     }
 }
