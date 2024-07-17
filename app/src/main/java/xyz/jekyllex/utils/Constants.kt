@@ -41,12 +41,12 @@ class Constants {
         val defaultExtensions = mapOf(
             "Gemfile" to "rb",
             "Rakefile" to "rb",
-            "Gemfile.lock" to "rb",
         )
 
-        val aliasExtensions = mapOf(
+        val extensionAliases = mapOf(
             "htm" to "md",
             "html" to "md",
+            "lock" to "rb",
         )
     }
 }

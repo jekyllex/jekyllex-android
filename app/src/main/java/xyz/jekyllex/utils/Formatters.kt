@@ -28,7 +28,7 @@ import android.icu.text.SimpleDateFormat
 import android.icu.util.TimeZone
 import android.util.Base64
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
-import xyz.jekyllex.utils.Constants.Companion.aliasExtensions
+import xyz.jekyllex.utils.Constants.Companion.extensionAliases
 import xyz.jekyllex.utils.Constants.Companion.defaultExtensions
 import java.net.URLEncoder
 import java.util.Locale
@@ -36,11 +36,10 @@ import java.util.Locale
 fun String.getExtension(): String = this
     .substringAfterLast("/")
     .let {
-        if (defaultExtensions.contains(it)) defaultExtensions[it]!!
-        else if (it.contains(".")) it.substringAfter(".")
-        else "txt"
+        defaultExtensions[it] ?:
+        if (it.contains(".")) it.substringAfterLast(".") else "txt"
     }
-    .let { aliasExtensions[it] ?: it}
+    .let { extensionAliases[it] ?: it}
 
 fun String.trimQuotes(level: Int): String = this.drop(level).dropLast(level)
 
