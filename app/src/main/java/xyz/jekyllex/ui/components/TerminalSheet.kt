@@ -100,7 +100,7 @@ fun TerminalSheet(
             LazyColumn(
                 state = listState,
                 modifier = Modifier
-                    .heightIn(0.dp, 1000.dp)
+                    .weight(1.0f)
                     .fillMaxWidth()
             ) {
                 items(logs.size) {
