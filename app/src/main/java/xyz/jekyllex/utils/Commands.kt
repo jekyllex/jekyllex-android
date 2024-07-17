@@ -31,7 +31,6 @@ class Commands {
         fun rmDir(vararg dirs: String): Array<String> = arrayOf("rm", "-rf", *dirs)
         fun stat(vararg command: String): Array<String> = arrayOf("stat", *command)
         fun echo(vararg command: String): Array<String> = arrayOf("echo", *command)
-        fun test(vararg command: String): Array<String> = arrayOf("test", *command)
         fun diskUsage(vararg command: String): Array<String> = arrayOf("du", *command)
         fun shell(vararg command: String): Array<String> = arrayOf("/bin/sh", "-c", *command)
 

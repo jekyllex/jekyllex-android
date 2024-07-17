@@ -29,14 +29,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
+import java.io.File as JFile
 import xyz.jekyllex.models.File
 import xyz.jekyllex.utils.Commands.Companion.diskUsage
 import xyz.jekyllex.utils.Commands.Companion.getFromYAML
 import xyz.jekyllex.utils.Commands.Companion.shell
 import xyz.jekyllex.utils.Commands.Companion.stat
-import xyz.jekyllex.utils.Commands.Companion.test
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.extractProject
@@ -51,6 +53,7 @@ class HomeViewModel : ViewModel() {
         const val LOG_TAG = "HomeViewModel"
     }
 
+    private var statsJob: Job? = null
     private var _cwd = mutableStateOf("")
     private val _logs = MutableStateFlow(listOf<String>())
     private val _availableFiles = MutableStateFlow(listOf<File>())
@@ -81,6 +84,7 @@ class HomeViewModel : ViewModel() {
     }
 
     fun cd(dir: String) {
+        statsJob?.cancel().also { statsJob = null; Log.d(LOG_TAG, "Cancelled stats job") }
         appendLog("${_cwd.value.formatDir("/")}$ cd ${dir.formatDir("/")}")
 
         if (dir == "..")
@@ -100,9 +104,11 @@ class HomeViewModel : ViewModel() {
                 .exec(shell(lsCmd))
                 .getFilesInDir(_cwd.value)
 
-            _availableFiles.value = files.map { File(it) }
+            _availableFiles.value = files.map {
+                File(it, isDir = JFile("${_cwd.value}/$it").isDirectory)
+            }
 
-            viewModelScope.launch(Dispatchers.IO) { fetchStats() }
+            statsJob = viewModelScope.launch(Dispatchers.IO) { fetchStats() }
 
             Log.d(LOG_TAG, "Available files in ${_cwd.value}: $files")
         } catch (e: Exception) {
@@ -110,14 +116,15 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    fun fetchStats() {
+    private suspend fun fetchStats() {
         _availableFiles.value = _availableFiles.value.map {
+            yield()
+
             val stats = NativeUtils.exec(
                 shell(
                     mergeCommands(
                         diskUsage("-sh", it.name),
-                        stat("-c", "%Y", it.name),
-                        test("-d", it.name, "&&", "echo", "1", "||", "echo", "0"),
+                        stat("-c", "%Y", it.name)
                     )
                 ),
                 _cwd.value
@@ -134,7 +141,6 @@ class HomeViewModel : ViewModel() {
 
             it.copy(
                 title = properties.getOrNull(0),
-                isDir = stats.getOrNull(2) == "1",
                 description = properties.getOrNull(1),
                 lastModified = stats.getOrNull(1)?.toDate(),
                 size = stats.getOrNull(0)?.split("\t")?.first(),
