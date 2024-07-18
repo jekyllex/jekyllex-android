@@ -33,6 +33,7 @@ import android.os.IBinder
 import android.util.Log
 import android.webkit.URLUtil
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
@@ -186,18 +187,37 @@ fun HomeScreen(
     val context = LocalContext.current
     var showTerminalSheet by remember { mutableStateOf(false) }
 
+    BackHandler(
+        enabled = homeViewModel.cwd.value.contains("$HOME_DIR/")
+    ) { homeViewModel.cd("..") }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            JekyllExAppBar(title = {
-                Text(
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    text = homeViewModel.cwd.value.substringAfterLast("/"),
-                )
-            }, actions = {
-                DropDownMenu(homeViewModel)
-            })
+            JekyllExAppBar(
+                title = {
+                    Text(
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        text = homeViewModel.cwd.value.substringAfterLast("/"),
+                    )
+                },
+                actions = {
+                    DropDownMenu(homeViewModel)
+                },
+                navigationIcon = {
+                    if (homeViewModel.cwd.value.contains("$HOME_DIR/"))
+                        IconButton(onClick = { homeViewModel.cd("..") }) {
+                            Icon(
+                                contentDescription = "Go back",
+                                painter = painterResource(id = R.drawable.back),
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .size(20.dp)
+                            )
+                        }
+                }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -262,13 +282,6 @@ fun HomeScreen(
                 else LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    if (homeViewModel.cwd.value.contains("$HOME_DIR/"))
-                        item {
-                            Button(onClick = {
-                                homeViewModel.cd("..")
-                            }) { Text(text = "..") }
-                        }
-
                     items(files.size) {
                         FileButton(
                             file = files[it],
