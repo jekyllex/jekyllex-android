@@ -37,6 +37,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -389,32 +390,34 @@ fun DropDownMenu(homeViewModel: HomeViewModel) {
                 Icon(painterResource(R.drawable.stop), "Stop server")
         }
 
-        IconButton(onClick = { expanded = !expanded }) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = "More"
-            )
-        }
+        Box {
+            IconButton(onClick = { expanded = !expanded }) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "More"
+                )
+            }
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("Bundler") },
-                onClick = {
-                    expanded = !expanded
-                    if (!isBound) return@DropdownMenuItem
-                    service.exec(bundle("install"), homeViewModel.cwd.value)
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Delete dir") },
-                onClick = {
-                    expanded = !expanded
-                    openDeleteDialog.value = true
-                },
-            )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Bundler") },
+                    onClick = {
+                        expanded = !expanded
+                        if (!isBound) return@DropdownMenuItem
+                        service.exec(bundle("install"), homeViewModel.cwd.value)
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Delete dir") },
+                    onClick = {
+                        expanded = !expanded
+                        openDeleteDialog.value = true
+                    },
+                )
+            }
         }
     }
 }
