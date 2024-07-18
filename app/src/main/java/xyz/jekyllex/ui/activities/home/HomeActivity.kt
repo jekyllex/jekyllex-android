@@ -82,7 +82,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -93,7 +92,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
-import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.activities.editor.EditorActivity
@@ -109,6 +107,7 @@ import xyz.jekyllex.utils.Commands.Companion.rmDir
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.requiredBinaries
 import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
 
 private var isBound: Boolean = false
@@ -125,12 +124,7 @@ class HomeActivity : ComponentActivity() {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
             isBound = true
             service = (binder as ProcessService.LocalBinder).service
-            lifecycleScope.launch {
-                service.events.collect {
-                    if (::viewModel.isInitialized && it.isNotEmpty())
-                        viewModel.appendLog(it)
-                }
-            }
+            viewModel.appendLog = { service.appendLog(it) }
             service.exec(echo("Welcome to JekyllEx!"))
         }
 
@@ -313,8 +307,8 @@ fun HomeScreen(
                 isServiceBound = isBound,
                 isRunning = service.isRunning,
                 onDismiss = { showTerminalSheet = false },
-                clearLogs = { homeViewModel.clearLogs() },
-                logs = homeViewModel.logs.collectAsState().value,
+                clearLogs = { service.clearLogs() },
+                logs = service.logs.collectAsState().value,
                 exec = { command: Array<String> ->
                     service.exec(command, homeViewModel.cwd.value)
                 },
@@ -377,9 +371,7 @@ fun DropDownMenu(homeViewModel: HomeViewModel) {
             if (!service.isRunning)
                 service.exec(
                     jekyll("serve"),
-                    homeViewModel.project?.let {
-                        "$HOME_DIR/$it"
-                    } ?: homeViewModel.cwd.value
+                    homeViewModel.cwd.value.let { it.getProjectDir() ?: it }
                 )
             else
                 service.killProcess()

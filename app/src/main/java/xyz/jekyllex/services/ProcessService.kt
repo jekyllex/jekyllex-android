@@ -58,20 +58,20 @@ class ProcessService : Service() {
         private const val ACTION_KILL_PROCESS = "xyz.jekyllex.process_service_kill"
     }
 
-    var runningCommand = ""
-    var _isRunning = mutableStateOf(false)
-
-    val isRunning
-        get() = _isRunning.value
-
     private var job: Job? = null
     private lateinit var process: Process
     private lateinit var outputReader: BufferedReader
     private lateinit var errorReader: BufferedReader
     private lateinit var notifBuilder: NotificationCompat.Builder
 
-    private val _events = MutableStateFlow("")
-    val events: Flow<String> = _events.asStateFlow()
+    private var runningCommand = ""
+    private var _isRunning = mutableStateOf(false)
+    private val _logs = MutableStateFlow(listOf<String>())
+
+    val isRunning
+        get() = _isRunning.value
+    val logs
+        get() = _logs
 
     inner class LocalBinder : Binder() {
         val service: ProcessService = this@ProcessService
@@ -109,17 +109,25 @@ class ProcessService : Service() {
         return START_NOT_STICKY
     }
 
+    fun appendLog(log: String) {
+        _logs.value += log
+    }
+
+    fun clearLogs() {
+        _logs.value = listOf()
+    }
+
     fun exec(command: Array<String>, dir: String = HOME_DIR, callBack: () -> Unit = {}) {
-        _events.value = "${dir.formatDir("/")} $ ${command.joinToString(" ")}"
+        appendLog("${dir.formatDir("/")} $ ${command.joinToString(" ")}")
 
         if (command.isDenied()) {
-            _events.value = "Command not allowed!"
+            appendLog("Command not allowed!")
             return
         }
 
         job = CoroutineScope(Dispatchers.IO).launch {
             if (_isRunning.value) {
-                _events.value = "\nSome other process is already running\n"
+                appendLog("\nSome other process is already running\n")
                 return@launch
             }
             // Start the process
@@ -144,7 +152,7 @@ class ProcessService : Service() {
                     try {
                         var out: String? = outputReader.readLine()
                         while (out != null) {
-                            _events.value = out
+                            appendLog(out)
                             out = outputReader.readLine()
                         }
                     } catch (e: Exception) {
@@ -156,7 +164,7 @@ class ProcessService : Service() {
                     try {
                         var err: String? = errorReader.readLine()
                         while (err != null) {
-                            _events.value = err
+                            appendLog(err)
                             err = errorReader.readLine()
                         }
                     } catch (e: Exception) {
@@ -166,28 +174,28 @@ class ProcessService : Service() {
 
                 process.waitFor()
 
-                killProcess()
+                killProcess(cancel = false)
                 callBack()
             } catch (e: Exception) {
                 Log.e(LOG_TAG, "Error while starting process: $e")
-                killProcess(e)
+                killProcess(e = e)
             }
         }
     }
 
-    fun killProcess(e: Exception? = null) {
+    fun killProcess(cancel: Boolean = true, e: Exception? = null) {
         if (!_isRunning.value) {
-            _events.value = "No process is running"
+            appendLog("No process is running")
             return
         }
 
-        job?.cancel()
+        if (cancel) job?.cancel()
 
-        if (e != null) _events.value = "${e.cause}"
-        if (::process.isInitialized) {
+        if (e != null) appendLog("${e.cause}")
+        if (::process.isInitialized && cancel) {
             process.destroy()
             val exitCode = process.waitFor()
-            if (exitCode != 0) _events.value = "Process exited with code $exitCode"
+            if (exitCode != 0) appendLog("Process exited with code $exitCode")
         }
 
         runningCommand = ""

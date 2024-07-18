@@ -27,7 +27,6 @@ package xyz.jekyllex.utils
 import android.icu.text.SimpleDateFormat
 import android.icu.util.TimeZone
 import android.util.Base64
-import xyz.jekyllex.utils.Commands.Companion.cat
 import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.extensionAliases
@@ -60,9 +59,9 @@ fun mergeCommands(vararg commands: Array<String>): String =
 fun String.formatDir(separator: String): String =
     this.replace(HOME_DIR, "~").replace("/", separator)
 
-fun String.extractProject(): String? =
+fun String.getProjectDir(): String? =
     if (this.contains("$HOME_DIR/"))
-        this.replace("$HOME_DIR/", "").substringBefore("/")
+        "$HOME_DIR/" + this.substringAfter("$HOME_DIR/").substringBefore("/")
     else null
 
 fun String.getFilesInDir(dir: String): List<String> = this.split("\n").map {

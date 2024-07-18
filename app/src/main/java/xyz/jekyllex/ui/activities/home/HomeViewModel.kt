@@ -41,7 +41,6 @@ import xyz.jekyllex.utils.Commands.Companion.shell
 import xyz.jekyllex.utils.Commands.Companion.stat
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.extractProject
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getFilesInDir
 import xyz.jekyllex.utils.mergeCommands
@@ -55,7 +54,6 @@ class HomeViewModel : ViewModel() {
 
     private var statsJob: Job? = null
     private var _cwd = mutableStateOf("")
-    private val _logs = MutableStateFlow(listOf<String>())
     private val _availableFiles = MutableStateFlow(listOf<File>())
 
     private val lsCmd
@@ -64,27 +62,17 @@ class HomeViewModel : ViewModel() {
 
     val cwd
         get() = _cwd
-    val logs
-        get() = _logs
     val availableFiles
         get() = _availableFiles
-    val project: String?
-        get() = _cwd.value.extractProject()
+
+    var appendLog: (String) -> Unit = {}
 
     init {
         cd(HOME_DIR)
     }
 
-    fun appendLog(log: String) {
-        _logs.value += log
-    }
-
-    fun clearLogs() {
-        _logs.value = listOf()
-    }
-
     fun cd(dir: String) {
-        statsJob?.cancel().also { statsJob = null; Log.d(LOG_TAG, "Cancelled stats job") }
+        statsJob?.let { it.cancel(); statsJob = null; Log.d(LOG_TAG, "Cancelled stats job") }
         appendLog("${_cwd.value.formatDir("/")}$ cd ${dir.formatDir("/")}")
 
         if (dir == "..")
