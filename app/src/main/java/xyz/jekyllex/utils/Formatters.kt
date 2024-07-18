@@ -79,7 +79,4 @@ fun buildStatsString(size: String?, lastMod: String?): String? =
     if (size == null || lastMod == null) null
     else "Size: $size  •  Last modified: $lastMod"
 
-fun String.buildEditorURL(): String =
-    "$EDITOR_URL/?lang=${this.getExtension()}&text=${
-        NativeUtils.exec(cat(this)).toBase64().encodeURIComponent()
-    }"
+fun String.buildEditorURL(): String = "$EDITOR_URL/?lang=${this.getExtension()}"

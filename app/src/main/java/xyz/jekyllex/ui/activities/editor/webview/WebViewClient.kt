@@ -27,14 +27,28 @@ package xyz.jekyllex.ui.activities.editor.webview
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import xyz.jekyllex.utils.Commands.Companion.cat
 import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
+import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.encodeURIComponent
+import xyz.jekyllex.utils.toBase64
 
-class WebViewClient: WebViewClient(){
+class WebViewClient(private val file: String): WebViewClient() {
     override fun shouldOverrideUrlLoading(
         view: WebView,
         request: WebResourceRequest
     ): Boolean {
         val url = request.url.toString()
         return url.startsWith(EDITOR_URL) || url.contains("localhost")
+    }
+
+    override fun onPageFinished(view: WebView, url: String) {
+        super.onPageFinished(view, url)
+
+        view.loadUrl(
+            "javascript:setText('${
+                NativeUtils.exec(cat(file)).toBase64().encodeURIComponent()
+            }')"
+        )
     }
 }

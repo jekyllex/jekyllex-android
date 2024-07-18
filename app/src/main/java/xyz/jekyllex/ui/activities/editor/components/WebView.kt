@@ -36,7 +36,7 @@ import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
 import xyz.jekyllex.utils.buildEditorURL
 
 @Composable
-fun WebView(file:String) {
+fun WebView(file: String) {
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = {
@@ -46,7 +46,7 @@ fun WebView(file:String) {
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
 
-                webViewClient = WebViewClient()
+                webViewClient = WebViewClient(file)
                 webChromeClient = WebViewChromeClient()
 
                 settings.javaScriptEnabled = true
