@@ -25,6 +25,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +44,7 @@ import xyz.jekyllex.ui.activities.editor.components.Editor
 import xyz.jekyllex.ui.activities.editor.components.Preview
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.ui.components.JekyllExAppBar
+import xyz.jekyllex.ui.components.TerminalSheet
 import xyz.jekyllex.utils.Commands.Companion.echo
 import xyz.jekyllex.utils.Commands.Companion.jekyll
 import xyz.jekyllex.utils.Commands.Companion.rm
@@ -91,6 +93,7 @@ class EditorActivity : ComponentActivity() {
 @Composable
 fun EditorView(file: String = "") {
     val context = LocalContext.current as Activity
+    var showTerminalSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -138,6 +141,9 @@ fun EditorView(file: String = "") {
                             else
                                 service.killProcess()
                         },
+                        openTerminal = {
+                            showTerminalSheet = true
+                        },
                         deleteFile = {
                             service.exec(rm(file))
                             context.finish()
@@ -172,6 +178,21 @@ fun EditorView(file: String = "") {
                     }
                 }
             }
+        }
+
+        if (showTerminalSheet) {
+            TerminalSheet(
+                isServiceBound = isBound.value,
+                isRunning = service.isRunning,
+                onDismiss = { showTerminalSheet = false },
+                clearLogs = { service.clearLogs() },
+                logs = service.logs.collectAsState().value,
+                exec = { command: Array<String> ->
+                    file.getProjectDir()?.let { dir ->
+                        service.exec(command, dir)
+                    }
+                },
+            )
         }
     }
 }

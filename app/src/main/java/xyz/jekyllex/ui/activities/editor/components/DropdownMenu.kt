@@ -42,6 +42,7 @@ fun DropDownMenu(
     serverItemText: String = "Start server",
     runServer: () -> Unit = {},
     deleteFile: () -> Unit = {},
+    openTerminal: () -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -59,6 +60,10 @@ fun DropDownMenu(
         DropdownMenuItem(
             text = { Text(serverItemText) },
             onClick = { runServer() }
+        )
+        DropdownMenuItem(
+            text = { Text("Show logs") },
+            onClick = { expanded = false; openTerminal() }
         )
         DropdownMenuItem(
             text = { Text("Delete file") },
