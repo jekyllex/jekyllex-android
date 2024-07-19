@@ -36,44 +36,27 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -86,20 +69,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.activities.editor.EditorActivity
+import xyz.jekyllex.ui.activities.home.components.DropDownMenu
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.FileButton
 import xyz.jekyllex.ui.components.TerminalSheet
 import xyz.jekyllex.ui.theme.JekyllExTheme
-import xyz.jekyllex.utils.Commands.Companion.bundle
 import xyz.jekyllex.utils.Commands.Companion.echo
 import xyz.jekyllex.utils.Commands.Companion.git
 import xyz.jekyllex.utils.Commands.Companion.jekyll
@@ -198,7 +177,44 @@ fun HomeScreen(
                     )
                 },
                 actions = {
-                    DropDownMenu(homeViewModel)
+                    DropDownMenu(
+                        homeViewModel,
+                        isCreating,
+                        onCreateConfirmation = { input, isDialogOpen ->
+                            if (input.isNotBlank()) create(input) {
+                                isDialogOpen.value = false
+                                homeViewModel.refresh()
+                            }
+                        },
+                        onDeleteConfirmation = { isDialogOpen ->
+                            if (service.isRunning) service.killProcess()
+                            val folder = homeViewModel.cwd.value
+                            NativeUtils.exec(rmDir(folder))
+                            homeViewModel.cd("..")
+                            service.appendLog(
+                                homeViewModel.cwd.value.formatDir("/") +
+                                        "$ rm -rf $folder"
+                            )
+                            isDialogOpen.value = false
+                        },
+                        serverIcon = {
+                            IconButton(onClick = {
+                                if (!isBound) return@IconButton
+                                if (!service.isRunning)
+                                    service.exec(
+                                        jekyll("serve"),
+                                        homeViewModel.cwd.value.let { it.getProjectDir() ?: it }
+                                    )
+                                else
+                                    service.killProcess()
+                            }) {
+                                if (!service.isRunning)
+                                    Icon(Icons.Default.PlayArrow, "Start server")
+                                else
+                                    Icon(painterResource(R.drawable.stop), "Stop server")
+                            }
+                        }
+                    ) { cmd, dir -> if (isBound) service.exec(cmd, dir) }
                 },
                 navigationIcon = {
                     if (homeViewModel.cwd.value.contains("$HOME_DIR/"))
@@ -315,218 +331,4 @@ fun HomeScreen(
             )
         }
     }
-}
-
-@Composable
-fun DropDownMenu(homeViewModel: HomeViewModel) {
-    var expanded by remember { mutableStateOf(false) }
-    val openDeleteDialog = remember { mutableStateOf(false) }
-    val openCreateDialog = remember { mutableStateOf(false) }
-
-    if (openCreateDialog.value) {
-        CreateDialog(
-            isCreating = isCreating.value,
-            onDismissRequest = { openCreateDialog.value = false },
-            onConfirmation = { input ->
-                if (input.isNotBlank()) create(input) {
-                    openCreateDialog.value = false
-                    homeViewModel.refresh()
-                }
-            }
-        )
-    }
-
-    if (openDeleteDialog.value) DeleteDialog(
-        onDismissRequest = { openDeleteDialog.value = false },
-        onConfirmation = {
-            if (service.isRunning) service.killProcess()
-            val folder = homeViewModel.cwd.value
-            NativeUtils.exec(rmDir(folder))
-            homeViewModel.cd("..")
-            homeViewModel.appendLog(
-                "${homeViewModel.cwd.value.formatDir("/")}$ rm -rf ${folder}"
-            )
-            openDeleteDialog.value = false
-        },
-        dialogTitle = "Delete",
-        dialogText = "Are you sure you want to delete the current directory?",
-        icon = Icons.Default.Delete
-    )
-
-    if (homeViewModel.cwd.value != HOME_DIR)
-        IconButton(onClick = { homeViewModel.cd(HOME_DIR) }) {
-            Icon(Icons.Default.Home, "Go back to home")
-
-        }
-    if (homeViewModel.cwd.value == HOME_DIR)
-        IconButton(
-            enabled = !isCreating.value,
-            onClick = { openCreateDialog.value = true }
-        ) {
-            Icon(Icons.Default.AddCircle, "Create new project")
-        }
-    else if (homeViewModel.cwd.value.contains(HOME_DIR)) {
-        IconButton(onClick = {
-            if (!isBound) return@IconButton
-            if (!service.isRunning)
-                service.exec(
-                    jekyll("serve"),
-                    homeViewModel.cwd.value.let { it.getProjectDir() ?: it }
-                )
-            else
-                service.killProcess()
-        }) {
-            if (!service.isRunning)
-                Icon(Icons.Default.PlayArrow, "Start server")
-            else
-                Icon(painterResource(R.drawable.stop), "Stop server")
-        }
-
-        Box {
-            IconButton(onClick = { expanded = !expanded }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "More"
-                )
-            }
-
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Bundler") },
-                    onClick = {
-                        expanded = !expanded
-                        if (!isBound) return@DropdownMenuItem
-                        service.exec(bundle("install"), homeViewModel.cwd.value)
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Delete dir") },
-                    onClick = {
-                        expanded = !expanded
-                        openDeleteDialog.value = true
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun CreateDialog(
-    isCreating: Boolean,
-    onDismissRequest: () -> Unit,
-    onConfirmation: (input: String) -> Unit,
-) {
-    BasicAlertDialog(onDismissRequest = { }) {
-        var text by remember { mutableStateOf("") }
-        val keyboardController = LocalSoftwareKeyboardController.current
-
-        val onDone: () -> Unit = {
-            keyboardController?.hide()
-            onConfirmation(text.trim())
-            text = ""
-        }
-
-        Surface(
-            modifier = Modifier
-                .wrapContentWidth()
-                .wrapContentHeight(),
-            shape = MaterialTheme.shapes.large
-        ) {
-            Column(modifier = Modifier.padding(18.dp)) {
-                Text(text = "Create project", style = MaterialTheme.typography.headlineSmall)
-                Text(
-                    text = "Enter the name of the project, " +
-                            "a remote repository's valid https:// URL or a " +
-                            "custom git clone command",
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(top = 6.dp)
-                )
-                if (!isCreating)
-                    OutlinedTextField(
-                        value = text,
-                        singleLine = true,
-                        onValueChange = { text = it },
-                        label = { Text(text = "Name / URL / git command") },
-                        modifier = Modifier.padding(top = 16.dp),
-                        textStyle = MaterialTheme.typography.bodySmall,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(onDone = { onDone() }),
-                    )
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                ) {
-                    TextButton(
-                        enabled = !isCreating,
-                        onClick = onDismissRequest,
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Text(text = "Cancel")
-                    }
-                    Button(onClick = onDone) {
-                        if (isCreating)
-                            CircularProgressIndicator(
-                                strokeWidth = 2.dp,
-                                color = Color.White,
-                                modifier = Modifier.size(18.dp),
-                            )
-                        else
-                            Text(text = "Create")
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun DeleteDialog(
-    onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
-    dialogTitle: String,
-    dialogText: String,
-    icon: ImageVector,
-) {
-    AlertDialog(
-        icon = {
-            Icon(icon, contentDescription = "Example Icon")
-        },
-        title = {
-            Text(text = dialogTitle)
-        },
-        text = {
-            Text(text = dialogText)
-        },
-        onDismissRequest = {
-            onDismissRequest()
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onConfirmation()
-                }
-            ) {
-                Text("Confirm")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onDismissRequest()
-                }
-            ) {
-                Text("Dismiss")
-            }
-        }
-    )
 }
