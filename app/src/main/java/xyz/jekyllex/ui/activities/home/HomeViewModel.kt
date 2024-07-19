@@ -124,7 +124,10 @@ class HomeViewModel : ViewModel() {
                         "${it.name}/_config.yml",
                         "title", "description", "url", "baseurl"
                     )
-                ).split("\n").map { prop -> prop.trimQuotes() }
+                ).split("\n").map { prop ->
+                    if (prop.isBlank()) null
+                    else prop.trimQuotes()
+                }
                 else listOf()
 
             it.copy(
@@ -132,7 +135,9 @@ class HomeViewModel : ViewModel() {
                 description = properties.getOrNull(1),
                 lastModified = stats.getOrNull(1)?.toDate(),
                 size = stats.getOrNull(0)?.split("\t")?.first(),
-                url = properties.getOrNull(2) + properties.getOrNull(3),
+                url = properties.getOrNull(2)?.let {
+                    url -> url + (properties.getOrNull(3) ?: "")
+                }
             )
         }
     }
