@@ -44,7 +44,8 @@ fun String.getExtension(): String = this
     .let { extensionAliases[it] ?: it}
 
 fun String.trimQuotes(): String =
-    if (this[0] == '"' && this[this.length - 1] == '"') this.drop(1).dropLast(1)
+    if (this.length < 2) this
+    else if (this[0] == '"' && this[this.length - 1] == '"') this.drop(1).dropLast(1)
     else this
 
 fun String.toBase64(): String = Base64.encodeToString(

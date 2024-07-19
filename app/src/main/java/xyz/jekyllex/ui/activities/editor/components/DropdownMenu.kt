@@ -40,7 +40,8 @@ import androidx.compose.runtime.setValue
 @Composable
 fun DropDownMenu(
     serverItemText: String = "Start server",
-    runServer: () -> Unit = {}
+    runServer: () -> Unit = {},
+    deleteFile: () -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -58,6 +59,10 @@ fun DropDownMenu(
         DropdownMenuItem(
             text = { Text(serverItemText) },
             onClick = { runServer() }
+        )
+        DropdownMenuItem(
+            text = { Text("Delete file") },
+            onClick = { deleteFile() }
         )
     }
 }
