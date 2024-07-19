@@ -124,7 +124,7 @@ class HomeViewModel : ViewModel() {
                         "${it.name}/_config.yml",
                         "title", "description", "url", "baseurl"
                     )
-                ).split("\n").map { prop -> prop.trimQuotes(1) }
+                ).split("\n").map { prop -> prop.trimQuotes() }
                 else listOf()
 
             it.copy(

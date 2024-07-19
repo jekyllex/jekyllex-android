@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
+import xyz.jekyllex.ui.activities.editor.components.DropDownMenu
 import xyz.jekyllex.ui.activities.editor.components.Editor
 import xyz.jekyllex.ui.activities.editor.components.Preview
 import xyz.jekyllex.ui.theme.JekyllExTheme
@@ -126,19 +127,17 @@ fun EditorView(file: String = "") {
                 },
                 actions = {
                     if (isBound.value)
-                        IconButton(onClick = {
+                    DropDownMenu(
+                        serverItemText = if (service.isRunning) "Stop server" else "Start server",
+                        runServer = {
                             if (!service.isRunning)
                                 file.getProjectDir()?.let { dir ->
                                     service.exec(jekyll("serve"), dir)
                                 }
                             else
                                 service.killProcess()
-                        }) {
-                            if (!service.isRunning)
-                                Icon(Icons.Default.PlayArrow, "Start server")
-                            else
-                                Icon(painterResource(R.drawable.stop), "Stop server")
                         }
+                    )
                 }
             )
         }
@@ -159,9 +158,14 @@ fun EditorView(file: String = "") {
                     )
                 }
             }
+
             when (tabIndex) {
                 0 -> Editor(file, innerPadding)
-                1 -> Preview()
+                1 -> Preview( file, isBound.value && service.isRunning, innerPadding) {
+                    file.getProjectDir()?.let { dir ->
+                        service.exec(jekyll("serve"), dir)
+                    }
+                }
             }
         }
     }

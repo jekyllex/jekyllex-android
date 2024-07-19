@@ -24,11 +24,14 @@
 
 package xyz.jekyllex.ui.activities.editor.webview
 
+import android.content.Intent
+import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import xyz.jekyllex.utils.Commands.Companion.cat
 import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
+import xyz.jekyllex.utils.Constants.Companion.PREVIEW_URL
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.encodeURIComponent
 import xyz.jekyllex.utils.toBase64
@@ -39,11 +42,19 @@ class WebViewClient(private val file: String): WebViewClient() {
         request: WebResourceRequest
     ): Boolean {
         val url = request.url.toString()
-        return url.startsWith(EDITOR_URL) || url.contains("localhost")
+        if (url.contains(EDITOR_URL) || url.contains(PREVIEW_URL)) return false
+
+        view.context.startActivity(
+            Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        )
+
+        return true
     }
 
     override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
+
+        if (!url.contains(EDITOR_URL)) return
 
         view.loadUrl(
             "javascript:setText('${

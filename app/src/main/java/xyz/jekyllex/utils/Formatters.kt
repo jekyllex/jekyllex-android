@@ -29,6 +29,7 @@ import android.icu.util.TimeZone
 import android.util.Base64
 import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
+import xyz.jekyllex.utils.Constants.Companion.PREVIEW_URL
 import xyz.jekyllex.utils.Constants.Companion.extensionAliases
 import xyz.jekyllex.utils.Constants.Companion.defaultExtensions
 import java.net.URLEncoder
@@ -42,7 +43,9 @@ fun String.getExtension(): String = this
     }
     .let { extensionAliases[it] ?: it}
 
-fun String.trimQuotes(level: Int): String = this.drop(level).dropLast(level)
+fun String.trimQuotes(): String =
+    if (this[0] == '"' && this[this.length - 1] == '"') this.drop(1).dropLast(1)
+    else this
 
 fun String.toBase64(): String = Base64.encodeToString(
     this.toByteArray(charset("UTF-8")),
@@ -79,3 +82,6 @@ fun buildStatsString(size: String?, lastMod: String?): String? =
     else "Size: $size  •  Last modified: $lastMod"
 
 fun String.buildEditorURL(): String = "$EDITOR_URL/?lang=${this.getExtension()}"
+
+fun String.buildPreviewURL(): String =
+    PREVIEW_URL + this.let { if ((it.getOrNull(0) ?: "") == '/') it else "/$it" }

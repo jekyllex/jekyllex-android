@@ -22,32 +22,42 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.utils
+package xyz.jekyllex.ui.activities.editor.components
 
-class Constants {
-    companion object{
-        const val APP_PACKAGE = "xyz.jekyllex"
-        const val PREFIX = "/data/data/$APP_PACKAGE"
-        const val FILES_DIR = "$PREFIX/files"
-        const val HOME_DIR = "$FILES_DIR/home"
-        const val USR_DIR = "$FILES_DIR/usr"
-        const val BIN_DIR = "$USR_DIR/bin"
-        const val LIB_DIR = "$USR_DIR/lib"
-        const val GEM_DIR = "$LIB_DIR/ruby/gems/3.3.0"
-        const val EDITOR_URL = "https://editor.jekyllex.xyz"
-        const val PREVIEW_URL = "http://localhost:4000"
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
-        val requiredBinaries = arrayOf("ruby", "gem", "bundler", "jekyll")
+@Composable
+fun DropDownMenu(
+    serverItemText: String = "Start server",
+    runServer: () -> Unit = {}
+) {
+    var expanded by remember { mutableStateOf(false) }
 
-        val defaultExtensions = mapOf(
-            "Gemfile" to "rb",
-            "Rakefile" to "rb",
+    IconButton(onClick = { expanded = !expanded }) {
+        Icon(
+            imageVector = Icons.Default.MoreVert,
+            contentDescription = "More"
         )
+    }
 
-        val extensionAliases = mapOf(
-            "htm" to "md",
-            "html" to "md",
-            "lock" to "rb",
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+    ) {
+        DropdownMenuItem(
+            text = { Text(serverItemText) },
+            onClick = { runServer() }
         )
     }
 }
