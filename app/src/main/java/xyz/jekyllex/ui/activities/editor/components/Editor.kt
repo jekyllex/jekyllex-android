@@ -24,12 +24,44 @@
 
 package xyz.jekyllex.ui.activities.editor.components
 
+import android.view.Surface
+import android.view.ViewGroup
+import android.webkit.WebView
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
+import xyz.jekyllex.ui.activities.editor.webview.IOBridge
+import xyz.jekyllex.ui.activities.editor.webview.WebViewChromeClient
+import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
+import xyz.jekyllex.utils.buildEditorURL
 
 @Composable
-fun Editor(file: String) {
+fun Editor(file: String, padding: PaddingValues) {
     Surface {
-        WebView(file)
+        AndroidView(
+            modifier = Modifier.fillMaxSize().consumeWindowInsets(padding).imePadding(),
+            factory = {
+                WebView(it).apply {
+                    this.layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+
+                    webViewClient = WebViewClient(file)
+                    webChromeClient = WebViewChromeClient()
+
+                    settings.javaScriptEnabled = true
+
+                    addJavascriptInterface(IOBridge(file), "IOBridge")
+                    loadUrl(file.buildEditorURL())
+                }
+            }
+        )
     }
 }
