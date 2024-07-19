@@ -46,8 +46,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import xyz.jekyllex.ui.activities.editor.webview.WebViewChromeClient
 import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
 import xyz.jekyllex.utils.Commands.Companion.getFromYAML
+import xyz.jekyllex.utils.Commands.Companion.rmDir
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
-import xyz.jekyllex.utils.Constants.Companion.PREVIEW_URL
+import xyz.jekyllex.utils.Constants.Companion.WEBVIEW_CACHE
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.buildPreviewURL
 import xyz.jekyllex.utils.trimQuotes
@@ -107,6 +108,7 @@ fun Preview(file: String, canPreview: Boolean, padding: PaddingValues, runServer
                         else prop.trimQuotes()
                     }
 
+                    NativeUtils.exec(rmDir(WEBVIEW_CACHE))
                     it.loadUrl(properties[0].buildPreviewURL())
                 }
             )

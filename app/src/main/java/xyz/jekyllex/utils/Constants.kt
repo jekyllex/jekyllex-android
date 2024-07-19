@@ -34,6 +34,7 @@ class Constants {
         const val BIN_DIR = "$USR_DIR/bin"
         const val LIB_DIR = "$USR_DIR/lib"
         const val GEM_DIR = "$LIB_DIR/ruby/gems/3.3.0"
+        const val WEBVIEW_CACHE = "$PREFIX/app_webview"
         const val EDITOR_URL = "https://editor.jekyllex.xyz"
         const val PREVIEW_URL = "http://localhost:4000"
 
