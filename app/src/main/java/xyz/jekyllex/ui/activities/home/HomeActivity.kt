@@ -30,7 +30,6 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import android.webkit.URLUtil
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -94,10 +93,6 @@ private lateinit var service: ProcessService
 private var isCreating = mutableStateOf(false)
 
 class HomeActivity : ComponentActivity() {
-    companion object {
-        private const val LOG_TAG = "HomeActivity"
-    }
-
     private lateinit var viewModel: HomeViewModel
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
@@ -137,21 +132,24 @@ class HomeActivity : ComponentActivity() {
 }
 
 private fun create(input: String, callBack: () -> Unit = {}) {
-    if (isCreating.value) return
-
+    if (!isBound || isCreating.value) return
     isCreating.value = true
-    Log.d("JekyllEx", isBound.toString())
-    if (!isBound) return
 
     val command: Array<String> =
-        if (input.startsWith("git "))
+        if (input.startsWith("git clone "))
             input.split(" ").toTypedArray()
-        else when (URLUtil.isValidUrl(input)) {
-            true -> git("clone", input, "--progress")
-            false -> jekyll("new", input)
+        else{
+            val url = input.let {
+                if (it.contains("github.com") && !it.contains("://")) "https://$it"
+                else it
+            }
+            when (URLUtil.isValidUrl(url)) {
+                true -> git("clone", url, "--progress")
+                false -> jekyll("new", input)
+            }
         }
 
-    service.exec(command, callBack = { isCreating.value = false; callBack() })
+    service.exec(command) { isCreating.value = false; callBack() }
 }
 
 @Composable
