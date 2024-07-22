@@ -136,7 +136,7 @@ fun EditorView(file: String = "") {
                         runServer = {
                             if (!service.isRunning)
                                 file.getProjectDir()?.let { dir ->
-                                    service.exec(jekyll("serve"), dir)
+                                    service.exec(jekyll("serve", "-l"), dir)
                                 }
                             else
                                 service.killProcess()
@@ -174,7 +174,7 @@ fun EditorView(file: String = "") {
                 0 -> Editor(file, innerPadding)
                 1 -> Preview( file, isBound.value && service.isRunning, innerPadding) {
                     file.getProjectDir()?.let { dir ->
-                        service.exec(jekyll("serve"), dir)
+                        service.exec(jekyll("serve", "-l"), dir)
                     }
                 }
             }

@@ -37,8 +37,8 @@ class Commands {
         fun git(vararg command: String): Array<String> = arrayOf("git", *command)
         fun gem(vararg command: String): Array<String> = arrayOf("gem", *command)
         fun ruby(vararg command: String): Array<String> = arrayOf("ruby", *command)
-        fun jekyll(vararg command: String): Array<String> = arrayOf("jekyll", *command)
         fun bundle(vararg command: String): Array<String> = arrayOf("bundle", *command)
+        fun jekyll(vararg command: String): Array<String> = bundle("exec", "jekyll", *command)
 
         fun getFromYAML(file: String, vararg properties: String): Array<String> = ruby(
             "-e", "require 'safe_yaml';_=SafeYAML.load_file('${file}');p ${
