@@ -85,8 +85,10 @@ import xyz.jekyllex.utils.Commands.Companion.rmDir
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.requiredBinaries
 import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.Utils
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
+import java.io.File
 
 private var isBound: Boolean = false
 private lateinit var service: ProcessService
@@ -149,7 +151,14 @@ private fun create(input: String, callBack: () -> Unit = {}) {
             }
         }
 
-    service.exec(command) { isCreating.value = false; callBack() }
+    service.exec(command) {
+        if (command.contentEquals(jekyll("new", input))) {
+            Utils.removeSymlinks(File(HOME_DIR, input))
+        }
+
+        isCreating.value = false
+        callBack()
+    }
 }
 
 @Composable
