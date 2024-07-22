@@ -100,8 +100,6 @@ class BootstrapInstaller : ComponentActivity() {
         // Adapted from
         // https://github.com/termux/termux-app/blob/android-10/app/src/main/java/com/termux/app/TermuxPackageInstaller.java#L45
         CoroutineScope(Dispatchers.IO).launch {
-            NativeUtils.exec(shell("rm -rf $USR_DIR"))
-
             Log.d(LOG_TAG, "Starting bootstrap installation...")
 
             val filesMapping = File(applicationInfo.nativeLibraryDir, "libfiles.so")
@@ -116,7 +114,6 @@ class BootstrapInstaller : ComponentActivity() {
 
                 NativeUtils.ensureDirectoryExists(File(newPath).parentFile)
 
-//                Log.d(LOG_TAG, "About to setup link: $oldPath ← $newPath")
                 File(newPath).delete()
                 Os.symlink(oldPath, newPath)
             }
@@ -132,7 +129,6 @@ class BootstrapInstaller : ComponentActivity() {
 
                 NativeUtils.ensureDirectoryExists(File(newPath).parentFile)
 
-//                Log.d(LOG_TAG, "About to setup link: $oldPath ← $newPath")
                 File(newPath).delete()
                 Os.symlink(oldPath, newPath)
             }
