@@ -27,6 +27,7 @@ package xyz.jekyllex.utils
 import android.icu.text.SimpleDateFormat
 import android.icu.util.TimeZone
 import android.util.Base64
+import xyz.jekyllex.utils.Commands.Companion.bundle
 import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.PREVIEW_URL
@@ -86,3 +87,5 @@ fun String.buildEditorURL(): String = "$EDITOR_URL/?lang=${this.getExtension()}"
 
 fun String.buildPreviewURL(): String =
     PREVIEW_URL + this.let { if ((it.getOrNull(0) ?: "") == '/') it else "/$it" }
+
+fun Array<String>.bundlerPrefixed(): Array<String> = bundle("exec", *this)

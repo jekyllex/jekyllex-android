@@ -86,6 +86,7 @@ import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.requiredBinaries
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Utils
+import xyz.jekyllex.utils.bundlerPrefixed
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
 import java.io.File
@@ -209,7 +210,7 @@ fun HomeScreen(
                                 if (!isBound) return@IconButton
                                 if (!service.isRunning)
                                     service.exec(
-                                        jekyll("serve", "-l"),
+                                        jekyll("serve", "-l").bundlerPrefixed(),
                                         homeViewModel.cwd.value.let { it.getProjectDir() ?: it }
                                     )
                                 else

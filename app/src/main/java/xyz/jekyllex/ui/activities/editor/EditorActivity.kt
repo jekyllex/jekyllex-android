@@ -45,9 +45,9 @@ import xyz.jekyllex.ui.activities.editor.components.Preview
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.TerminalSheet
-import xyz.jekyllex.utils.Commands.Companion.echo
 import xyz.jekyllex.utils.Commands.Companion.jekyll
 import xyz.jekyllex.utils.Commands.Companion.rm
+import xyz.jekyllex.utils.bundlerPrefixed
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getProjectDir
 
@@ -136,7 +136,9 @@ fun EditorView(file: String = "") {
                         runServer = {
                             if (!service.isRunning)
                                 file.getProjectDir()?.let { dir ->
-                                    service.exec(jekyll("serve", "-l"), dir)
+                                    service.exec(
+                                        jekyll("serve", "-l").bundlerPrefixed(), dir
+                                    )
                                 }
                             else
                                 service.killProcess()
@@ -174,7 +176,7 @@ fun EditorView(file: String = "") {
                 0 -> Editor(file, innerPadding)
                 1 -> Preview( file, isBound.value && service.isRunning, innerPadding) {
                     file.getProjectDir()?.let { dir ->
-                        service.exec(jekyll("serve", "-l"), dir)
+                        service.exec(jekyll("serve", "-l").bundlerPrefixed(), dir)
                     }
                 }
             }
