@@ -24,6 +24,7 @@
 
 package xyz.jekyllex.utils
 
+import android.content.Context
 import android.icu.text.SimpleDateFormat
 import android.icu.util.TimeZone
 import android.util.Base64
@@ -33,6 +34,7 @@ import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.PREVIEW_URL
 import xyz.jekyllex.utils.Constants.Companion.extensionAliases
 import xyz.jekyllex.utils.Constants.Companion.defaultExtensions
+import xyz.jekyllex.utils.Setting.DEBOUNCE_DELAY
 import java.net.URLEncoder
 import java.util.Locale
 
@@ -83,9 +85,12 @@ fun buildStatsString(size: String?, lastMod: String?): String? =
     if (size == null || lastMod == null) null
     else "Size: $size  •  Last modified: $lastMod"
 
-fun String.buildEditorURL(): String = "$EDITOR_URL/?lang=${this.getExtension()}"
+fun String.buildEditorURL(timeout: Int = DEBOUNCE_DELAY.defaultValue.get()): String =
+    "$EDITOR_URL/?lang=${this.getExtension()}&timeout=$timeout"
 
 fun String.buildPreviewURL(): String =
     PREVIEW_URL + this.let { if ((it.getOrNull(0) ?: "") == '/') it else "/$it" }
 
-fun Array<String>.bundlerPrefixed(): Array<String> = bundle("exec", *this)
+fun Array<String>.bundlerPrefixed(context: Context): Array<String> =
+    if (Settings(context).get(Setting.PREFIX_BUNDLER)) bundle("exec", *this)
+    else this

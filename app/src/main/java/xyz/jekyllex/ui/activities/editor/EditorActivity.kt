@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +45,8 @@ import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.TerminalSheet
 import xyz.jekyllex.utils.Commands.Companion.jekyll
 import xyz.jekyllex.utils.Commands.Companion.rm
+import xyz.jekyllex.utils.Setting
+import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.bundlerPrefixed
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getProjectDir
@@ -74,12 +74,14 @@ class EditorActivity : ComponentActivity() {
         }
 
         val file = intent.getStringExtra("file") ?: ""
+        val timeout = Settings(this).get<Float>(Setting.DEBOUNCE_DELAY)
+            .times(1000).toInt()
 
         enableEdgeToEdge()
 
         setContent {
             JekyllExTheme {
-                EditorView(file)
+                EditorView(file, timeout)
             }
         }
     }
@@ -91,7 +93,7 @@ class EditorActivity : ComponentActivity() {
 }
 
 @Composable
-fun EditorView(file: String = "") {
+fun EditorView(file: String = "", timeout: Int) {
     val context = LocalContext.current as Activity
     var showTerminalSheet by remember { mutableStateOf(false) }
 
@@ -137,7 +139,8 @@ fun EditorView(file: String = "") {
                             if (!service.isRunning)
                                 file.getProjectDir()?.let { dir ->
                                     service.exec(
-                                        jekyll("serve", "-l").bundlerPrefixed(), dir
+                                        jekyll("serve", "-l").bundlerPrefixed(context),
+                                        dir
                                     )
                                 }
                             else
@@ -173,10 +176,12 @@ fun EditorView(file: String = "") {
             }
 
             when (tabIndex) {
-                0 -> Editor(file, innerPadding)
+                0 -> Editor(file, timeout, innerPadding)
                 1 -> Preview( file, isBound.value && service.isRunning, innerPadding) {
                     file.getProjectDir()?.let { dir ->
-                        service.exec(jekyll("serve", "-l").bundlerPrefixed(), dir)
+                        service.exec(
+                            jekyll("serve", "-l").bundlerPrefixed(context), dir
+                        )
                     }
                 }
             }

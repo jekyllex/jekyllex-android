@@ -24,6 +24,7 @@
 
 package xyz.jekyllex.ui.activities.home.components
 
+import android.content.Intent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -40,7 +41,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import xyz.jekyllex.ui.activities.home.HomeViewModel
+import xyz.jekyllex.ui.activities.settings.SettingsActivity
 import xyz.jekyllex.utils.Commands.Companion.bundle
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 
@@ -53,6 +56,7 @@ fun DropDownMenu(
     onDeleteConfirmation: (MutableState<Boolean>) -> Unit,
     exec: (Array<String>, String) -> Unit,
 ) {
+    val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     val openDeleteDialog = remember { mutableStateOf(false) }
     val openCreateDialog = remember { mutableStateOf(false) }
@@ -84,21 +88,21 @@ fun DropDownMenu(
         ) {
             Icon(Icons.Default.AddCircle, "Create new project")
         }
-    else if (homeViewModel.cwd.value.contains(HOME_DIR)) {
-        serverIcon()
+    else serverIcon()
 
-        Box {
-            IconButton(onClick = { expanded = !expanded }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "More"
-                )
-            }
+    Box {
+        IconButton(onClick = { expanded = !expanded }) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = "More"
+            )
+        }
 
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-            ) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            if (homeViewModel.cwd.value.contains("$HOME_DIR/")) {
                 DropdownMenuItem(
                     text = { Text("Bundler") },
                     onClick = {
@@ -114,6 +118,15 @@ fun DropDownMenu(
                     },
                 )
             }
+            DropdownMenuItem(
+                text = { Text("Settings") },
+                onClick = {
+                    expanded = !expanded
+                    context.startActivity(
+                        Intent(context, SettingsActivity::class.java)
+                    )
+                }
+            )
         }
     }
 }

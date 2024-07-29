@@ -39,10 +39,12 @@ import androidx.compose.ui.viewinterop.AndroidView
 import xyz.jekyllex.ui.activities.editor.webview.IOBridge
 import xyz.jekyllex.ui.activities.editor.webview.WebViewChromeClient
 import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
+import xyz.jekyllex.utils.Setting
+import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.buildEditorURL
 
 @Composable
-fun Editor(file: String, padding: PaddingValues) {
+fun Editor(file: String, timeout: Int, padding: PaddingValues) {
     Surface {
         AndroidView(
             modifier = Modifier.fillMaxSize().consumeWindowInsets(padding).imePadding(),
@@ -59,7 +61,7 @@ fun Editor(file: String, padding: PaddingValues) {
                     settings.javaScriptEnabled = true
 
                     addJavascriptInterface(IOBridge(file), "IOBridge")
-                    loadUrl(file.buildEditorURL())
+                    loadUrl(file.buildEditorURL(timeout))
                 }
             }
         )

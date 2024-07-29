@@ -210,7 +210,7 @@ fun HomeScreen(
                                 if (!isBound) return@IconButton
                                 if (!service.isRunning)
                                     service.exec(
-                                        jekyll("serve", "-l").bundlerPrefixed(),
+                                        jekyll("serve", "-l").bundlerPrefixed(context),
                                         homeViewModel.cwd.value.let { it.getProjectDir() ?: it }
                                     )
                                 else

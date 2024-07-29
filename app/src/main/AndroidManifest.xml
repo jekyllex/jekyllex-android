@@ -32,6 +32,7 @@
             android:exported="false"
             android:launchMode="singleTask"
             android:theme="@style/Theme.JekyllEx" />
+
         <activity
             android:name=".ui.activities.home.HomeActivity"
             android:exported="true"
@@ -49,6 +50,9 @@
             android:theme="@style/Theme.JekyllEx"
             android:name=".ui.activities.editor.EditorActivity"
             android:parentActivityName=".ui.activities.home.HomeActivity" />
-    </application>
 
+        <activity
+            android:exported="false"
+            android:name=".ui.activities.settings.SettingsActivity" />
+    </application>
 </manifest>
