@@ -91,8 +91,13 @@ class BootstrapInstaller : ComponentActivity() {
     override fun onStart() {
         super.onStart()
 
-        if (NativeUtils.areUsable(requiredBinaries)) {
+        val forceInstall = intent.getBooleanExtra("force", false)
+        if (!forceInstall && NativeUtils.areUsable(requiredBinaries)) {
             Log.d(LOG_TAG, "Required tools already set up. Aborting re-installation...")
+            startActivity(
+                Intent(this, HomeActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            )
             finish()
             return
         }

@@ -17,9 +17,15 @@
     </string>
     <string name="title_activity_editor">EditorActivity</string>
 
+    <string name="bootstrap_setting_title">Fix binaries</string>
+    <string name="bootstrap_setting_summary">
+        Attempt to re-install bundled binaries (ruby, coreutils, gems, etc.) if they go
+        missing or corrupted.
+    </string>
+
     <string name="debounce_setting_title">Editor delay</string>
     <string name="debounce_setting_summary">
-        Time in seconds to wait before saving changes to the file being edited (debounce delay).
+        Time to wait before saving changes to the file being edited (debounce delay).
     </string>
 
     <string name="prefix_bundler_title">Prefix bundler</string>

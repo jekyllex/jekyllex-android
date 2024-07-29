@@ -43,10 +43,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import me.zhanghai.compose.preference.checkboxPreference
+import me.zhanghai.compose.preference.preference
 import me.zhanghai.compose.preference.sliderPreference
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.theme.JekyllExTheme
+import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting.DEBOUNCE_DELAY
 import xyz.jekyllex.utils.Setting.PREFIX_BUNDLER
 
@@ -88,6 +90,18 @@ fun SettingsView() {
             LazyColumn(
                 modifier = Modifier.padding(padding)
             ) {
+                preference(
+                    key = "install_bootstrap",
+                    onClick = { NativeUtils.launchInstaller(context, true) },
+                    title = { Text(context.getString(R.string.bootstrap_setting_title)) },
+                    summary = {
+                        Text(
+                            context.getString(R.string.bootstrap_setting_summary),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                )
+
                 checkboxPreference(
                     key = PREFIX_BUNDLER.key,
                     defaultValue = PREFIX_BUNDLER.defaultValue.get(),
@@ -105,7 +119,7 @@ fun SettingsView() {
                     defaultValue = DEBOUNCE_DELAY.defaultValue.get(),
                     valueRange = .25f..3f,
                     key = DEBOUNCE_DELAY.key,
-                    valueText = { Text(text = "%.2f".format(it)) },
+                    valueText = { Text(text = "%.2fs".format(it)) },
                     title = { Text(context.getString(R.string.debounce_setting_title)) },
                     summary = {
                         Text(

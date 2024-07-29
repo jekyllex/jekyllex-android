@@ -38,12 +38,15 @@ class NativeUtils {
     companion object {
         const val LOG_TAG = "NativeUtils"
 
-        fun launchInstaller(context: Activity) {
+        fun launchInstaller(context: Activity, force: Boolean = false) {
             Log.d(LOG_TAG, "Launching bootstrap installer activity")
 
             context.startActivity(
                 Intent(context, BootstrapInstaller::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    .putExtra("force", force)
+                    .addFlags(
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    )
             )
 
             context.finish()
