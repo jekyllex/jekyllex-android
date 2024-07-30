@@ -94,7 +94,7 @@ fun String.buildPreviewURL(): String =
 
 fun buildServeCommand(prefixBundler: Boolean = true, livereload: Boolean = true): Array<String> {
     val command = prefixBundler.let {
-        if (it) bundle("exec", "jekyll", "serve")
+        if (it) bundle("exec", *jekyll("serve"))
         else jekyll("serve")
     }.toMutableList()
 
