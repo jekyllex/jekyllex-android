@@ -85,8 +85,10 @@ import xyz.jekyllex.utils.Commands.Companion.rmDir
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.requiredBinaries
 import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.Setting
+import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.Utils
-import xyz.jekyllex.utils.bundlerPrefixed
+import xyz.jekyllex.utils.buildServeCommand
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
 import java.io.File
@@ -169,6 +171,8 @@ fun HomeScreen(
     val context = LocalContext.current
     var showTerminalSheet by remember { mutableStateOf(false) }
 
+    val settings = Settings(context)
+
     BackHandler(
         enabled = homeViewModel.cwd.value.contains("$HOME_DIR/")
     ) { homeViewModel.cd("..") }
@@ -210,7 +214,10 @@ fun HomeScreen(
                                 if (!isBound) return@IconButton
                                 if (!service.isRunning)
                                     service.exec(
-                                        jekyll("serve", "-l").bundlerPrefixed(context),
+                                        buildServeCommand(
+                                            settings.get(Setting.PREFIX_BUNDLER),
+                                            settings.get(Setting.LIVERELOAD)
+                                        ),
                                         homeViewModel.cwd.value.let { it.getProjectDir() ?: it }
                                     )
                                 else

@@ -47,7 +47,7 @@ import xyz.jekyllex.utils.Commands.Companion.jekyll
 import xyz.jekyllex.utils.Commands.Companion.rm
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
-import xyz.jekyllex.utils.bundlerPrefixed
+import xyz.jekyllex.utils.buildServeCommand
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getProjectDir
 
@@ -97,6 +97,8 @@ fun EditorView(file: String = "", timeout: Int) {
     val context = LocalContext.current as Activity
     var showTerminalSheet by remember { mutableStateOf(false) }
 
+    val settings = Settings(context)
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -139,8 +141,10 @@ fun EditorView(file: String = "", timeout: Int) {
                             if (!service.isRunning)
                                 file.getProjectDir()?.let { dir ->
                                     service.exec(
-                                        jekyll("serve", "-l").bundlerPrefixed(context),
-                                        dir
+                                        buildServeCommand(
+                                            settings.get(Setting.PREFIX_BUNDLER),
+                                            settings.get(Setting.LIVERELOAD)
+                                        ), dir
                                     )
                                 }
                             else
@@ -180,7 +184,10 @@ fun EditorView(file: String = "", timeout: Int) {
                 1 -> Preview( file, isBound.value && service.isRunning, innerPadding) {
                     file.getProjectDir()?.let { dir ->
                         service.exec(
-                            jekyll("serve", "-l").bundlerPrefixed(context), dir
+                            buildServeCommand(
+                                settings.get(Setting.PREFIX_BUNDLER),
+                                settings.get(Setting.LIVERELOAD)
+                            ), dir
                         )
                     }
                 }

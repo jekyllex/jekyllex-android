@@ -28,6 +28,7 @@ import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -44,13 +45,14 @@ import androidx.compose.ui.unit.dp
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import me.zhanghai.compose.preference.checkboxPreference
 import me.zhanghai.compose.preference.preference
+import me.zhanghai.compose.preference.preferenceCategory
+import me.zhanghai.compose.preference.preferenceTheme
 import me.zhanghai.compose.preference.sliderPreference
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.Setting.DEBOUNCE_DELAY
-import xyz.jekyllex.utils.Setting.PREFIX_BUNDLER
+import xyz.jekyllex.utils.Setting.*
 
 class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,32 +88,57 @@ fun SettingsView() {
             )
         }
     ) { padding ->
-        ProvidePreferenceLocals {
+        ProvidePreferenceLocals(
+            theme = preferenceTheme(
+                summaryTextStyle = MaterialTheme.typography.labelSmall,
+                categoryTextStyle = MaterialTheme.typography.labelMedium,
+                categoryPadding = PaddingValues(
+                    start = 16.dp, top = 24.dp, end = 16.dp, bottom = 4.dp
+                )
+            )
+        ) {
             LazyColumn(
                 modifier = Modifier.padding(padding)
             ) {
+                preferenceCategory(
+                    key = "general_settings",
+                    title = { Text("General") }
+                )
+
                 preference(
                     key = "install_bootstrap",
                     onClick = { NativeUtils.launchInstaller(context, true) },
                     title = { Text(context.getString(R.string.bootstrap_setting_title)) },
                     summary = {
-                        Text(
-                            context.getString(R.string.bootstrap_setting_summary),
-                            style = MaterialTheme.typography.labelSmall
-                        )
+                        Text(context.getString(R.string.bootstrap_setting_summary))
                     }
+                )
+
+                preferenceCategory(
+                    key = "jekyll_settings",
+                    title = { Text("Jekyll") }
                 )
 
                 checkboxPreference(
                     key = PREFIX_BUNDLER.key,
                     defaultValue = PREFIX_BUNDLER.defaultValue.get(),
                     title = { Text(context.getString(R.string.prefix_bundler_title)) },
+                    summary = { Text(context.getString(R.string.prefix_bundler_summary)) },
+                )
+
+                checkboxPreference(
+                    key = LIVERELOAD.key,
+                    defaultValue = LIVERELOAD.defaultValue.get(),
+                    title = { Text(context.getString(R.string.livereload_title)) },
                     summary = {
-                        Text(
-                            context.getString(R.string.prefix_bundler_summary),
-                            style = MaterialTheme.typography.labelSmall
-                        )
+                        Text(context.getString(R.string.livereload_summary))
                     },
+                )
+
+                preferenceCategory(
+                    key = "editor_settings",
+                    title = { Text("Editor") },
+                    modifier = Modifier.padding(bottom = 0.dp)
                 )
 
                 sliderPreference(
@@ -121,12 +148,7 @@ fun SettingsView() {
                     key = DEBOUNCE_DELAY.key,
                     valueText = { Text(text = "%.2fs".format(it)) },
                     title = { Text(context.getString(R.string.debounce_setting_title)) },
-                    summary = {
-                        Text(
-                            context.getString(R.string.debounce_setting_summary),
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    },
+                    summary = { Text(context.getString(R.string.debounce_setting_summary)) },
                 )
             }
         }

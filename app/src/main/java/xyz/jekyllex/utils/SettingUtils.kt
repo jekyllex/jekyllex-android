@@ -53,6 +53,10 @@ sealed class SettingType {
 }
 
 enum class Setting(val key: String, val defaultValue: SettingType) {
+    // Editor
     DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
+
+    // Jekyll
+    LIVERELOAD("enable_livereload", SettingType.BooleanValue(true)),
     PREFIX_BUNDLER("prefix_bundler", SettingType.BooleanValue(true)),
 }

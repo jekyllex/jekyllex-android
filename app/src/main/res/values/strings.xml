@@ -23,13 +23,19 @@
         missing or corrupted.
     </string>
 
-    <string name="debounce_setting_title">Editor delay</string>
-    <string name="debounce_setting_summary">
-        Time to wait before saving changes to the file being edited (debounce delay).
-    </string>
-
     <string name="prefix_bundler_title">Prefix bundler</string>
     <string name="prefix_bundler_summary">
         Prefix jekyll serve command with \"bundle exec\"
+    </string>
+
+    <string name="livereload_title">Live reload</string>
+    <string name="livereload_summary">
+        Enable livereload when jekyll serve command is executed. Auto appends
+        \"-l\" to the \"jekyll serve\" command.
+    </string>
+
+    <string name="debounce_setting_title">Save delay</string>
+    <string name="debounce_setting_summary">
+        Time to wait before saving changes to the file being edited (debounce delay).
     </string>
 </resources>
