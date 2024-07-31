@@ -23,6 +23,18 @@
         missing or corrupted.
     </string>
 
+    <string name="git_name_title">Name</string>
+    <string name="git_name_summary">
+        Global name to use for git operations.
+    </string>
+
+    <string name="git_email_title">Email</string>
+    <string name="git_email_summary">
+        Global email to use for git operations.
+    </string>
+
+    <string name="github_pat_title">GitHub access token</string>
+
     <string name="prefix_bundler_title">Prefix bundler</string>
     <string name="prefix_bundler_summary">
         Prefix jekyll serve command with \"bundle exec\"

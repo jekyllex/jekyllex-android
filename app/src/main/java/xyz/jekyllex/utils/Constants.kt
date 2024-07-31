@@ -37,6 +37,7 @@ class Constants {
         const val WEBVIEW_CACHE = "$PREFIX/app_webview"
         const val EDITOR_URL = "https://editor.jekyllex.xyz"
         const val PREVIEW_URL = "http://localhost:4000"
+        const val PAT_SETTINGS_URL = "https://github.com/settings/tokens/new"
 
         val requiredBinaries = arrayOf("ruby", "gem", "bundler", "jekyll")
 

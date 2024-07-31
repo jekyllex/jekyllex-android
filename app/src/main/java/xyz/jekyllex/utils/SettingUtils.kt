@@ -56,6 +56,11 @@ sealed class SettingType {
 }
 
 enum class Setting(val key: String, val defaultValue: SettingType) {
+    // Git
+    GIT_NAME("git_name", SettingType.StringValue("")),
+    GIT_EMAIL("git_email", SettingType.StringValue("")),
+    GITHUB_PAT("github_pat", SettingType.StringValue("")),
+
     // Editor
     DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
 
