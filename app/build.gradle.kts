@@ -263,23 +263,23 @@ tasks {
         doFirst {
             setupBootstrap(
                 "aarch64",
-                "6862d6b545de050791321e13c157a2e1a50eb29ab7698345626d55f3dc92ee42",
-                "v0.1.0"
+                "c7863b6e7830307099f89a8af4412b68191ae3c758ec0ad5a14a5279297b7089",
+                "v0.1.1"
             )
             setupBootstrap(
                 "arm",
-                "1e509958eea7dde58892db8264375238c06a4c57d4f7b69cab3292d5a77042b4",
-                "v0.1.0"
+                "bd53af8125ca969b476eaa22cec6918acaf60f272d70058cd46e95989765b8db",
+                "v0.1.1"
             )
             setupBootstrap(
                 "i686",
-                "dc61c525a52f3ed466d946fc4df42e43aac35aab32629e7fba5e8602d1f9b4f2",
-                "v0.1.0"
+                "d4eb484288e01e31a824852d659482e6c4254360fdd18ca23a93c6b57f9a6151",
+                "v0.1.1"
             )
             setupBootstrap(
                 "x86_64",
-                "5a0f49f6ac3242724821801d8849d113ecc0e6ba12df4aa1a3b9773ebe219cf8",
-                "v0.1.0"
+                "740380a397636b8e93ff13c73a9d25e6b3503a18fecd7af7861638e1417442f4",
+                "v0.1.1"
             )
         }
     }
