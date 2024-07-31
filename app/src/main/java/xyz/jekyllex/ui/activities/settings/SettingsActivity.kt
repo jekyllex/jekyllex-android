@@ -48,6 +48,7 @@ import me.zhanghai.compose.preference.preference
 import me.zhanghai.compose.preference.preferenceCategory
 import me.zhanghai.compose.preference.preferenceTheme
 import me.zhanghai.compose.preference.sliderPreference
+import me.zhanghai.compose.preference.textFieldPreference
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.theme.JekyllExTheme
@@ -132,6 +133,18 @@ fun SettingsView() {
                     title = { Text(context.getString(R.string.livereload_title)) },
                     summary = {
                         Text(context.getString(R.string.livereload_summary))
+                    },
+                )
+
+                textFieldPreference(
+                    key = JEKYLL_FLAGS.key,
+                    textToValue = { it },
+                    valueToText = { it },
+                    defaultValue = JEKYLL_FLAGS.defaultValue.get(),
+                    title = { Text(context.getString(R.string.jekyll_flags_title)) },
+                    summary = {
+                        Text(context.getString(R.string.jekyll_flags_summary))
+                        it.takeIf { it.isNotBlank() }?.let { flag -> Text(flag) }
                     },
                 )
 

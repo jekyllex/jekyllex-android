@@ -92,13 +92,15 @@ fun String.buildEditorURL(timeout: Int = DEBOUNCE_DELAY.defaultValue.get()): Str
 fun String.buildPreviewURL(): String =
     PREVIEW_URL + this.let { if ((it.getOrNull(0) ?: "") == '/') it else "/$it" }
 
-fun buildServeCommand(prefixBundler: Boolean = true, livereload: Boolean = true): Array<String> {
-    val command = prefixBundler.let {
+fun buildServeCommand(context: Context): Array<String> {
+    val settings = Settings(context)
+    val command = settings.get<Boolean>(Setting.PREFIX_BUNDLER).let {
         if (it) bundle("exec", *jekyll("serve"))
         else jekyll("serve")
     }.toMutableList()
 
-    if (livereload) command.add("-l")
+    if (settings.get(Setting.LIVERELOAD)) command.add("-l")
+    command.addAll(settings.get<String>(Setting.JEKYLL_FLAGS).split(" "))
 
     return command.toTypedArray()
 }

@@ -34,6 +34,11 @@
         \"-l\" to the \"jekyll serve\" command.
     </string>
 
+    <string name="jekyll_flags_title">Additional flags</string>
+    <string name="jekyll_flags_summary">
+        Space separated list of additional flags to pass to the \"jekyll serve\" command.
+    </string>
+
     <string name="debounce_setting_title">Save delay</string>
     <string name="debounce_setting_summary">
         Time to wait before saving changes to the file being edited (debounce delay).

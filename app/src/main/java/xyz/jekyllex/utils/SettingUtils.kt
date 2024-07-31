@@ -35,6 +35,7 @@ class Settings(context: Context) {
     fun <T> get(setting: Setting): T {
         return when (val type = setting.defaultValue) {
             is SettingType.FloatValue -> sharedPreferences.getFloat(setting.key, type.value) as T
+            is SettingType.StringValue -> sharedPreferences.getString(setting.key, type.value) as T
             is SettingType.BooleanValue -> sharedPreferences.getBoolean(setting.key, type.value) as T
         }
     }
@@ -44,11 +45,13 @@ sealed class SettingType {
     inline fun <reified T> get(): T {
         return when (this) {
             is FloatValue -> value as T
+            is StringValue -> value as T
             is BooleanValue -> value as T
         }
     }
 
     data class FloatValue(val value: Float) : SettingType()
+    data class StringValue(val value: String) : SettingType()
     data class BooleanValue(val value: Boolean) : SettingType()
 }
 
@@ -57,6 +60,7 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
 
     // Jekyll
+    JEKYLL_FLAGS("jekyll_flags", SettingType.StringValue("")),
     LIVERELOAD("enable_livereload", SettingType.BooleanValue(true)),
     PREFIX_BUNDLER("prefix_bundler", SettingType.BooleanValue(true)),
 }

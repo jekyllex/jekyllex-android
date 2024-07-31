@@ -43,7 +43,6 @@ import xyz.jekyllex.ui.activities.editor.components.Preview
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.TerminalSheet
-import xyz.jekyllex.utils.Commands.Companion.jekyll
 import xyz.jekyllex.utils.Commands.Companion.rm
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
@@ -97,8 +96,6 @@ fun EditorView(file: String = "", timeout: Int) {
     val context = LocalContext.current as Activity
     var showTerminalSheet by remember { mutableStateOf(false) }
 
-    val settings = Settings(context)
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -140,12 +137,7 @@ fun EditorView(file: String = "", timeout: Int) {
                         runServer = {
                             if (!service.isRunning)
                                 file.getProjectDir()?.let { dir ->
-                                    service.exec(
-                                        buildServeCommand(
-                                            settings.get(Setting.PREFIX_BUNDLER),
-                                            settings.get(Setting.LIVERELOAD)
-                                        ), dir
-                                    )
+                                    service.exec(buildServeCommand(context), dir)
                                 }
                             else
                                 service.killProcess()
@@ -183,12 +175,7 @@ fun EditorView(file: String = "", timeout: Int) {
                 0 -> Editor(file, timeout, innerPadding)
                 1 -> Preview( file, isBound.value && service.isRunning, innerPadding) {
                     file.getProjectDir()?.let { dir ->
-                        service.exec(
-                            buildServeCommand(
-                                settings.get(Setting.PREFIX_BUNDLER),
-                                settings.get(Setting.LIVERELOAD)
-                            ), dir
-                        )
+                        service.exec(buildServeCommand(context), dir)
                     }
                 }
             }
