@@ -36,6 +36,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -53,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import xyz.jekyllex.utils.toCommand
@@ -72,6 +75,19 @@ fun TerminalSheet(
 
     LaunchedEffect(logs.size) {
         listState.animateScrollToItem(logs.size)
+    }
+
+    fun run() {
+        if (isRunning) {
+            Toast.makeText(
+                context,
+                "A process is already running",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+        exec(text.toCommand())
+        text = ""
     }
 
     ModalBottomSheet(
@@ -121,6 +137,8 @@ fun TerminalSheet(
                         singleLine = true,
                         onValueChange = { text = it },
                         placeholder = { Text("Enter a command") },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { run() }),
                         modifier = Modifier
                             .weight(1.0f)
                             .padding(end = 8.dp),
@@ -129,18 +147,7 @@ fun TerminalSheet(
                         enabled = text.isNotBlank(),
                         modifier = Modifier
                             .align(Alignment.CenterVertically),
-                        onClick = run@{
-                            if (isRunning) {
-                                Toast.makeText(
-                                    context,
-                                    "A process is already running",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                return@run
-                            }
-                            exec(text.toCommand())
-                            text = ""
-                        },
+                        onClick = { run() },
                     ) { Text(text = "Run") }
                 }
             Spacer(modifier = Modifier.navigationBarsPadding())
