@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,8 +25,10 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -156,6 +159,8 @@ fun EditorView(file: String = "", timeout: Int) {
     ) { innerPadding ->
         val tabs = listOf("Editor", "Preview")
         var tabIndex by remember { mutableIntStateOf(0) }
+        val viewCache = remember { mutableStateMapOf<Int, WebView>() }
+        val canPreview by remember { derivedStateOf { isBound.value && service.isRunning } }
 
         Column(
             modifier = Modifier
@@ -172,8 +177,8 @@ fun EditorView(file: String = "", timeout: Int) {
             }
 
             when (tabIndex) {
-                0 -> Editor(file, timeout, innerPadding)
-                1 -> Preview( file, isBound.value && service.isRunning, innerPadding) {
+                0 -> Editor(viewCache, file, timeout, innerPadding)
+                1 -> Preview(viewCache, file, canPreview, innerPadding) {
                     file.getProjectDir()?.let { dir ->
                         service.exec(buildServeCommand(context), dir)
                     }

@@ -39,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -54,7 +55,13 @@ import xyz.jekyllex.utils.buildPreviewURL
 import xyz.jekyllex.utils.trimQuotes
 
 @Composable
-fun Preview(file: String, canPreview: Boolean, padding: PaddingValues, runServer: () -> Unit = {}) {
+fun Preview(
+    viewCache: SnapshotStateMap<Int, WebView>,
+    file: String,
+    canPreview: Boolean,
+    padding: PaddingValues,
+    runServer: () -> Unit = {}
+) {
     if (!canPreview)
         Column(
             modifier = Modifier
@@ -83,34 +90,38 @@ fun Preview(file: String, canPreview: Boolean, padding: PaddingValues, runServer
     else
         Surface {
             AndroidView(
-                modifier = Modifier.fillMaxSize().consumeWindowInsets(padding).imePadding(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .consumeWindowInsets(padding)
+                    .imePadding(),
                 factory = {
-                    WebView(it).apply {
-                        this.layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
+                    viewCache.getOrPut(1) {
+                        WebView(it).apply {
+                            this.layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
 
-                        webViewClient = WebViewClient(file)
-                        webChromeClient = WebViewChromeClient()
+                            webViewClient = WebViewClient(file)
+                            webChromeClient = WebViewChromeClient()
 
-                        settings.javaScriptEnabled = true
+                            settings.javaScriptEnabled = true
+
+                            val properties = NativeUtils.exec(
+                                getFromYAML(
+                                    file.substringAfter("$HOME_DIR/"),
+                                    "permalink"
+                                )
+                            ).split("\n").map { prop ->
+                                if (prop == "nil") ""
+                                else prop.trimQuotes()
+                            }
+
+                            NativeUtils.exec(rmDir(WEBVIEW_CACHE))
+                            loadUrl(properties[0].buildPreviewURL())
+                        }
                     }
                 },
-                update = {
-                    val properties = NativeUtils.exec(
-                        getFromYAML(
-                            file.substringAfter("$HOME_DIR/"),
-                            "permalink"
-                        )
-                    ).split("\n").map { prop ->
-                        if (prop == "nil") ""
-                        else prop.trimQuotes()
-                    }
-
-                    NativeUtils.exec(rmDir(WEBVIEW_CACHE))
-                    it.loadUrl(properties[0].buildPreviewURL())
-                }
             )
         }
 }

@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import xyz.jekyllex.ui.activities.editor.webview.IOBridge
@@ -44,24 +45,34 @@ import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.buildEditorURL
 
 @Composable
-fun Editor(file: String, timeout: Int, padding: PaddingValues) {
+fun Editor(
+    viewCache: SnapshotStateMap<Int, WebView>,
+    file: String,
+    timeout: Int,
+    padding: PaddingValues
+) {
     Surface {
         AndroidView(
-            modifier = Modifier.fillMaxSize().consumeWindowInsets(padding).imePadding(),
+            modifier = Modifier
+                .fillMaxSize()
+                .consumeWindowInsets(padding)
+                .imePadding(),
             factory = {
-                WebView(it).apply {
-                    this.layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
+                viewCache.getOrPut(0) {
+                    WebView(it).apply {
+                        this.layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
 
-                    webViewClient = WebViewClient(file)
-                    webChromeClient = WebViewChromeClient()
+                        webViewClient = WebViewClient(file)
+                        webChromeClient = WebViewChromeClient()
 
-                    settings.javaScriptEnabled = true
+                        settings.javaScriptEnabled = true
 
-                    addJavascriptInterface(IOBridge(file), "IOBridge")
-                    loadUrl(file.buildEditorURL(timeout))
+                        addJavascriptInterface(IOBridge(file), "IOBridge")
+                        loadUrl(file.buildEditorURL(timeout))
+                    }
                 }
             }
         )
