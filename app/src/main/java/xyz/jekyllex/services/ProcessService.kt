@@ -209,7 +209,7 @@ class ProcessService : Service() {
             .Builder(this, getString(R.string.process_notifications_id))
             .setContentTitle(getText(R.string.notification_text_title))
             .setContentText(getText(R.string.notification_text_waiting))
-            .setSmallIcon(android.R.drawable.ic_delete)
+            .setSmallIcon(R.drawable.ic_notif_logo)
             .setOngoing(true)
             .setShowWhen(false)
             .setColor(-0x9f8275)
@@ -231,7 +231,7 @@ class ProcessService : Service() {
             notifBuilder.setContentText("Currently running:\n$runningCommand")
 
             notifBuilder.addAction(
-                android.R.drawable.ic_delete,
+                R.drawable.ic_notif_logo,
                 getString(R.string.notification_action_kill),
                 PendingIntent.getService(
                     this,
