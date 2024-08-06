@@ -104,3 +104,30 @@ fun buildServeCommand(context: Context): Array<String> {
 
     return command.toTypedArray()
 }
+
+fun String.toCommand(): Array<String> {
+    val command = mutableListOf<String>()
+    val currentArg = StringBuilder()
+    var inDoubleQuotes = false
+    var inSingleQuotes = false
+
+    for (char in this) {
+        when {
+            char == ' ' && !inDoubleQuotes && !inSingleQuotes -> {
+                if (currentArg.isNotEmpty()) {
+                    command.add(currentArg.toString())
+                    currentArg.clear()
+                }
+            }
+            char == '"' -> inDoubleQuotes = !inDoubleQuotes
+            char == '\'' -> inSingleQuotes = !inSingleQuotes
+            else -> currentArg.append(char)
+        }
+    }
+
+    if (currentArg.isNotEmpty()) {
+        command.add(currentArg.toString())
+    }
+
+    return command.toTypedArray()
+}

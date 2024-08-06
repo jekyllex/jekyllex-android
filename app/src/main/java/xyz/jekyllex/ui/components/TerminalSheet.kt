@@ -55,6 +55,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import xyz.jekyllex.utils.toCommand
 
 @Composable
 fun TerminalSheet(
@@ -137,7 +138,7 @@ fun TerminalSheet(
                                 ).show()
                                 return@run
                             }
-                            exec(text.split(" ").toTypedArray())
+                            exec(text.toCommand())
                             text = ""
                         },
                     ) { Text(text = "Run") }
