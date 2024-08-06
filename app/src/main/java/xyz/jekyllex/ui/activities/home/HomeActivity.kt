@@ -85,10 +85,10 @@ import xyz.jekyllex.utils.Commands.Companion.rmDir
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.requiredBinaries
 import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.Utils
 import xyz.jekyllex.utils.buildServeCommand
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
+import xyz.jekyllex.utils.removeSymlinks
 import java.io.File
 
 private var isBound: Boolean = false
@@ -154,7 +154,7 @@ private fun create(input: String, callBack: () -> Unit = {}) {
 
     service.exec(command) {
         if (command.contentEquals(jekyll("new", input))) {
-            Utils.removeSymlinks(File(HOME_DIR, input))
+            File(HOME_DIR, input).removeSymlinks()
         }
 
         isCreating.value = false

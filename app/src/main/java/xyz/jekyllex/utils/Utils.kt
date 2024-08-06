@@ -26,20 +26,19 @@ package xyz.jekyllex.utils
 
 import java.io.File
 
-class Utils {
-    companion object {
-        fun removeSymlinks(file: File) {
-            if (file.isDirectory) {
-                file.listFiles()?.forEach { removeSymlinks(it) }
-            } else {
-                if (file.canonicalPath != file.absolutePath) {
-                    file.apply {
-                        val text = readText()
-                        delete()
-                        createNewFile()
-                        writeText(text)
-                    }
-                }
+private val denyList = arrayOf("ls", "ln", "cd")
+fun Array<String>.isDenied(): Boolean = this.any { it in denyList }
+
+fun File.removeSymlinks() {
+    if (this.isDirectory) {
+        this.listFiles()?.forEach { it.removeSymlinks() }
+    } else {
+        if (this.canonicalPath != this.absolutePath) {
+            this.apply {
+                val text = readText()
+                delete()
+                createNewFile()
+                writeText(text)
             }
         }
     }
