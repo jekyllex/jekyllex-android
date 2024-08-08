@@ -100,6 +100,7 @@ private lateinit var service: ProcessService
 private var isCreating = mutableStateOf(false)
 
 class HomeActivity : ComponentActivity() {
+    private lateinit var settings: Settings
     private lateinit var viewModel: HomeViewModel
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
@@ -123,9 +124,10 @@ class HomeActivity : ComponentActivity() {
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
 
+        settings = Settings(this)
         viewModel = viewModels<HomeViewModel>(
             factoryProducer = {
-                HomeViewModel.Factory(Settings(this).get(Setting.REDUCE_ANIMATIONS))
+                HomeViewModel.Factory(settings.get(Setting.REDUCE_ANIMATIONS))
             }
         ).value
 
@@ -134,6 +136,17 @@ class HomeActivity : ComponentActivity() {
                 HomeScreen(viewModel)
             }
         }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+
+        if (::viewModel.isInitialized && ::settings.isInitialized)
+            viewModel.setSkipAnimation(
+                settings.get(Setting.REDUCE_ANIMATIONS)
+            )
+
+        if (::viewModel.isInitialized) viewModel.refresh()
     }
 
     override fun onDestroy() {
@@ -148,7 +161,7 @@ private fun create(input: String, callBack: () -> Unit = {}) {
 
     val command: Array<String> =
         if (input.startsWith("git clone ")) input.toCommand()
-        else{
+        else {
             val url = input.let {
                 if (it.contains("github.com") && !it.contains("://")) "https://$it"
                 else it
@@ -289,7 +302,7 @@ fun HomeScreen(
                             style = MaterialTheme.typography.labelSmall
                         )
                         Button(
-                            onClick = { create( "test") { homeViewModel.refresh() } },
+                            onClick = { create("test") { homeViewModel.refresh() } },
                             modifier = Modifier.padding(top = 16.dp),
                             elevation = ButtonDefaults.buttonElevation(
                                 defaultElevation = 4.dp

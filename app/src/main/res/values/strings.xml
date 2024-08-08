@@ -30,7 +30,7 @@
 
     <string name="reduce_animations_title">Reduce animations</string>
     <string name="reduce_animations_summary">
-        Skip rendering the file/folder details on the home page (restart required).
+        Skip rendering the file/folder details on the home page.
     </string>
 
     <string name="git_name_title">Name</string>

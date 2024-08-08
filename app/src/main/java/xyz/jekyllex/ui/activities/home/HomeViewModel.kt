@@ -48,7 +48,7 @@ import xyz.jekyllex.utils.mergeCommands
 import xyz.jekyllex.utils.toDate
 import xyz.jekyllex.utils.trimQuotes
 
-class HomeViewModel(private val skipAnimations: Boolean) : ViewModel() {
+class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
     companion object {
         const val LOG_TAG = "HomeViewModel"
     }
@@ -81,6 +81,10 @@ class HomeViewModel(private val skipAnimations: Boolean) : ViewModel() {
 
     init {
         cd(HOME_DIR)
+    }
+
+    fun setSkipAnimation(value: Boolean) {
+        skipAnimations = value
     }
 
     fun cd(dir: String) {
