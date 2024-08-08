@@ -28,6 +28,11 @@
         Try to trim command outputs to avoid excessive log sizes in the running session.
     </string>
 
+    <string name="reduce_animations_title">Reduce animations</string>
+    <string name="reduce_animations_summary">
+        Skip rendering the file/folder details on the home page (restart required).
+    </string>
+
     <string name="git_name_title">Name</string>
     <string name="git_name_summary">
         Global name to use for git operations.

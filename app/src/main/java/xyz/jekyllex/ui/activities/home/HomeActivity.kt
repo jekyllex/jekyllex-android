@@ -123,7 +123,11 @@ class HomeActivity : ComponentActivity() {
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
 
-        viewModel = viewModels<HomeViewModel>().value
+        viewModel = viewModels<HomeViewModel>(
+            factoryProducer = {
+                HomeViewModel.Factory(Settings(this).get(Setting.REDUCE_ANIMATIONS))
+            }
+        ).value
 
         setContent {
             JekyllExTheme {

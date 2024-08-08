@@ -131,6 +131,13 @@ fun SettingsView() {
                     summary = { Text(context.getString(R.string.trim_logs_summary)) },
                 )
 
+                switchPreference(
+                    key = REDUCE_ANIMATIONS.key,
+                    defaultValue = REDUCE_ANIMATIONS.defaultValue.get(),
+                    title = { Text(context.getString(R.string.reduce_animations_title)) },
+                    summary = { Text(context.getString(R.string.reduce_animations_summary)) },
+                )
+
                 sliderPreference(
                     valueSteps = 10,
                     defaultValue = DEBOUNCE_DELAY.defaultValue.get(),

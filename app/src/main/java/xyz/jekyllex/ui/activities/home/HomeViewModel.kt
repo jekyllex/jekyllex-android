@@ -27,6 +27,7 @@ package xyz.jekyllex.ui.activities.home
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -47,9 +48,19 @@ import xyz.jekyllex.utils.mergeCommands
 import xyz.jekyllex.utils.toDate
 import xyz.jekyllex.utils.trimQuotes
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(private val skipAnimations: Boolean) : ViewModel() {
     companion object {
         const val LOG_TAG = "HomeViewModel"
+    }
+
+    class Factory(private val skipAnimations: Boolean) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return HomeViewModel(skipAnimations) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
     }
 
     private var statsJob: Job? = null
@@ -96,7 +107,8 @@ class HomeViewModel : ViewModel() {
                 File(it, isDir = JFile("${_cwd.value}/$it").isDirectory)
             }
 
-            statsJob = viewModelScope.launch(Dispatchers.IO) { fetchStats() }
+            if (!skipAnimations)
+                statsJob = viewModelScope.launch(Dispatchers.IO) { fetchStats() }
 
             Log.d(LOG_TAG, "Available files in ${_cwd.value}: $files")
         } catch (e: Exception) {
@@ -135,10 +147,11 @@ class HomeViewModel : ViewModel() {
                 description = properties.getOrNull(1),
                 lastModified = stats.getOrNull(1)?.toDate(),
                 size = stats.getOrNull(0)?.split("\t")?.first(),
-                url = properties.getOrNull(2)?.let {
-                    url -> url + (properties.getOrNull(3) ?: "")
+                url = properties.getOrNull(2)?.let { url ->
+                    url + (properties.getOrNull(3) ?: "")
                 }
             )
         }
     }
 }
+
