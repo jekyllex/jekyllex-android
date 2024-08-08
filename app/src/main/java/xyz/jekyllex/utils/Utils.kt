@@ -27,6 +27,7 @@ package xyz.jekyllex.utils
 import java.io.File
 import android.content.Context
 import xyz.jekyllex.utils.Commands.Companion.git
+import xyz.jekyllex.utils.Commands.Companion.jekyll
 import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
 
 private val denyList = arrayOf("ls", "ln", "cd")
@@ -47,6 +48,13 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
                     )
                 }) {
                 git(true, *this.drop(1))
+            } else this
+        }
+
+        "jekyll" -> {
+            val skipBundle = settings.get<Boolean>(Setting.SKIP_BUNDLER)
+            if (skipBundle && this.any { it == "new" }) {
+                jekyll(*this.drop(1), "--skip-bundle")
             } else this
         }
 

@@ -45,6 +45,11 @@
         Append —progress flag to possible git commands.
     </string>
 
+    <string name="skip_bundler_title">Skip bundle install</string>
+    <string name="skip_bundler_summary">
+        Avoid \"bundle install\" for new projects. Uses the \"--skip-bundle\" flag.
+    </string>
+
     <string name="prefix_bundler_title">Prefix bundler</string>
     <string name="prefix_bundler_summary">
         Prefix jekyll serve command with \"bundle exec\"

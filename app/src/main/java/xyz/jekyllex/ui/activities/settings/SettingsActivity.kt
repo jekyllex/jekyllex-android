@@ -254,6 +254,13 @@ fun SettingsView() {
                 )
 
                 switchPreference(
+                    key = SKIP_BUNDLER.key,
+                    defaultValue = SKIP_BUNDLER.defaultValue.get(),
+                    title = { Text(context.getString(R.string.skip_bundler_title)) },
+                    summary = { Text(context.getString(R.string.skip_bundler_summary)) },
+                )
+
+                switchPreference(
                     key = PREFIX_BUNDLER.key,
                     defaultValue = PREFIX_BUNDLER.defaultValue.get(),
                     title = { Text(context.getString(R.string.prefix_bundler_title)) },
