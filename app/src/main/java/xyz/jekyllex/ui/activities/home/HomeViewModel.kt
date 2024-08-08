@@ -68,8 +68,9 @@ class HomeViewModel(private val skipAnimations: Boolean) : ViewModel() {
     private val _availableFiles = MutableStateFlow(listOf<File>())
 
     private val lsCmd
-        get() = (_cwd.value == HOME_DIR)
-            .let { if (it) "ls -d */" else "ls -a ${_cwd.value}" }
+        get() = (_cwd.value == HOME_DIR).let {
+            if (it) "ls -d */" else "ls -a ${_cwd.value.replace(" ", "\\ ")}"
+        }
 
     val cwd
         get() = _cwd
