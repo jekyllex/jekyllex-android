@@ -234,6 +234,18 @@ fun SettingsView() {
                     title = { Text("Jekyll") }
                 )
 
+                textFieldPreference(
+                    key = JEKYLL_ENV.key,
+                    textToValue = { it },
+                    valueToText = { it },
+                    defaultValue = JEKYLL_ENV.defaultValue.get(),
+                    title = { Text(context.getString(R.string.jekyll_env_title)) },
+                    summary = {
+                        Text(context.getString(R.string.jekyll_env_summary))
+                        Text(it)
+                    },
+                )
+
                 switchPreference(
                     key = PREFIX_BUNDLER.key,
                     defaultValue = PREFIX_BUNDLER.defaultValue.get(),
@@ -247,18 +259,6 @@ fun SettingsView() {
                     title = { Text(context.getString(R.string.livereload_title)) },
                     summary = {
                         Text(context.getString(R.string.livereload_summary))
-                    },
-                )
-
-                textFieldPreference(
-                    key = JEKYLL_ENV.key,
-                    textToValue = { it },
-                    valueToText = { it },
-                    defaultValue = JEKYLL_ENV.defaultValue.get(),
-                    title = { Text(context.getString(R.string.jekyll_env_title)) },
-                    summary = {
-                        Text(context.getString(R.string.jekyll_env_summary))
-                        Text(it)
                     },
                 )
 
