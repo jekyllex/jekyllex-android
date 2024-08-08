@@ -141,7 +141,7 @@ class ProcessService : Service() {
                 process = Runtime.getRuntime().exec(
                     if (command[0].contains("/bin")) command
                     else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1).toTypedArray()),
-                    buildEnvironment(dir),
+                    buildEnvironment(dir, this@ProcessService),
                     File(dir)
                 )
 

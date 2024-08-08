@@ -251,6 +251,18 @@ fun SettingsView() {
                 )
 
                 textFieldPreference(
+                    key = JEKYLL_ENV.key,
+                    textToValue = { it },
+                    valueToText = { it },
+                    defaultValue = JEKYLL_ENV.defaultValue.get(),
+                    title = { Text(context.getString(R.string.jekyll_env_title)) },
+                    summary = {
+                        Text(context.getString(R.string.jekyll_env_summary))
+                        Text(it)
+                    },
+                )
+
+                textFieldPreference(
                     key = JEKYLL_FLAGS.key,
                     textToValue = { it },
                     valueToText = { it },

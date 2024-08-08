@@ -51,6 +51,11 @@
         \"-l\" to the \"jekyll serve\" command.
     </string>
 
+    <string name="jekyll_env_title">Environment</string>
+    <string name="jekyll_env_summary">
+        Value for the JEKYLL_ENV environment variable
+    </string>
+
     <string name="jekyll_flags_title">Additional flags</string>
     <string name="jekyll_flags_summary">
         Space separated list of additional flags to pass to the \"jekyll serve\" command.

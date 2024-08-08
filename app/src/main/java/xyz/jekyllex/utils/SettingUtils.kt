@@ -69,4 +69,5 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     JEKYLL_FLAGS("jekyll_flags", SettingType.StringValue("")),
     LIVERELOAD("enable_livereload", SettingType.BooleanValue(true)),
     PREFIX_BUNDLER("prefix_bundler", SettingType.BooleanValue(true)),
+    JEKYLL_ENV("jekyll_env", SettingType.StringValue("development")),
 }

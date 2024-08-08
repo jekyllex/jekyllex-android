@@ -25,6 +25,7 @@
 package xyz.jekyllex.utils
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import java.io.File
 import android.util.Log
@@ -97,7 +98,7 @@ class NativeUtils {
             return output.trim()
         }
 
-        fun buildEnvironment(cwd: String): Array<String> {
+        fun buildEnvironment(cwd: String, context: Context? = null): Array<String> {
             ensureDirectoryExists(File(HOME_DIR))
 
             val environment: Array<String> = ArrayList<String>().apply {
@@ -107,6 +108,11 @@ class NativeUtils {
                 add("GEM_HOME=$GEM_DIR")
                 add("GEM_PATH=$GEM_DIR")
                 add("PATH=$BIN_DIR:${System.getenv("PATH")}")
+
+                context?.let {
+                    val settings = Settings(it)
+                    add("JEKYLL_ENV=${settings.get<String>(Setting.JEKYLL_ENV)}")
+                }
             }.toTypedArray()
 
             return environment
