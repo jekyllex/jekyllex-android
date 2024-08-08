@@ -32,19 +32,29 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import xyz.jekyllex.ui.components.DeleteDialog
 
 @Composable
 fun DropDownMenu(
-    serverItemText: String = "Start server",
     runServer: () -> Unit = {},
-    deleteFile: () -> Unit = {},
     openTerminal: () -> Unit = {},
+    serverItemText: String = "Start server",
+    deleteFile: () -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val openDeleteDialog = remember { mutableStateOf(false) }
+
+    if (openDeleteDialog.value) DeleteDialog(
+        dialogTitle = "Delete",
+        dialogText = "Are you sure you want to delete this file?",
+        onDismissRequest = { openDeleteDialog.value = false },
+        onConfirmation = { openDeleteDialog.value = false; deleteFile() },
+    )
 
     IconButton(onClick = { expanded = !expanded }) {
         Icon(
@@ -67,7 +77,7 @@ fun DropDownMenu(
         )
         DropdownMenuItem(
             text = { Text("Delete file") },
-            onClick = { deleteFile() }
+            onClick = { expanded = false; openDeleteDialog.value = true }
         )
     }
 }

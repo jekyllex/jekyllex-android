@@ -149,8 +149,7 @@ fun EditorView(file: String = "", timeout: Int) {
                             showTerminalSheet = true
                         },
                         deleteFile = {
-                            service.exec(rm(file))
-                            context.finish()
+                            service.exec(rm(file)) { context.finish() }
                         }
                     )
                 }

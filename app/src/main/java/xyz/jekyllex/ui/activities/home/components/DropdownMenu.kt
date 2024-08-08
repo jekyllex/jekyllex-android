@@ -44,11 +44,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import xyz.jekyllex.ui.activities.home.HomeViewModel
 import xyz.jekyllex.ui.activities.settings.SettingsActivity
+import xyz.jekyllex.ui.components.DeleteDialog
 import xyz.jekyllex.utils.Commands.Companion.bundle
 import xyz.jekyllex.utils.Commands.Companion.mkDir
 import xyz.jekyllex.utils.Commands.Companion.touch
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
-import xyz.jekyllex.utils.NativeUtils
 
 @Composable
 fun DropDownMenu(

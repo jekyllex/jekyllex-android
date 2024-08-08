@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.home.components
+package xyz.jekyllex.ui.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
