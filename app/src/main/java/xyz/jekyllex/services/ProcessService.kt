@@ -49,7 +49,6 @@ import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils.Companion.buildEnvironment
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
-import xyz.jekyllex.utils.equivalentTo
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.isDenied
 import xyz.jekyllex.utils.transform
@@ -130,8 +129,6 @@ class ProcessService : Service() {
             return
         }
 
-        val trimLogs = Settings(this@ProcessService).get<Boolean>(Setting.TRIM_LOGS)
-
         job = CoroutineScope(Dispatchers.IO).launch {
             if (_isRunning.value) {
                 appendLog("\nSome other process is already running\n")
@@ -159,9 +156,6 @@ class ProcessService : Service() {
                     try {
                         var out: String? = outputReader.readLine()
                         while (out != null) {
-                            if (trimLogs && out.equivalentTo(_logs.value.last(), 75)) {
-                                _logs.value = _logs.value.dropLast(1)
-                            }
                             appendLog(out)
                             out = outputReader.readLine()
                         }
@@ -174,9 +168,6 @@ class ProcessService : Service() {
                     try {
                         var err: String? = errorReader.readLine()
                         while (err != null) {
-                            if (trimLogs && err.equivalentTo(_logs.value.last(), 50)) {
-                                _logs.value = _logs.value.dropLast(1)
-                            }
                             appendLog(err)
                             err = errorReader.readLine()
                         }
@@ -213,6 +204,10 @@ class ProcessService : Service() {
 
         runningCommand = ""
         _isRunning.value = false
+
+        Settings(this@ProcessService).get<Boolean>(Setting.TRIM_LOGS).let {
+            if (it) _logs.value = _logs.value.takeLast(200)
+        }
 
         updateKillActionOnNotif()
     }

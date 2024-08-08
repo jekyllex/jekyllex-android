@@ -34,9 +34,6 @@ private val denyList = arrayOf("ls", "ln", "cd")
 fun Array<String>.isDenied(): Boolean = this.any { it in denyList }
 fun Array<String>.drop(n: Int): Array<String> = this.toList().drop(n).toTypedArray()
 
-fun String.equivalentTo(s: String, upto: Int): Boolean =
-    this.take((this.length * upto) / 100) == s.take((s.length * upto) / 100)
-
 fun Array<String>.transform(context: Context): Array<String> = this.let {
     val settings = Settings(context)
     val command = when (this.getOrNull(0)) {
