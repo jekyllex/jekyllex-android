@@ -30,7 +30,6 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import android.webkit.URLUtil
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -91,6 +90,7 @@ import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.buildServeCommand
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
+import xyz.jekyllex.utils.getFileName
 import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.utils.toCommand
 import java.io.File
@@ -325,14 +325,14 @@ fun HomeScreen(
                         FileButton(
                             file = files[it],
                             modifier = Modifier.padding(8.dp),
+                            refresh = { homeViewModel.refresh() },
                             onClick = {
                                 if (files[it].isDir == true)
-                                    homeViewModel.cd(files[it].name)
+                                    homeViewModel.cd(files[it].path.getFileName())
                                 else {
-                                    val file = "${homeViewModel.cwd.value}/${files[it].name}"
                                     context.startActivity(
                                         Intent(context, EditorActivity::class.java)
-                                            .putExtra("file", file)
+                                            .putExtra("file", files[it].path)
                                     )
                                 }
                             }

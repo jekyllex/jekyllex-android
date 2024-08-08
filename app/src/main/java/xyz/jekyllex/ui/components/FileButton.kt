@@ -40,6 +40,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +49,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -55,9 +59,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import java.io.File as JFile
 import xyz.jekyllex.R
 import xyz.jekyllex.models.File
 import xyz.jekyllex.utils.buildStatsString
+import xyz.jekyllex.utils.getFileName
 
 @Preview
 @Composable
@@ -65,8 +71,27 @@ fun FileButton(
     modifier: Modifier = Modifier,
     file: File = File("test"),
     onClick: () -> Unit = {},
+    refresh: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val openDeleteDialog = remember { mutableStateOf(false) }
+
+    if (openDeleteDialog.value) {
+        val jFile = JFile(file.path)
+
+        DeleteDialog(
+            dialogTitle = "Delete",
+            dialogText = "Are you sure you want to delete " +
+                    "this ${if (jFile.isDirectory) "folder" else "file"}?",
+            onDismissRequest = { openDeleteDialog.value = false },
+            onConfirmation = {
+                openDeleteDialog.value = false
+                if (jFile.isDirectory) jFile.deleteRecursively()
+                else jFile.delete()
+                refresh()
+            },
+        )
+    }
 
     OutlinedButton(
         onClick = onClick,
@@ -84,29 +109,38 @@ fun FileButton(
                     Text(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        text = file.title ?: file.name,
+                        text = file.title ?: file.path.getFileName(),
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Start,
                         modifier = Modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically)
                     )
-                    if (URLUtil.isValidUrl(file.url ?: ""))
-                        IconButton(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .align(Alignment.CenterVertically),
-                            onClick = {
-                                context.startActivity(
-                                    Intent(Intent.ACTION_VIEW, Uri.parse(file.url))
+                    Row(Modifier.align(Alignment.CenterVertically)) {
+                        if (URLUtil.isValidUrl(file.url ?: ""))
+                            IconButton(
+                                modifier = Modifier.size(24.dp).padding(end = 4.dp),
+                                onClick = {
+                                    context.startActivity(
+                                        Intent(Intent.ACTION_VIEW, Uri.parse(file.url))
+                                    )
+                                }
+                            ) {
+                                Icon(
+                                    painterResource(id = R.drawable.open_url),
+                                    "Open in browser",
                                 )
                             }
+                        IconButton(
+                            modifier = Modifier.size(24.dp),
+                            onClick = { openDeleteDialog.value = true }
                         ) {
                             Icon(
-                                painterResource(id = R.drawable.open_url),
-                                "Open in browser",
+                                Icons.Outlined.Delete,
+                                "Delete",
                             )
                         }
+                    }
                 }
                 AnimatedContent(
                     label = "Description animation",
@@ -129,7 +163,7 @@ fun FileButton(
                     Text(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        text = "./${file.name}",
+                        text = "./${file.path.getFileName()}",
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Start,
                         modifier = Modifier.padding(top = 8.dp)

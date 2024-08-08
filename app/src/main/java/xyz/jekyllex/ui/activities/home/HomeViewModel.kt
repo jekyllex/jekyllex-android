@@ -111,7 +111,10 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
             _availableFiles.value = files
                 .filter { it !in listOf(".", "..", ".git") }
                 .map {
-                    File(it, isDir = JFile("${_cwd.value}/$it").isDirectory)
+                    File(
+                        "${_cwd.value}/$it",
+                        isDir = JFile("${_cwd.value}/$it").isDirectory
+                    )
                 }
 
             if (!skipAnimations)
@@ -130,17 +133,16 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
             val stats = NativeUtils.exec(
                 shell(
                     mergeCommands(
-                        diskUsage("-sh", it.name),
-                        stat("-c", "%Y", it.name)
+                        diskUsage("-sh", it.path),
+                        stat("-c", "%Y", it.path)
                     )
-                ),
-                _cwd.value
+                )
             ).split("\n")
 
             val properties =
                 if (_cwd.value == HOME_DIR) NativeUtils.exec(
                     getFromYAML(
-                        "${it.name}/_config.yml",
+                        "${it.path}/_config.yml",
                         "title", "description", "url", "baseurl"
                     )
                 ).split("\n").map { prop ->
