@@ -124,6 +124,16 @@ fun SettingsView() {
                     }
                 )
 
+                sliderPreference(
+                    valueSteps = 10,
+                    defaultValue = DEBOUNCE_DELAY.defaultValue.get(),
+                    valueRange = .25f..3f,
+                    key = DEBOUNCE_DELAY.key,
+                    valueText = { Text(text = "%.2fs".format(it)) },
+                    title = { Text(context.getString(R.string.debounce_setting_title)) },
+                    summary = { Text(context.getString(R.string.debounce_setting_summary)) },
+                )
+
                 preferenceCategory(
                     key = "git_settings",
                     title = { Text("Git") }
@@ -250,22 +260,6 @@ fun SettingsView() {
                         Text(context.getString(R.string.jekyll_flags_summary))
                         it.takeIf { it.isNotBlank() }?.let { flag -> Text(flag) }
                     },
-                )
-
-                preferenceCategory(
-                    key = "editor_settings",
-                    title = { Text("Editor") },
-                    modifier = Modifier.padding(bottom = 0.dp)
-                )
-
-                sliderPreference(
-                    valueSteps = 10,
-                    defaultValue = DEBOUNCE_DELAY.defaultValue.get(),
-                    valueRange = .25f..3f,
-                    key = DEBOUNCE_DELAY.key,
-                    valueText = { Text(text = "%.2fs".format(it)) },
-                    title = { Text(context.getString(R.string.debounce_setting_title)) },
-                    summary = { Text(context.getString(R.string.debounce_setting_summary)) },
                 )
             }
         }
