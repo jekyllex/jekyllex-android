@@ -62,7 +62,8 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     GITHUB_PAT("github_pat", SettingType.StringValue("")),
     LOG_PROGRESS("log_progress", SettingType.BooleanValue(true)),
 
-    // Editor
+    // General
+    TRIM_LOGS("trim_logs", SettingType.BooleanValue(true)),
     DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
 
     // Jekyll

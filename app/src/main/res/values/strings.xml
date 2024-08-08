@@ -23,6 +23,11 @@
         missing or corrupted.
     </string>
 
+    <string name="trim_logs_title">Trim logs</string>
+    <string name="trim_logs_summary">
+        Try to trim command outputs to avoid excessive log sizes in the running session.
+    </string>
+
     <string name="git_name_title">Name</string>
     <string name="git_name_summary">
         Global name to use for git operations.

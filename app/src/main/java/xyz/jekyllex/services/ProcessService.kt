@@ -41,11 +41,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils.Companion.buildEnvironment
+import xyz.jekyllex.utils.Setting
+import xyz.jekyllex.utils.Settings
+import xyz.jekyllex.utils.equivalentTo
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.isDenied
 import xyz.jekyllex.utils.transform
@@ -126,6 +130,8 @@ class ProcessService : Service() {
             return
         }
 
+        val trimLogs = Settings(this@ProcessService).get<Boolean>(Setting.TRIM_LOGS)
+
         job = CoroutineScope(Dispatchers.IO).launch {
             if (_isRunning.value) {
                 appendLog("\nSome other process is already running\n")
@@ -153,6 +159,9 @@ class ProcessService : Service() {
                     try {
                         var out: String? = outputReader.readLine()
                         while (out != null) {
+                            if (trimLogs && out.equivalentTo(_logs.value.last(), 75)) {
+                                _logs.value = _logs.value.dropLast(1)
+                            }
                             appendLog(out)
                             out = outputReader.readLine()
                         }
@@ -165,6 +174,9 @@ class ProcessService : Service() {
                     try {
                         var err: String? = errorReader.readLine()
                         while (err != null) {
+                            if (trimLogs && err.equivalentTo(_logs.value.last(), 50)) {
+                                _logs.value = _logs.value.dropLast(1)
+                            }
                             appendLog(err)
                             err = errorReader.readLine()
                         }

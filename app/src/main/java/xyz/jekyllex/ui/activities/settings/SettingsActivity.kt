@@ -124,6 +124,13 @@ fun SettingsView() {
                     }
                 )
 
+                switchPreference(
+                    key = TRIM_LOGS.key,
+                    defaultValue = TRIM_LOGS.defaultValue.get(),
+                    title = { Text(context.getString(R.string.trim_logs_title)) },
+                    summary = { Text(context.getString(R.string.trim_logs_summary)) },
+                )
+
                 sliderPreference(
                     valueSteps = 10,
                     defaultValue = DEBOUNCE_DELAY.defaultValue.get(),
