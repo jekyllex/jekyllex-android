@@ -42,7 +42,7 @@
 
     <string name="log_progress_title">Log progress</string>
     <string name="log_progress_summary">
-        Append —progress flag to possible git commands.
+        Append \"--progress\" to possible git commands.
     </string>
 
     <string name="skip_bundler_title">Skip bundle install</string>
