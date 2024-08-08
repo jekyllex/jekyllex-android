@@ -30,9 +30,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,17 +44,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
-import me.zhanghai.compose.preference.checkboxPreference
 import me.zhanghai.compose.preference.preference
 import me.zhanghai.compose.preference.preferenceCategory
 import me.zhanghai.compose.preference.preferenceTheme
 import me.zhanghai.compose.preference.sliderPreference
+import me.zhanghai.compose.preference.switchPreference
 import me.zhanghai.compose.preference.textFieldPreference
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.components.JekyllExAppBar
@@ -65,7 +62,6 @@ import xyz.jekyllex.utils.Commands.Companion.git
 import xyz.jekyllex.utils.Constants.Companion.PAT_SETTINGS_URL
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting.*
-import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.trimQuotes
 
 class SettingsActivity : ComponentActivity() {
@@ -216,19 +212,26 @@ fun SettingsView() {
                     },
                 )
 
+                switchPreference(
+                    key = LOG_PROGRESS.key,
+                    defaultValue = LOG_PROGRESS.defaultValue.get(),
+                    title = { Text(context.getString(R.string.log_progress_title)) },
+                    summary = { Text(context.getString(R.string.log_progress_summary)) },
+                )
+
                 preferenceCategory(
                     key = "jekyll_settings",
                     title = { Text("Jekyll") }
                 )
 
-                checkboxPreference(
+                switchPreference(
                     key = PREFIX_BUNDLER.key,
                     defaultValue = PREFIX_BUNDLER.defaultValue.get(),
                     title = { Text(context.getString(R.string.prefix_bundler_title)) },
                     summary = { Text(context.getString(R.string.prefix_bundler_summary)) },
                 )
 
-                checkboxPreference(
+                switchPreference(
                     key = LIVERELOAD.key,
                     defaultValue = LIVERELOAD.defaultValue.get(),
                     title = { Text(context.getString(R.string.livereload_title)) },

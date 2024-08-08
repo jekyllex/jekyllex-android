@@ -60,6 +60,7 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     GIT_NAME("git_name", SettingType.StringValue("")),
     GIT_EMAIL("git_email", SettingType.StringValue("")),
     GITHUB_PAT("github_pat", SettingType.StringValue("")),
+    LOG_PROGRESS("log_progress", SettingType.BooleanValue(true)),
 
     // Editor
     DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),

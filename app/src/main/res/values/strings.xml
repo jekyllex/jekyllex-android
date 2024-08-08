@@ -35,6 +35,11 @@
 
     <string name="github_pat_title">GitHub access token</string>
 
+    <string name="log_progress_title">Log progress</string>
+    <string name="log_progress_summary">
+        Append —progress flag to possible git commands.
+    </string>
+
     <string name="prefix_bundler_title">Prefix bundler</string>
     <string name="prefix_bundler_summary">
         Prefix jekyll serve command with \"bundle exec\"

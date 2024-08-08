@@ -30,6 +30,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import android.webkit.URLUtil
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -85,6 +86,8 @@ import xyz.jekyllex.utils.Commands.Companion.rmDir
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.requiredBinaries
 import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.Setting
+import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.buildServeCommand
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
@@ -134,7 +137,7 @@ class HomeActivity : ComponentActivity() {
     }
 }
 
-private fun create(input: String, callBack: () -> Unit = {}) {
+private fun create(context: Context, input: String, callBack: () -> Unit = {}) {
     if (!isBound || isCreating.value) return
     isCreating.value = true
 
@@ -147,7 +150,10 @@ private fun create(input: String, callBack: () -> Unit = {}) {
                 else it
             }
             when (URLUtil.isValidUrl(url)) {
-                true -> git("clone", url, "--progress")
+                true -> {
+                    val enableProgress = Settings(context).get<Boolean>(Setting.LOG_PROGRESS)
+                    git(enableProgress, "clone", url)
+                }
                 false -> jekyll("new", input)
             }
         }
@@ -189,7 +195,7 @@ fun HomeScreen(
                         homeViewModel,
                         isCreating,
                         onCreateConfirmation = { input, isDialogOpen ->
-                            if (input.isNotBlank()) create(input) {
+                            if (input.isNotBlank()) create(context, input) {
                                 isDialogOpen.value = false
                                 homeViewModel.refresh()
                             }
@@ -282,7 +288,7 @@ fun HomeScreen(
                             style = MaterialTheme.typography.labelSmall
                         )
                         Button(
-                            onClick = { create("test") { homeViewModel.refresh() } },
+                            onClick = { create(context, "test") { homeViewModel.refresh() } },
                             modifier = Modifier.padding(top = 16.dp),
                             elevation = ButtonDefaults.buttonElevation(
                                 defaultElevation = 4.dp

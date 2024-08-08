@@ -40,6 +40,10 @@ class Commands {
         fun bundle(vararg command: String): Array<String> = arrayOf("bundle", *command)
         fun jekyll(vararg command: String): Array<String> = arrayOf("jekyll", *command)
 
+        fun git(progress: Boolean, vararg command: String): Array<String> = git(*command).let {
+            if (progress) it.plus("--progress") else it
+        }
+
         fun getFromYAML(file: String, vararg properties: String): Array<String> = ruby(
             "-e", "require 'safe_yaml';_=SafeYAML.load_file('${file}');p ${
                 properties.joinToString(", ") { "_['${it}']" }
