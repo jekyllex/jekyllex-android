@@ -92,6 +92,7 @@ import xyz.jekyllex.utils.buildServeCommand
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.removeSymlinks
+import xyz.jekyllex.utils.toCommand
 import java.io.File
 
 private var isBound: Boolean = false
@@ -137,23 +138,19 @@ class HomeActivity : ComponentActivity() {
     }
 }
 
-private fun create(context: Context, input: String, callBack: () -> Unit = {}) {
+private fun create(input: String, callBack: () -> Unit = {}) {
     if (!isBound || isCreating.value) return
     isCreating.value = true
 
     val command: Array<String> =
-        if (input.startsWith("git clone "))
-            input.split(" ").toTypedArray()
+        if (input.startsWith("git clone ")) input.toCommand()
         else{
             val url = input.let {
                 if (it.contains("github.com") && !it.contains("://")) "https://$it"
                 else it
             }
             when (URLUtil.isValidUrl(url)) {
-                true -> {
-                    val enableProgress = Settings(context).get<Boolean>(Setting.LOG_PROGRESS)
-                    git(enableProgress, "clone", url)
-                }
+                true -> git("clone", url)
                 false -> jekyll("new", input)
             }
         }
@@ -195,7 +192,7 @@ fun HomeScreen(
                         homeViewModel,
                         isCreating,
                         onCreateConfirmation = { input, isDialogOpen ->
-                            if (input.isNotBlank()) create(context, input) {
+                            if (input.isNotBlank()) create(input) {
                                 isDialogOpen.value = false
                                 homeViewModel.refresh()
                             }
@@ -288,7 +285,7 @@ fun HomeScreen(
                             style = MaterialTheme.typography.labelSmall
                         )
                         Button(
-                            onClick = { create(context, "test") { homeViewModel.refresh() } },
+                            onClick = { create( "test") { homeViewModel.refresh() } },
                             modifier = Modifier.padding(top = 16.dp),
                             elevation = ButtonDefaults.buttonElevation(
                                 defaultElevation = 4.dp

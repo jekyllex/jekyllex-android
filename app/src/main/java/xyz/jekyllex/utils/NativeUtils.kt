@@ -87,7 +87,7 @@ class NativeUtils {
         fun exec(command: Array<String>, dir: String = HOME_DIR): String {
             val process = Runtime.getRuntime().exec(
                 if (command[0].contains("/bin")) command
-                else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1).toTypedArray()),
+                else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1)),
                 buildEnvironment(dir),
                 File(dir)
             )

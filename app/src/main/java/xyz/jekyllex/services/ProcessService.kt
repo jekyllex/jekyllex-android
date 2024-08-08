@@ -48,6 +48,7 @@ import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils.Companion.buildEnvironment
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.isDenied
+import xyz.jekyllex.utils.transform
 import java.io.BufferedReader
 import java.io.File
 
@@ -140,7 +141,7 @@ class ProcessService : Service() {
 
                 process = Runtime.getRuntime().exec(
                     if (command[0].contains("/bin")) command
-                    else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1).toTypedArray()),
+                    else command.transform(this@ProcessService),
                     buildEnvironment(dir, this@ProcessService),
                     File(dir)
                 )

@@ -25,9 +25,32 @@
 package xyz.jekyllex.utils
 
 import java.io.File
+import android.content.Context
+import xyz.jekyllex.utils.Commands.Companion.git
+import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
 
 private val denyList = arrayOf("ls", "ln", "cd")
 fun Array<String>.isDenied(): Boolean = this.any { it in denyList }
+fun Array<String>.drop(n: Int): Array<String> = this.toList().drop(n).toTypedArray()
+
+fun Array<String>.transform(context: Context): Array<String> = this.let {
+    val settings = Settings(context)
+    val command = when (this.getOrNull(0)) {
+        "git" -> {
+            val enableProgress = settings.get<Boolean>(Setting.LOG_PROGRESS)
+            if (enableProgress && this.any {
+                    it in arrayOf(
+                        "clone", "fetch", "pull", "push", "archive", "repack"
+                    )
+                }) {
+                git(true, *this.drop(1))
+            } else this
+        }
+
+        else -> this
+    }
+    arrayOf("$BIN_DIR/${command.getOrNull(0)}", *command.drop(1))
+}
 
 fun File.removeSymlinks() {
     if (this.isDirectory) {
