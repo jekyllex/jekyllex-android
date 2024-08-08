@@ -69,7 +69,7 @@ class HomeViewModel(private val skipAnimations: Boolean) : ViewModel() {
 
     private val lsCmd
         get() = (_cwd.value == HOME_DIR)
-            .let { if (it) "ls -d */" else "ls ${_cwd.value}" }
+            .let { if (it) "ls -d */" else "ls -a ${_cwd.value}" }
 
     val cwd
         get() = _cwd
@@ -103,9 +103,11 @@ class HomeViewModel(private val skipAnimations: Boolean) : ViewModel() {
                 .exec(shell(lsCmd))
                 .getFilesInDir(_cwd.value)
 
-            _availableFiles.value = files.map {
-                File(it, isDir = JFile("${_cwd.value}/$it").isDirectory)
-            }
+            _availableFiles.value = files
+                .filter { it !in listOf(".", "..", ".git") }
+                .map {
+                    File(it, isDir = JFile("${_cwd.value}/$it").isDirectory)
+                }
 
             if (!skipAnimations)
                 statsJob = viewModelScope.launch(Dispatchers.IO) { fetchStats() }
