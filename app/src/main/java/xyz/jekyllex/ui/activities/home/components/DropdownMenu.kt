@@ -45,7 +45,10 @@ import androidx.compose.ui.platform.LocalContext
 import xyz.jekyllex.ui.activities.home.HomeViewModel
 import xyz.jekyllex.ui.activities.settings.SettingsActivity
 import xyz.jekyllex.utils.Commands.Companion.bundle
+import xyz.jekyllex.utils.Commands.Companion.mkDir
+import xyz.jekyllex.utils.Commands.Companion.touch
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
+import xyz.jekyllex.utils.NativeUtils
 
 @Composable
 fun DropDownMenu(
@@ -54,7 +57,7 @@ fun DropDownMenu(
     serverIcon: @Composable () -> Unit,
     onCreateConfirmation: (String, MutableState<Boolean>) -> Unit,
     onDeleteConfirmation: (MutableState<Boolean>) -> Unit,
-    exec: (Array<String>, String) -> Unit,
+    exec: (Array<String>, String, (() -> Unit)?) -> Unit,
 ) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
@@ -62,11 +65,24 @@ fun DropDownMenu(
     val openCreateDialog = remember { mutableStateOf(false) }
 
     if (openCreateDialog.value) {
-        CreateDialog(
-            isCreating = isCreating.value,
-            onDismissRequest = { openCreateDialog.value = false },
-            onConfirmation = { onCreateConfirmation(it, openCreateDialog) }
-        )
+        if (homeViewModel.cwd.value == HOME_DIR)
+            CreateProjectDialog(
+                isCreating = isCreating.value,
+                onDismissRequest = { openCreateDialog.value = false },
+                onConfirmation = { onCreateConfirmation(it, openCreateDialog) }
+            )
+        else
+            CreateFileDialog(
+                isCreating = isCreating.value,
+                onDismissRequest = { openCreateDialog.value = false },
+                onConfirmation = { input, isFolder ->
+                    val command = if (isFolder) mkDir(input) else touch(input)
+                    exec(command, homeViewModel.cwd.value) {
+                        homeViewModel.refresh()
+                    }
+                    openCreateDialog.value = false
+                }
+            )
     }
 
     if (openDeleteDialog.value) DeleteDialog(
@@ -76,19 +92,19 @@ fun DropDownMenu(
         onConfirmation = { onDeleteConfirmation(openDeleteDialog) },
     )
 
-    if (homeViewModel.cwd.value != HOME_DIR)
+    if (homeViewModel.cwd.value != HOME_DIR) {
         IconButton(onClick = { homeViewModel.cd(HOME_DIR) }) {
             Icon(Icons.Default.Home, "Go back to home")
 
         }
-    if (homeViewModel.cwd.value == HOME_DIR)
-        IconButton(
-            enabled = !isCreating.value,
-            onClick = { openCreateDialog.value = true }
-        ) {
-            Icon(Icons.Default.AddCircle, "Create new project")
-        }
-    else serverIcon()
+        serverIcon()
+    }
+    IconButton(
+        enabled = !isCreating.value,
+        onClick = { openCreateDialog.value = true }
+    ) {
+        Icon(Icons.Default.AddCircle, "Create new project")
+    }
 
     Box {
         IconButton(onClick = { expanded = !expanded }) {
@@ -107,7 +123,7 @@ fun DropDownMenu(
                     text = { Text("Bundler") },
                     onClick = {
                         expanded = !expanded
-                        exec(bundle("install"), homeViewModel.cwd.value)
+                        exec(bundle("install"), homeViewModel.cwd.value, null)
                     }
                 )
                 DropdownMenuItem(

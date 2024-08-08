@@ -24,10 +24,14 @@
 
 package xyz.jekyllex.ui.activities.home.components
 
+import android.widget.Toast
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -36,6 +40,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -49,26 +54,39 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CreateProjectDialog(
+fun CreateFileDialog(
     isCreating: Boolean,
     onDismissRequest: () -> Unit,
-    onConfirmation: (input: String) -> Unit,
+    onConfirmation: (name: String, isFolder: Boolean) -> Unit,
 ) {
     BasicAlertDialog(onDismissRequest = { }) {
-        var text by remember { mutableStateOf("") }
+        val context = LocalContext.current
+        var file by remember { mutableStateOf("") }
+        var isFolder by remember { mutableStateOf(false) }
         val keyboardController = LocalSoftwareKeyboardController.current
 
-        val onDone: () -> Unit = {
+        val onDone: () -> Unit = run@{
+            if (file.trim().contains(" ")) {
+                Toast.makeText(
+                    context,
+                    "Name can't contain spaces",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                return@run
+            }
             keyboardController?.hide()
-            onConfirmation(text.trim())
-            text = ""
+            onConfirmation(file.trim(), isFolder)
+            file = ""
         }
 
         Surface(
@@ -78,21 +96,43 @@ fun CreateProjectDialog(
             shape = MaterialTheme.shapes.large
         ) {
             Column(modifier = Modifier.padding(18.dp)) {
-                Text(text = "Create project", style = MaterialTheme.typography.headlineSmall)
-                Text(
-                    text = "Enter the name of the project, " +
-                            "a remote repository's valid https:// URL or a " +
-                            "custom git clone command",
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(top = 6.dp)
-                )
+                Row (
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "New",
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Row(
+                        modifier = Modifier.clickable(
+                            indication = null, onClick = { isFolder = !isFolder },
+                            interactionSource = remember { MutableInteractionSource() }
+                        )
+                    ) {
+                        Text(
+                            text = "Folder",
+                            modifier = Modifier.align(Alignment.CenterVertically).offset(x = 4.dp),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Checkbox(
+                            checked = isFolder,
+                            modifier = Modifier.scale(0.75f),
+                            onCheckedChange = { isFolder = it },
+                        )
+                    }
+                }
+
                 if (!isCreating)
                     OutlinedTextField(
-                        value = text,
+                        value = file,
                         singleLine = true,
-                        onValueChange = { text = it },
-                        label = { Text(text = "Name / URL / git command") },
-                        modifier = Modifier.padding(top = 16.dp),
+                        onValueChange = { file = it },
+                        label = {
+                            Text("Enter the name of the ${if (isFolder) "folder" else "file"}")
+                        },
+                        modifier = Modifier.padding(top = 4.dp),
                         textStyle = MaterialTheme.typography.bodySmall,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text,
@@ -100,6 +140,7 @@ fun CreateProjectDialog(
                         ),
                         keyboardActions = KeyboardActions(onDone = { onDone() }),
                     )
+
                 Row(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically,
