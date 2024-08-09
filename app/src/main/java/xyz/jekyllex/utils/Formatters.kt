@@ -72,6 +72,9 @@ fun String.getProjectDir(): String? =
         "$HOME_DIR/" + this.substringAfter("$HOME_DIR/").substringBefore("/")
     else null
 
+fun String.pathInProject() = this.substringAfter("$HOME_DIR/")
+    .substringAfter("/")
+
 fun String.getFileName(): String = this.substringAfterLast("/")
 
 fun String.getFilesInDir(dir: String): List<String> = this.split("\n").map {

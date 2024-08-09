@@ -24,6 +24,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -38,6 +39,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.activities.editor.components.DropDownMenu
@@ -46,12 +51,16 @@ import xyz.jekyllex.ui.activities.editor.components.Preview
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.TerminalSheet
+import xyz.jekyllex.utils.Commands.Companion.guessDestinationUrl
 import xyz.jekyllex.utils.Commands.Companion.rm
+import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
+import xyz.jekyllex.utils.buildPreviewURL
 import xyz.jekyllex.utils.buildServeCommand
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getProjectDir
+import xyz.jekyllex.utils.pathInProject
 
 private val isBound = mutableStateOf(false)
 private lateinit var service: ProcessService
@@ -157,9 +166,35 @@ fun EditorView(file: String = "", timeout: Int) {
         }
     ) { innerPadding ->
         val tabs = listOf("Editor", "Preview")
+        var guessedUrl by remember { mutableStateOf("") }
         var tabIndex by remember { mutableIntStateOf(0) }
         val viewCache = remember { mutableStateMapOf<Int, WebView>() }
         val canPreview by remember { derivedStateOf { isBound.value && service.isRunning } }
+
+        LaunchedEffect(Unit) {
+            CoroutineScope(Dispatchers.IO).launch run@{
+                file.getProjectDir()?.let {
+                    val path = file.pathInProject()
+                    val url = NativeUtils.exec(
+                        guessDestinationUrl(path), it
+                    )
+
+                    val stripExt = path.split('.')
+                        .dropLast(1).joinToString()
+
+                    if (
+                        !url.contains("404") &&
+                        (url == "/${stripExt}" || url == "/$path")
+                    ) return@run
+
+                    guessedUrl = url
+                    withContext(Dispatchers.Main) {
+                        viewCache[1]?.loadUrl(url.buildPreviewURL())
+                    }
+                }
+            }
+        }
+
 
         Column(
             modifier = Modifier
@@ -177,7 +212,7 @@ fun EditorView(file: String = "", timeout: Int) {
 
             when (tabIndex) {
                 0 -> Editor(viewCache, file, timeout, innerPadding)
-                1 -> Preview(viewCache, file, canPreview, innerPadding) {
+                1 -> Preview(viewCache, file, guessedUrl, canPreview, innerPadding) {
                     file.getProjectDir()?.let { dir ->
                         service.exec(buildServeCommand(context), dir)
                     }

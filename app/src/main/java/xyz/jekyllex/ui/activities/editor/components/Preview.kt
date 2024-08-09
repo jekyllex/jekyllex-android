@@ -46,18 +46,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import xyz.jekyllex.ui.activities.editor.webview.WebViewChromeClient
 import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
-import xyz.jekyllex.utils.Commands.Companion.getFromYAML
 import xyz.jekyllex.utils.Commands.Companion.rmDir
-import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.WEBVIEW_CACHE
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.buildPreviewURL
-import xyz.jekyllex.utils.trimQuotes
 
 @Composable
 fun Preview(
     viewCache: SnapshotStateMap<Int, WebView>,
     file: String,
+    guessedUrl: String,
     canPreview: Boolean,
     padding: PaddingValues,
     runServer: () -> Unit = {}
@@ -107,18 +105,8 @@ fun Preview(
 
                             settings.javaScriptEnabled = true
 
-                            val properties = NativeUtils.exec(
-                                getFromYAML(
-                                    file.substringAfter("$HOME_DIR/"),
-                                    "permalink"
-                                )
-                            ).split("\n").map { prop ->
-                                if (prop == "nil") ""
-                                else prop.trimQuotes()
-                            }
-
                             NativeUtils.exec(rmDir(WEBVIEW_CACHE))
-                            loadUrl(properties[0].buildPreviewURL())
+                            loadUrl(guessedUrl.buildPreviewURL())
                         }
                     }
                 },
