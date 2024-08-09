@@ -71,6 +71,12 @@
         Value for the JEKYLL_ENV environment variable
     </string>
 
+    <string name="guess_urls_title">Guess destination URLs</string>
+    <string name="guess_urls_summary">
+        Try to guess the destination URL for files and load it the preview tab.
+        Always load the home page otherwise.
+    </string>
+
     <string name="jekyll_flags_title">Additional flags</string>
     <string name="jekyll_flags_summary">
         Space separated list of additional flags to pass to the \"jekyll serve\" command.

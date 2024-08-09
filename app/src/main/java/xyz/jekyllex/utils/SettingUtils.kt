@@ -68,6 +68,7 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     REDUCE_ANIMATIONS("reduce_animations", SettingType.BooleanValue(false)),
 
     // Jekyll
+    GUESS_URLS("guess_urls", SettingType.BooleanValue(true)),
     JEKYLL_FLAGS("jekyll_flags", SettingType.StringValue("")),
     SKIP_BUNDLER("skip_bundle", SettingType.BooleanValue(false)),
     LIVERELOAD("enable_livereload", SettingType.BooleanValue(true)),

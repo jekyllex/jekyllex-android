@@ -261,6 +261,13 @@ fun SettingsView() {
                 )
 
                 switchPreference(
+                    key = GUESS_URLS.key,
+                    defaultValue = GUESS_URLS.defaultValue.get(),
+                    title = { Text(context.getString(R.string.guess_urls_title)) },
+                    summary = { Text(context.getString(R.string.guess_urls_summary)) },
+                )
+
+                switchPreference(
                     key = SKIP_BUNDLER.key,
                     defaultValue = SKIP_BUNDLER.defaultValue.get(),
                     title = { Text(context.getString(R.string.skip_bundler_title)) },

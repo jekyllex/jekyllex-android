@@ -170,8 +170,11 @@ fun EditorView(file: String = "", timeout: Int) {
         var tabIndex by remember { mutableIntStateOf(0) }
         val viewCache = remember { mutableStateMapOf<Int, WebView>() }
         val canPreview by remember { derivedStateOf { isBound.value && service.isRunning } }
+        val shouldGuessURLs = Settings(context).get<Boolean>(Setting.GUESS_URLS)
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(Unit) effect@{
+            if (!shouldGuessURLs) return@effect
+
             CoroutineScope(Dispatchers.IO).launch run@{
                 file.getProjectDir()?.let {
                     val path = file.pathInProject()
