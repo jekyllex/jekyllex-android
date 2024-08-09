@@ -84,9 +84,13 @@ fun String.toDate(): String {
     return dateFormat.format(this.toLong() * 1000)
 }
 
-fun buildStatsString(size: String?, lastMod: String?): String? =
-    if (size == null || lastMod == null) null
-    else "Size: $size  •  Last modified: $lastMod"
+fun buildStatsString(isDir: Boolean?, size: String?, lastMod: String?): String? {
+    if (size == null && lastMod == null) return null
+    val dirTag = isDir?.let { if (it) "Folder" else "File" } ?: ""
+    val sizeTag = (isDir?.let { "  •  " } ?: "") + (size?.let { "Size: $size" } ?: "")
+    val lastModTag = lastMod?.let { "  •  Modified: $lastMod" } ?: ""
+    return "$dirTag$sizeTag$lastModTag"
+}
 
 fun String.buildEditorURL(timeout: Int = DEBOUNCE_DELAY.defaultValue.get()): String =
     "$EDITOR_URL/?lang=${this.getExtension()}&timeout=$timeout"

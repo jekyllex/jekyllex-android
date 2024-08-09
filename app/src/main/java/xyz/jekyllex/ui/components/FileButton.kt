@@ -170,7 +170,7 @@ fun FileButton(
                     )
                 AnimatedContent(
                     label = "Stats animation",
-                    targetState = buildStatsString(file.size, file.lastModified),
+                    targetState = buildStatsString(file.isDir, file.size, file.lastModified),
                     transitionSpec = {
                         fadeIn() + slideInVertically(animationSpec = tween(400)) togetherWith
                                 fadeOut(animationSpec = tween(200))
