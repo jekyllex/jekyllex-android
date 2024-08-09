@@ -118,6 +118,13 @@ fun DropDownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
+            DropdownMenuItem(
+                text = { Text("Refresh") },
+                onClick = {
+                    expanded = !expanded
+                    homeViewModel.refresh()
+                }
+            )
             if (homeViewModel.cwd.value.contains("$HOME_DIR/")) {
                 DropdownMenuItem(
                     text = { Text("Bundler") },
