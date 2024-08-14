@@ -26,6 +26,7 @@ package xyz.jekyllex.utils
 
 import java.io.File
 import android.content.Context
+import xyz.jekyllex.utils.Commands.Companion.bundle
 import xyz.jekyllex.utils.Commands.Companion.git
 import xyz.jekyllex.utils.Commands.Companion.jekyll
 import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
@@ -37,12 +38,19 @@ fun Array<String>.drop(n: Int): Array<String> = this.toList().drop(n).toTypedArr
 fun Array<String>.transform(context: Context): Array<String> = this.let {
     val settings = Settings(context)
     val command = when (this.getOrNull(0)) {
+        "bundle" -> {
+            val localGems = settings.get<Boolean>(Setting.LOCAL_GEMS)
+            if (localGems && this.any {
+                    it in arrayOf("install", "update")
+                }) {
+                bundle(*this.drop(1), "--prefer-local")
+            } else this
+        }
+
         "git" -> {
             val enableProgress = settings.get<Boolean>(Setting.LOG_PROGRESS)
             if (enableProgress && this.any {
-                    it in arrayOf(
-                        "clone", "fetch", "pull", "push", "archive", "repack"
-                    )
+                    it in arrayOf("clone", "fetch", "pull", "push", "archive", "repack")
                 }) {
                 git(true, *this.drop(1))
             } else this

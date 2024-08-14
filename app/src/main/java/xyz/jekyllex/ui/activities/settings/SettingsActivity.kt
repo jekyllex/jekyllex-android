@@ -244,6 +244,18 @@ fun SettingsView() {
                 )
 
                 preferenceCategory(
+                    key = "bundler_settings",
+                    title = { Text("Bundler") }
+                )
+
+                switchPreference(
+                    key = LOCAL_GEMS.key,
+                    defaultValue = LOCAL_GEMS.defaultValue.get(),
+                    title = { Text(context.getString(R.string.local_gems_title)) },
+                    summary = { Text(context.getString(R.string.local_gems_summary)) },
+                )
+
+                preferenceCategory(
                     key = "jekyll_settings",
                     title = { Text("Jekyll") }
                 )

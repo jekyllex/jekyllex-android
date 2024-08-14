@@ -50,6 +50,13 @@
         Append \"--progress\" to possible git commands.
     </string>
 
+    <string name="local_gems_title">Prefer local gems</string>
+    <string name="local_gems_summary">
+        Prefer installed gems over latest versions when running \"bundle install\".
+        Disabling will break installation of gems with native extensions.
+        Hardcode the available gem version in the Gemfile if needed.
+    </string>
+
     <string name="skip_bundler_title">Skip bundle install</string>
     <string name="skip_bundler_summary">
         Avoid \"bundle install\" for new projects. Uses the \"--skip-bundle\" flag.

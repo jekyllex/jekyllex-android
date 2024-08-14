@@ -67,6 +67,9 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
     REDUCE_ANIMATIONS("reduce_animations", SettingType.BooleanValue(false)),
 
+    // Bundler
+    LOCAL_GEMS("local_gems", SettingType.BooleanValue(true)),
+
     // Jekyll
     GUESS_URLS("guess_urls", SettingType.BooleanValue(true)),
     JEKYLL_FLAGS("jekyll_flags", SettingType.StringValue("")),
