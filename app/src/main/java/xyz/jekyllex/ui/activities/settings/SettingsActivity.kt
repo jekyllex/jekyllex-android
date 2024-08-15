@@ -131,6 +131,13 @@ fun SettingsView() {
                 )
 
                 switchPreference(
+                    key = REDUCE_ANIMATIONS.key,
+                    defaultValue = REDUCE_ANIMATIONS.defaultValue.get(),
+                    title = { Text(context.getString(R.string.reduce_animations_title)) },
+                    summary = { Text(context.getString(R.string.reduce_animations_summary)) },
+                )
+
+                switchPreference(
                     key = TRIM_LOGS.key,
                     defaultValue = TRIM_LOGS.defaultValue.get(),
                     title = { Text(context.getString(R.string.trim_logs_title)) },
@@ -138,10 +145,10 @@ fun SettingsView() {
                 )
 
                 switchPreference(
-                    key = REDUCE_ANIMATIONS.key,
-                    defaultValue = REDUCE_ANIMATIONS.defaultValue.get(),
-                    title = { Text(context.getString(R.string.reduce_animations_title)) },
-                    summary = { Text(context.getString(R.string.reduce_animations_summary)) },
+                    key = GUESS_URLS.key,
+                    defaultValue = GUESS_URLS.defaultValue.get(),
+                    title = { Text(context.getString(R.string.guess_urls_title)) },
+                    summary = { Text(context.getString(R.string.guess_urls_summary)) },
                 )
 
                 sliderPreference(
@@ -276,13 +283,6 @@ fun SettingsView() {
                         Text(context.getString(R.string.jekyll_env_summary))
                         Text(it)
                     },
-                )
-
-                switchPreference(
-                    key = GUESS_URLS.key,
-                    defaultValue = GUESS_URLS.defaultValue.get(),
-                    title = { Text(context.getString(R.string.guess_urls_title)) },
-                    summary = { Text(context.getString(R.string.guess_urls_summary)) },
                 )
 
                 switchPreference(
