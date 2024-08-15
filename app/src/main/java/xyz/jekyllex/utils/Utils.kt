@@ -56,10 +56,27 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
         }
 
         "jekyll" -> {
-            val skipBundle = settings.get<Boolean>(Setting.SKIP_BUNDLER)
-            if (skipBundle && this.contains("new")) {
-                jekyll(*this.drop(1), "--skip-bundle")
-            } else this
+            if (this.getOrNull(1) == "new") {
+                val skipBundle = settings.get<Boolean>(Setting.SKIP_BUNDLER)
+                if (skipBundle) jekyll(*this.drop(1), "--skip-bundle")
+                else this
+            }
+            else if (this.getOrNull(1) == "serve" && this.size == 2) {
+                val liveReload = settings.get<Boolean>(Setting.LIVERELOAD)
+                val prefixBundler = settings.get<Boolean>(Setting.PREFIX_BUNDLER)
+                val flags = settings.get<String>(Setting.JEKYLL_FLAGS).split(" ")
+
+                val command = prefixBundler.let {
+                    if (it) bundle("exec", *jekyll("serve"))
+                    else jekyll("serve")
+                }.toMutableList()
+
+                if (liveReload) command.add("-l")
+                command.addAll(flags)
+
+                command.toTypedArray()
+            }
+            else this
         }
 
         else -> this

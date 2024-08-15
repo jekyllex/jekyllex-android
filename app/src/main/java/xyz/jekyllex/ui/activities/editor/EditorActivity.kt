@@ -52,12 +52,12 @@ import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.TerminalSheet
 import xyz.jekyllex.utils.Commands.guessDestinationUrl
+import xyz.jekyllex.utils.Commands.jekyll
 import xyz.jekyllex.utils.Commands.rm
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.buildPreviewURL
-import xyz.jekyllex.utils.buildServeCommand
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.pathInProject
@@ -149,7 +149,7 @@ fun EditorView(file: String = "", timeout: Int) {
                         runServer = {
                             if (!service.isRunning)
                                 file.getProjectDir()?.let { dir ->
-                                    service.exec(buildServeCommand(context), dir)
+                                    service.exec(jekyll("serve"), dir)
                                 }
                             else
                                 service.killProcess()
@@ -217,7 +217,7 @@ fun EditorView(file: String = "", timeout: Int) {
                 0 -> Editor(viewCache, file, timeout, innerPadding)
                 1 -> Preview(viewCache, file, guessedUrl, canPreview, innerPadding) {
                     file.getProjectDir()?.let { dir ->
-                        service.exec(buildServeCommand(context), dir)
+                        service.exec(jekyll("serve"), dir)
                     }
                 }
             }

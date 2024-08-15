@@ -24,12 +24,9 @@
 
 package xyz.jekyllex.utils
 
-import android.content.Context
 import android.icu.text.SimpleDateFormat
 import android.icu.util.TimeZone
 import android.util.Base64
-import xyz.jekyllex.utils.Commands.bundle
-import xyz.jekyllex.utils.Commands.jekyll
 import xyz.jekyllex.utils.Constants.EDITOR_URL
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.Constants.PREVIEW_URL
@@ -98,19 +95,6 @@ fun String.buildEditorURL(timeout: Int = DEBOUNCE_DELAY.defaultValue.get()): Str
 
 fun String.buildPreviewURL(): String =
     PREVIEW_URL + this.let { if ((it.getOrNull(0) ?: "") == '/') it else "/$it" }
-
-fun buildServeCommand(context: Context): Array<String> {
-    val settings = Settings(context)
-    val command = settings.get<Boolean>(Setting.PREFIX_BUNDLER).let {
-        if (it) bundle("exec", *jekyll("serve"))
-        else jekyll("serve")
-    }.toMutableList()
-
-    if (settings.get(Setting.LIVERELOAD)) command.add("-l")
-    command.addAll(settings.get<String>(Setting.JEKYLL_FLAGS).split(" "))
-
-    return command.toTypedArray()
-}
 
 fun String.toCommand(): Array<String> {
     val command = mutableListOf<String>()

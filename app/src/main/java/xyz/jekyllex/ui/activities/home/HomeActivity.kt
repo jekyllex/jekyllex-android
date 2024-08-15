@@ -98,7 +98,6 @@ import xyz.jekyllex.utils.Constants.requiredBinaries
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
-import xyz.jekyllex.utils.buildServeCommand
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.removeSymlinks
@@ -254,7 +253,7 @@ fun HomeScreen(
                                 if (!isBound) return@IconButton
                                 if (!service.isRunning)
                                     service.exec(
-                                        buildServeCommand(context),
+                                        jekyll("serve"),
                                         homeViewModel.cwd.value.let { it.getProjectDir() ?: it }
                                     )
                                 else
