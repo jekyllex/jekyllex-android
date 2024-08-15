@@ -29,6 +29,9 @@ import android.content.Context
 import android.content.Intent
 import java.io.File
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import xyz.jekyllex.ui.activities.installer.BootstrapInstaller
 import xyz.jekyllex.utils.Constants.BIN_DIR
 import xyz.jekyllex.utils.Constants.GEM_DIR
@@ -61,7 +64,7 @@ object NativeUtils {
         val command = arrayOf(binary, versionFlag)
 
         try {
-            exec(command)
+            _exec(command)
         } catch (e: Exception) {
             Log.d(LOG_TAG, "Error while executing $command: $e")
             return false
@@ -83,7 +86,7 @@ object NativeUtils {
         throw RuntimeException("Unable to create directory: ${directory?.absolutePath}")
     }
 
-    fun exec(command: Array<String>, dir: String = HOME_DIR): String {
+    private fun _exec(command: Array<String>, dir: String = HOME_DIR): String {
         val process = Runtime.getRuntime().exec(
             if (command[0].contains("/bin")) command
             else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1)),
@@ -97,10 +100,26 @@ object NativeUtils {
         return output.trim()
     }
 
+    fun exec(command: Array<String>, dir: String = HOME_DIR): String {
+        return try {
+            _exec(command, dir)
+        } catch (e: Exception) {
+            Log.d(LOG_TAG, "Error while executing $command: $e")
+            ""
+        }
+    }
+
+    fun exec(
+        command: Array<String>,
+        scope: CoroutineScope,
+        dir: String = HOME_DIR,
+        callback: suspend (String) -> Unit = {},
+    ) = scope.launch { callback(exec(command, dir)) }
+
     fun buildEnvironment(cwd: String, context: Context? = null): Array<String> {
         ensureDirectoryExists(File(HOME_DIR))
 
-        val environment: Array<String> = ArrayList<String>().apply {
+        return ArrayList<String>().apply {
             add("PWD=$cwd")
             add("HOME=$HOME_DIR")
             add("PREFIX=$PREFIX")
@@ -113,7 +132,5 @@ object NativeUtils {
                 add("JEKYLL_ENV=${settings.get<String>(Setting.JEKYLL_ENV)}")
             }
         }.toTypedArray()
-
-        return environment
     }
 }

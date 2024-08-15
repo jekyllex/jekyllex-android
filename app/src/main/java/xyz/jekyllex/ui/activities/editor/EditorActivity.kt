@@ -182,6 +182,7 @@ fun EditorView(file: String = "", timeout: Int) {
                         guessDestinationUrl(path), it
                     )
 
+                    if (url.isEmpty()) return@run
                     val stripExt = path.split('.')
                         .dropLast(1).joinToString()
 

@@ -29,6 +29,9 @@ import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import xyz.jekyllex.utils.Commands.cat
 import xyz.jekyllex.utils.Constants.EDITOR_URL
 import xyz.jekyllex.utils.Constants.PREVIEW_URL
@@ -60,10 +63,14 @@ class WebViewClient(
         if (url.contains(PREVIEW_URL)) previewLoadCallback(url)
         if (!url.contains(EDITOR_URL)) return
 
-        view.loadUrl(
-            "javascript:setText('${
-                NativeUtils.exec(cat(file)).toBase64().encodeURIComponent()
-            }')"
-        )
+        NativeUtils.exec(cat(file), CoroutineScope(Dispatchers.IO)) { content ->
+            withContext(Dispatchers.Main) {
+                view.loadUrl(
+                    "javascript:setText('${
+                        content.toBase64().encodeURIComponent()
+                    }')"
+                )
+            }
+        }
     }
 }
