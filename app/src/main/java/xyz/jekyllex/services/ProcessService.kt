@@ -49,6 +49,7 @@ import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils.Companion.buildEnvironment
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
+import xyz.jekyllex.utils.drop
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.isDenied
 import xyz.jekyllex.utils.transform
@@ -121,7 +122,9 @@ class ProcessService : Service() {
         _logs.value = listOf()
     }
 
-    fun exec(command: Array<String>, dir: String = HOME_DIR, callBack: () -> Unit = {}) {
+    fun exec(cmd: Array<String>, dir: String = HOME_DIR, callBack: () -> Unit = {}) {
+        val command = if (cmd[0].contains("/bin")) cmd
+            else cmd.transform(this@ProcessService)
         appendLog("${dir.formatDir("/")} $ ${command.joinToString(" ")}")
 
         if (command.isDenied()) {
@@ -144,7 +147,7 @@ class ProcessService : Service() {
 
                 process = Runtime.getRuntime().exec(
                     if (command[0].contains("/bin")) command
-                    else command.transform(this@ProcessService),
+                    else arrayOf("$BIN_DIR/${command.getOrNull(0)}", *command.drop(1)),
                     buildEnvironment(dir, this@ProcessService),
                     File(dir)
                 )

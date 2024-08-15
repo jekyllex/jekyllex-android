@@ -37,7 +37,7 @@ fun Array<String>.drop(n: Int): Array<String> = this.toList().drop(n).toTypedArr
 
 fun Array<String>.transform(context: Context): Array<String> = this.let {
     val settings = Settings(context)
-    val command = when (this.getOrNull(0)) {
+    when (this.getOrNull(0)) {
         "bundle" -> {
             val localGems = settings.get<Boolean>(Setting.LOCAL_GEMS)
             if (localGems && this.any {
@@ -50,7 +50,7 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
         "git" -> {
             val enableProgress = settings.get<Boolean>(Setting.LOG_PROGRESS)
             if (enableProgress && this.any {
-                    it in arrayOf("clone", "fetch", "pull", "push", "archive", "repack")
+                    it in arrayOf("clone", "fetch", "pull", "push")
                 }) {
                 git(true, *this.drop(1))
             } else this
@@ -58,14 +58,13 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
 
         "jekyll" -> {
             val skipBundle = settings.get<Boolean>(Setting.SKIP_BUNDLER)
-            if (skipBundle && this.any { it == "new" }) {
+            if (skipBundle && this.contains("new")) {
                 jekyll(*this.drop(1), "--skip-bundle")
             } else this
         }
 
         else -> this
     }
-    arrayOf("$BIN_DIR/${command.getOrNull(0)}", *command.drop(1))
 }
 
 fun File.removeSymlinks() {
