@@ -82,8 +82,8 @@ import xyz.jekyllex.utils.Commands.echo
 import xyz.jekyllex.utils.Commands.git
 import xyz.jekyllex.utils.Commands.jekyll
 import xyz.jekyllex.utils.Commands.rmDir
-import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
-import xyz.jekyllex.utils.Constants.Companion.requiredBinaries
+import xyz.jekyllex.utils.Constants.HOME_DIR
+import xyz.jekyllex.utils.Constants.requiredBinaries
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings

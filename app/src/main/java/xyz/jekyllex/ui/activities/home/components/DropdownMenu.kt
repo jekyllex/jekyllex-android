@@ -48,7 +48,7 @@ import xyz.jekyllex.ui.components.DeleteDialog
 import xyz.jekyllex.utils.Commands.bundle
 import xyz.jekyllex.utils.Commands.mkDir
 import xyz.jekyllex.utils.Commands.touch
-import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
+import xyz.jekyllex.utils.Constants.HOME_DIR
 
 @Composable
 fun DropDownMenu(

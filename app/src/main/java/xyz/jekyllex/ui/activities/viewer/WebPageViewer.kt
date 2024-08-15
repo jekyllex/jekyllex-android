@@ -55,8 +55,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.theme.JekyllExTheme
-import xyz.jekyllex.utils.Constants.Companion.DOMAIN
-import xyz.jekyllex.utils.Constants.Companion.HOME_PAGE
+import xyz.jekyllex.utils.Constants.DOMAIN
+import xyz.jekyllex.utils.Constants.HOME_PAGE
 
 class WebPageViewer: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

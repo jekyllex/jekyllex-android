@@ -59,7 +59,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import xyz.jekyllex.ui.activities.editor.webview.WebViewChromeClient
 import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
 import xyz.jekyllex.utils.Commands.rmDir
-import xyz.jekyllex.utils.Constants.Companion.WEBVIEW_CACHE
+import xyz.jekyllex.utils.Constants.WEBVIEW_CACHE
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.buildPreviewURL
 

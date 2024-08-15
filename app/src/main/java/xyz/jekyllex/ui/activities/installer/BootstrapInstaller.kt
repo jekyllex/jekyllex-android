@@ -48,10 +48,10 @@ import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.activities.home.HomeActivity
 import xyz.jekyllex.ui.theme.JekyllExTheme
-import xyz.jekyllex.utils.Constants.Companion.FILES_DIR
 import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.Constants.Companion.USR_DIR
-import xyz.jekyllex.utils.Constants.Companion.requiredBinaries
+import xyz.jekyllex.utils.Constants.USR_DIR
+import xyz.jekyllex.utils.Constants.FILES_DIR
+import xyz.jekyllex.utils.Constants.requiredBinaries
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader

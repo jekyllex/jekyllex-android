@@ -30,11 +30,11 @@ import android.icu.util.TimeZone
 import android.util.Base64
 import xyz.jekyllex.utils.Commands.bundle
 import xyz.jekyllex.utils.Commands.jekyll
-import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
-import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
-import xyz.jekyllex.utils.Constants.Companion.PREVIEW_URL
-import xyz.jekyllex.utils.Constants.Companion.extensionAliases
-import xyz.jekyllex.utils.Constants.Companion.defaultExtensions
+import xyz.jekyllex.utils.Constants.EDITOR_URL
+import xyz.jekyllex.utils.Constants.HOME_DIR
+import xyz.jekyllex.utils.Constants.PREVIEW_URL
+import xyz.jekyllex.utils.Constants.extensionAliases
+import xyz.jekyllex.utils.Constants.defaultExtensions
 import xyz.jekyllex.utils.Setting.DEBOUNCE_DELAY
 import java.net.URLEncoder
 import java.util.Locale

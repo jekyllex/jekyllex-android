@@ -60,15 +60,15 @@ import xyz.jekyllex.R
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.Commands.git
-import xyz.jekyllex.utils.Constants.Companion.PAT_SETTINGS_URL
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting.*
 import xyz.jekyllex.utils.trimQuotes
 import xyz.jekyllex.BuildConfig
 import xyz.jekyllex.ui.activities.viewer.WebPageViewer
-import xyz.jekyllex.utils.Constants.Companion.LICENSES
-import xyz.jekyllex.utils.Constants.Companion.PRIVACY
-import xyz.jekyllex.utils.Constants.Companion.TERMS
+import xyz.jekyllex.utils.Constants.LICENSES
+import xyz.jekyllex.utils.Constants.PRIVACY
+import xyz.jekyllex.utils.Constants.TERMS
+import xyz.jekyllex.utils.Constants.PAT_SETTINGS_URL
 
 class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

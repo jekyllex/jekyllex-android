@@ -40,7 +40,7 @@ import xyz.jekyllex.utils.Commands.diskUsage
 import xyz.jekyllex.utils.Commands.getFromYAML
 import xyz.jekyllex.utils.Commands.shell
 import xyz.jekyllex.utils.Commands.stat
-import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
+import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getFilesInDir

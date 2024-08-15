@@ -30,10 +30,10 @@ import android.content.Intent
 import java.io.File
 import android.util.Log
 import xyz.jekyllex.ui.activities.installer.BootstrapInstaller
-import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
-import xyz.jekyllex.utils.Constants.Companion.GEM_DIR
-import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
-import xyz.jekyllex.utils.Constants.Companion.PREFIX
+import xyz.jekyllex.utils.Constants.BIN_DIR
+import xyz.jekyllex.utils.Constants.GEM_DIR
+import xyz.jekyllex.utils.Constants.HOME_DIR
+import xyz.jekyllex.utils.Constants.PREFIX
 
 class NativeUtils {
     companion object {

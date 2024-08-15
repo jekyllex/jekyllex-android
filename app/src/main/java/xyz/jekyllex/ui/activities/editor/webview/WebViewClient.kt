@@ -30,8 +30,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import xyz.jekyllex.utils.Commands.cat
-import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
-import xyz.jekyllex.utils.Constants.Companion.PREVIEW_URL
+import xyz.jekyllex.utils.Constants.EDITOR_URL
+import xyz.jekyllex.utils.Constants.PREVIEW_URL
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.encodeURIComponent
 import xyz.jekyllex.utils.toBase64
