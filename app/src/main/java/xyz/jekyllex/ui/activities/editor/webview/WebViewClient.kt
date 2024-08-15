@@ -36,7 +36,10 @@ import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.encodeURIComponent
 import xyz.jekyllex.utils.toBase64
 
-class WebViewClient(private val file: String): WebViewClient() {
+class WebViewClient(
+    private val file: String,
+    private val previewLoadCallback: (url: String) -> Unit = {}
+): WebViewClient() {
     override fun shouldOverrideUrlLoading(
         view: WebView,
         request: WebResourceRequest
@@ -54,6 +57,7 @@ class WebViewClient(private val file: String): WebViewClient() {
     override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
 
+        if (url.contains(PREVIEW_URL)) previewLoadCallback(url)
         if (!url.contains(EDITOR_URL)) return
 
         view.loadUrl(

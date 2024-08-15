@@ -28,17 +28,29 @@ import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,29 +99,70 @@ fun Preview(
         }
     else
         Surface {
-            AndroidView(
+            var canGoBack by remember { mutableStateOf(false) }
+            val defaultUrl by rememberUpdatedState(guessedUrl)
+
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .consumeWindowInsets(padding)
-                    .imePadding(),
-                factory = {
-                    viewCache.getOrPut(1) {
-                        WebView(it).apply {
-                            this.layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                            )
+                    .imePadding()
+            ) {
+                AndroidView(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    factory = {
+                        viewCache.getOrPut(1) {
+                            WebView(it).apply {
+                                this.layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT
+                                )
 
-                            webViewClient = WebViewClient(file)
-                            webChromeClient = WebViewChromeClient()
+                                webViewClient = WebViewClient(file) { url ->
+                                    if (
+                                        defaultUrl.isNotBlank() &&
+                                        url.contains(defaultUrl) &&
+                                        !canGoBack
+                                    ) {
+                                        viewCache[1]?.clearHistory()
+                                        return@WebViewClient
+                                    }
+                                    canGoBack = viewCache[1]?.canGoBack() ?: false
+                                }
 
-                            settings.javaScriptEnabled = true
+                                webChromeClient = WebViewChromeClient()
+                                settings.javaScriptEnabled = true
 
-                            NativeUtils.exec(rmDir(WEBVIEW_CACHE))
-                            loadUrl(guessedUrl.buildPreviewURL())
+                                NativeUtils.exec(rmDir(WEBVIEW_CACHE))
+                                loadUrl(defaultUrl.buildPreviewURL())
+                            }
                         }
+                    },
+                )
+                Row(Modifier.fillMaxWidth().padding(4.dp)) {
+                    IconButton(
+                        onClick = { viewCache[1]?.goBack() },
+                        modifier = Modifier.weight(1f),
+                        enabled = canGoBack
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Go Back")
                     }
-                },
-            )
+
+                    if (defaultUrl.isNotBlank())
+                        Button(
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                viewCache[1]?.loadUrl(defaultUrl.buildPreviewURL())
+                                canGoBack = false
+                            },
+                        ) { Text(text = "Load default") }
+
+                    IconButton(onClick = { viewCache[1]?.reload() }, Modifier.weight(1f)) {
+                        Icon(Icons.Default.Refresh, "Refresh")
+                    }
+                }
+            }
         }
 }
