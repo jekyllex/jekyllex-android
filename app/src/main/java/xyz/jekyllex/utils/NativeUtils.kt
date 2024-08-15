@@ -35,87 +35,85 @@ import xyz.jekyllex.utils.Constants.GEM_DIR
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.Constants.PREFIX
 
-class NativeUtils {
-    companion object {
-        const val LOG_TAG = "NativeUtils"
+object NativeUtils {
+    const val LOG_TAG = "NativeUtils"
 
-        fun launchInstaller(context: Activity, force: Boolean = false) {
-            Log.d(LOG_TAG, "Launching bootstrap installer activity")
+    fun launchInstaller(context: Activity, force: Boolean = false) {
+        Log.d(LOG_TAG, "Launching bootstrap installer activity")
 
-            context.startActivity(
-                Intent(context, BootstrapInstaller::class.java)
-                    .putExtra("force", force)
-                    .addFlags(
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                    )
-            )
+        context.startActivity(
+            Intent(context, BootstrapInstaller::class.java)
+                .putExtra("force", force)
+                .addFlags(
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                )
+        )
 
-            context.finish()
+        context.finish()
+    }
+
+    fun isUsable(binary: String, versionFlag: String = "--version"): Boolean {
+        Log.d(LOG_TAG, "Checking if $binary exists")
+
+        val file = File("$BIN_DIR/$binary")
+        if (!file.exists()) return false
+
+        val command = arrayOf(binary, versionFlag)
+
+        try {
+            exec(command)
+        } catch (e: Exception) {
+            Log.d(LOG_TAG, "Error while executing $command: $e")
+            return false
         }
 
-        fun isUsable(binary: String, versionFlag: String = "--version"): Boolean {
-            Log.d(LOG_TAG, "Checking if $binary exists")
+        return true
+    }
 
-            val file = File("$BIN_DIR/$binary")
-            if (!file.exists()) return false
+    fun areUsable(binaries: Array<String>): Boolean {
+        for (binary in binaries) {
+            if (!isUsable(binary)) return false
+        }
 
-            val command = arrayOf(binary, versionFlag)
+        return true
+    }
 
-            try {
-                exec(command)
-            } catch (e: Exception) {
-                Log.d(LOG_TAG, "Error while executing $command: $e")
-                return false
+    fun ensureDirectoryExists(directory: File?) {
+        if (directory !== null && (directory.exists() || directory.mkdirs())) return
+        throw RuntimeException("Unable to create directory: ${directory?.absolutePath}")
+    }
+
+    fun exec(command: Array<String>, dir: String = HOME_DIR): String {
+        val process = Runtime.getRuntime().exec(
+            if (command[0].contains("/bin")) command
+            else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1)),
+            buildEnvironment(dir),
+            File(dir)
+        )
+
+        val output = process.inputStream.bufferedReader().readText()
+        Log.d(LOG_TAG, "Output for command \"${command.toList()}\": $output")
+
+        return output.trim()
+    }
+
+    fun buildEnvironment(cwd: String, context: Context? = null): Array<String> {
+        ensureDirectoryExists(File(HOME_DIR))
+
+        val environment: Array<String> = ArrayList<String>().apply {
+            add("PWD=$cwd")
+            add("HOME=$HOME_DIR")
+            add("PREFIX=$PREFIX")
+            add("GEM_HOME=$GEM_DIR")
+            add("GEM_PATH=$GEM_DIR")
+            add("PATH=$BIN_DIR:${System.getenv("PATH")}")
+
+            context?.let {
+                val settings = Settings(it)
+                add("JEKYLL_ENV=${settings.get<String>(Setting.JEKYLL_ENV)}")
             }
+        }.toTypedArray()
 
-            return true
-        }
-
-        fun areUsable(binaries: Array<String>): Boolean {
-            for (binary in binaries) {
-                if (!isUsable(binary)) return false
-            }
-
-            return true
-        }
-
-        fun ensureDirectoryExists(directory: File?) {
-            if (directory !== null && (directory.exists() || directory.mkdirs())) return
-            throw RuntimeException("Unable to create directory: ${directory?.absolutePath}")
-        }
-
-        fun exec(command: Array<String>, dir: String = HOME_DIR): String {
-            val process = Runtime.getRuntime().exec(
-                if (command[0].contains("/bin")) command
-                else arrayOf("$BIN_DIR/${command[0]}", *command.drop(1)),
-                buildEnvironment(dir),
-                File(dir)
-            )
-
-            val output = process.inputStream.bufferedReader().readText()
-            Log.d(LOG_TAG, "Output for command \"${command.toList()}\": $output")
-
-            return output.trim()
-        }
-
-        fun buildEnvironment(cwd: String, context: Context? = null): Array<String> {
-            ensureDirectoryExists(File(HOME_DIR))
-
-            val environment: Array<String> = ArrayList<String>().apply {
-                add("PWD=$cwd")
-                add("HOME=$HOME_DIR")
-                add("PREFIX=$PREFIX")
-                add("GEM_HOME=$GEM_DIR")
-                add("GEM_PATH=$GEM_DIR")
-                add("PATH=$BIN_DIR:${System.getenv("PATH")}")
-
-                context?.let {
-                    val settings = Settings(it)
-                    add("JEKYLL_ENV=${settings.get<String>(Setting.JEKYLL_ENV)}")
-                }
-            }.toTypedArray()
-
-            return environment
-        }
+        return environment
     }
 }

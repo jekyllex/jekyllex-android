@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.utils.Constants.BIN_DIR
 import xyz.jekyllex.utils.Constants.HOME_DIR
-import xyz.jekyllex.utils.NativeUtils.Companion.buildEnvironment
+import xyz.jekyllex.utils.NativeUtils.buildEnvironment
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.drop
