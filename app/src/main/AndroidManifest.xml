@@ -46,13 +46,20 @@
 
         <activity
             android:exported="false"
-            android:label="@string/title_activity_editor"
+            android:theme="@style/Theme.JekyllEx"
+            android:name=".ui.activities.viewer.WebPageViewer"
+            android:parentActivityName=".ui.activities.home.HomeActivity" />
+
+        <activity
+            android:exported="false"
             android:theme="@style/Theme.JekyllEx"
             android:name=".ui.activities.editor.EditorActivity"
             android:parentActivityName=".ui.activities.home.HomeActivity" />
 
         <activity
             android:exported="false"
-            android:name=".ui.activities.settings.SettingsActivity" />
+            android:theme="@style/Theme.JekyllEx"
+            android:name=".ui.activities.settings.SettingsActivity"
+            android:parentActivityName=".ui.activities.home.HomeActivity" />
     </application>
 </manifest>

@@ -15,7 +15,6 @@
         You can close the app and come back later
         but please don\'t remove the app from history.
     </string>
-    <string name="title_activity_editor">EditorActivity</string>
 
     <string name="bootstrap_setting_title">Fix binaries</string>
     <string name="bootstrap_setting_summary">
@@ -93,4 +92,8 @@
     <string name="debounce_setting_summary">
         Time to wait before saving changes to the file being edited (debounce delay).
     </string>
+
+    <string name="licenses">Licenses</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_and_conditions">Terms &amp; Conditions</string>
 </resources>

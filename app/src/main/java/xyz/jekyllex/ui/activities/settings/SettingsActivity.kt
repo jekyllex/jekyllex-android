@@ -49,6 +49,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
+import me.zhanghai.compose.preference.footerPreference
 import me.zhanghai.compose.preference.preference
 import me.zhanghai.compose.preference.preferenceCategory
 import me.zhanghai.compose.preference.preferenceTheme
@@ -63,6 +64,11 @@ import xyz.jekyllex.utils.Constants.Companion.PAT_SETTINGS_URL
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting.*
 import xyz.jekyllex.utils.trimQuotes
+import xyz.jekyllex.BuildConfig
+import xyz.jekyllex.ui.activities.viewer.WebPageViewer
+import xyz.jekyllex.utils.Constants.Companion.LICENSES
+import xyz.jekyllex.utils.Constants.Companion.PRIVACY
+import xyz.jekyllex.utils.Constants.Companion.TERMS
 
 class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -311,6 +317,58 @@ fun SettingsView() {
                     summary = {
                         Text(context.getString(R.string.jekyll_flags_summary))
                         it.takeIf { it.isNotBlank() }?.let { flag -> Text(flag) }
+                    },
+                )
+
+                preferenceCategory(
+                    key = "other",
+                    title = { Text("Other") }
+                )
+
+                preference(
+                    key = "licenses",
+                    onClick = {
+                        context.startActivity(
+                            Intent(context, WebPageViewer::class.java).apply {
+                                putExtra("url", LICENSES)
+                                putExtra("title", context.getString(R.string.licenses))
+                            }
+                        )
+                    },
+                    title = { Text(context.getString(R.string.licenses)) },
+                )
+
+                preference(
+                    key = "privacy",
+                    onClick = {
+                        context.startActivity(
+                            Intent(context, WebPageViewer::class.java).apply {
+                                putExtra("url", PRIVACY)
+                                putExtra("title", context.getString(R.string.privacy_policy))
+                            }
+                        )
+                    },
+                    title = { Text(context.getString(R.string.privacy_policy)) },
+                )
+
+                preference(
+                    key = "terms",
+                    onClick = {
+                        context.startActivity(
+                            Intent(context, WebPageViewer::class.java).apply {
+                                putExtra("url", TERMS)
+                                putExtra("title", context.getString(R.string.terms_and_conditions))
+                            }
+                        )
+                    },
+                    title = { Text(context.getString(R.string.terms_and_conditions)) },
+                )
+
+                footerPreference(
+                    key = "footer",
+                    summary = {
+                        Text("${BuildConfig.APPLICATION_ID} (${BuildConfig.BUILD_TYPE})")
+                        Text("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
                     },
                 )
             }
