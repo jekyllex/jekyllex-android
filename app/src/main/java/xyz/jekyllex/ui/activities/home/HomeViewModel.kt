@@ -63,9 +63,11 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
         }
     }
 
+    private var query: String = ""
     private var statsJob: Job? = null
     private var _cwd = mutableStateOf("")
     private val _availableFiles = MutableStateFlow(listOf<File>())
+    private val _searchedFiles = MutableStateFlow(listOf<File>())
 
     private val lsCmd
         get() = (_cwd.value == HOME_DIR).let {
@@ -75,12 +77,32 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
     val cwd
         get() = _cwd
     val availableFiles
-        get() = _availableFiles
+        get() = _searchedFiles
+    val filesCount
+        get() = _availableFiles.value.size
 
     var appendLog: (String) -> Unit = {}
 
     init {
         cd(HOME_DIR)
+    }
+
+    fun search(query: String) {
+        this.query = query
+
+        if (query.isBlank()) {
+            _searchedFiles.value = _availableFiles.value
+            return
+        }
+
+        _searchedFiles.value = _availableFiles.value.filter {
+            it.name.contains(query, true) or
+            it.url.orEmpty().contains(query, true) or
+            it.size.orEmpty().contains(query, true) or
+            it.title.orEmpty().contains(query, true) or
+            it.description.orEmpty().contains(query, true) or
+            it.lastModified.orEmpty().contains(query, true)
+        }
     }
 
     fun setSkipAnimation(value: Boolean) {
@@ -112,10 +134,13 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
                 .filter { it !in listOf(".", "..", ".git") }
                 .map {
                     File(
-                        "${_cwd.value}/$it",
+                        name = it,
+                        path = "${_cwd.value}/$it",
                         isDir = JFile("${_cwd.value}/$it").isDirectory
                     )
                 }
+
+            search(query)
 
             if (!skipAnimations)
                 statsJob = viewModelScope.launch(Dispatchers.IO) { fetchStats() }
@@ -161,6 +186,7 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
                 }
             )
         }
+
+        search(query)
     }
 }
-

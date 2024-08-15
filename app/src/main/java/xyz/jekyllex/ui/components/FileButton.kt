@@ -57,19 +57,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.io.File as JFile
 import xyz.jekyllex.R
 import xyz.jekyllex.models.File
 import xyz.jekyllex.utils.buildStatsString
-import xyz.jekyllex.utils.getFileName
 
-@Preview
 @Composable
 fun FileButton(
+    file: File,
     modifier: Modifier = Modifier,
-    file: File = File("test"),
     onClick: () -> Unit = {},
     refresh: () -> Unit = {},
 ) {
@@ -109,7 +106,7 @@ fun FileButton(
                     Text(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        text = file.title ?: file.path.getFileName(),
+                        text = file.title ?: file.name,
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Start,
                         modifier = Modifier
@@ -162,8 +159,8 @@ fun FileButton(
                 if (file.title != null)
                     Text(
                         maxLines = 1,
+                        text = "./${file.name}",
                         overflow = TextOverflow.Ellipsis,
-                        text = "./${file.path.getFileName()}",
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Start,
                         modifier = Modifier.padding(top = 8.dp)

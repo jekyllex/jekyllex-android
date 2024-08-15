@@ -25,6 +25,7 @@
 package xyz.jekyllex.models
 
 data class File(
+    val name: String,
     val path: String,
     val url: String? = null,
     val size: String? = null,

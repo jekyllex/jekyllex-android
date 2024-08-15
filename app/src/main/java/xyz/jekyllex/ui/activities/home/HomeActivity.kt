@@ -35,16 +35,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,6 +59,7 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -68,7 +75,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
@@ -90,7 +101,6 @@ import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.buildServeCommand
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
-import xyz.jekyllex.utils.getFileName
 import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.utils.toCommand
 import java.io.File
@@ -187,11 +197,24 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    var query by remember { mutableStateOf("") }
     var showTerminalSheet by remember { mutableStateOf(false) }
+
+    val resetQuery = {
+        query = ""
+        focusManager.clearFocus()
+        homeViewModel.search(query)
+    }
+
+    val onBackPressed = {
+        resetQuery()
+        homeViewModel.cd("..")
+    }
 
     BackHandler(
         enabled = homeViewModel.cwd.value.contains("$HOME_DIR/")
-    ) { homeViewModel.cd("..") }
+    ) { onBackPressed() }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -208,6 +231,7 @@ fun HomeScreen(
                     DropDownMenu(
                         homeViewModel,
                         isCreating,
+                        resetQuery = { resetQuery() },
                         onCreateConfirmation = { input, isDialogOpen ->
                             if (input.isNotBlank()) create(input) {
                                 isDialogOpen.value = false
@@ -246,7 +270,7 @@ fun HomeScreen(
                 },
                 navigationIcon = {
                     if (homeViewModel.cwd.value.contains("$HOME_DIR/"))
-                        IconButton(onClick = { homeViewModel.cd("..") }) {
+                        IconButton(onClick = { onBackPressed() }) {
                             Icon(
                                 contentDescription = "Go back",
                                 painter = painterResource(id = R.drawable.back),
@@ -274,7 +298,9 @@ fun HomeScreen(
         val files = homeViewModel.availableFiles.collectAsState().value
 
         Column(
-            modifier = Modifier.padding(top = padding.calculateTopPadding())
+            modifier = Modifier
+                .padding(top = padding.calculateTopPadding())
+                .pointerInput(Unit) { detectTapGestures { focusManager.clearFocus() } }
         ) {
             Text(
                 text = homeViewModel.cwd.value.formatDir(" / "),
@@ -286,7 +312,7 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(horizontal = 8.dp),
             ) {
-                if (homeViewModel.cwd.value == HOME_DIR && files.isEmpty())
+                if (homeViewModel.cwd.value == HOME_DIR && homeViewModel.filesCount == 0)
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -321,15 +347,48 @@ fun HomeScreen(
                 else LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
+                    if (homeViewModel.filesCount > 1)
+                        item {
+                            OutlinedTextField(
+                                value = query,
+                                singleLine = true,
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                onValueChange = { query = it; homeViewModel.search(query) },
+                                label = {
+                                    Text("Search among ${homeViewModel.filesCount} items")
+                                },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Text,
+                                    imeAction = ImeAction.Search
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onSearch = {
+                                        homeViewModel.search(query)
+                                        focusManager.clearFocus()
+                                    }
+                                ),
+                                trailingIcon = {
+                                    if (query.isNotBlank())
+                                        IconButton(onClick = { resetQuery() }) {
+                                            Icon(Icons.Outlined.Clear, "Reset query")
+                                        }
+                                }
+                            )
+                        }
+
                     items(files.size) {
                         FileButton(
                             file = files[it],
                             modifier = Modifier.padding(8.dp),
                             refresh = { homeViewModel.refresh() },
                             onClick = {
-                                if (files[it].isDir == true)
-                                    homeViewModel.cd(files[it].path.getFileName())
-                                else {
+                                if (files[it].isDir == true) {
+                                    resetQuery()
+                                    homeViewModel.cd(files[it].name)
+                                } else {
                                     context.startActivity(
                                         Intent(context, EditorActivity::class.java)
                                             .putExtra("file", files[it].path)

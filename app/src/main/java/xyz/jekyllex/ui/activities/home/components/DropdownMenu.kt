@@ -54,6 +54,7 @@ import xyz.jekyllex.utils.Constants.HOME_DIR
 fun DropDownMenu(
     homeViewModel: HomeViewModel,
     isCreating: MutableState<Boolean>,
+    resetQuery: () -> Unit,
     serverIcon: @Composable () -> Unit,
     onCreateConfirmation: (String, MutableState<Boolean>) -> Unit,
     onDeleteConfirmation: (MutableState<Boolean>) -> Unit,
@@ -93,9 +94,8 @@ fun DropDownMenu(
     )
 
     if (homeViewModel.cwd.value != HOME_DIR) {
-        IconButton(onClick = { homeViewModel.cd(HOME_DIR) }) {
+        IconButton(onClick = { resetQuery(); homeViewModel.cd(HOME_DIR) }) {
             Icon(Icons.Default.Home, "Go back to home")
-
         }
         serverIcon()
     }
