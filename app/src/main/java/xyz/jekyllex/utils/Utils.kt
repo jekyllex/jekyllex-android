@@ -26,10 +26,9 @@ package xyz.jekyllex.utils
 
 import java.io.File
 import android.content.Context
-import xyz.jekyllex.utils.Commands.Companion.bundle
-import xyz.jekyllex.utils.Commands.Companion.git
-import xyz.jekyllex.utils.Commands.Companion.jekyll
-import xyz.jekyllex.utils.Constants.Companion.BIN_DIR
+import xyz.jekyllex.utils.Commands.bundle
+import xyz.jekyllex.utils.Commands.git
+import xyz.jekyllex.utils.Commands.jekyll
 
 private val denyList = arrayOf("ls", "ln", "cd")
 fun Array<String>.isDenied(): Boolean = this.any { it in denyList }

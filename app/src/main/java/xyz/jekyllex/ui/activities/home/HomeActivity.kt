@@ -78,10 +78,10 @@ import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.FileButton
 import xyz.jekyllex.ui.components.TerminalSheet
 import xyz.jekyllex.ui.theme.JekyllExTheme
-import xyz.jekyllex.utils.Commands.Companion.echo
-import xyz.jekyllex.utils.Commands.Companion.git
-import xyz.jekyllex.utils.Commands.Companion.jekyll
-import xyz.jekyllex.utils.Commands.Companion.rmDir
+import xyz.jekyllex.utils.Commands.echo
+import xyz.jekyllex.utils.Commands.git
+import xyz.jekyllex.utils.Commands.jekyll
+import xyz.jekyllex.utils.Commands.rmDir
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.requiredBinaries
 import xyz.jekyllex.utils.NativeUtils

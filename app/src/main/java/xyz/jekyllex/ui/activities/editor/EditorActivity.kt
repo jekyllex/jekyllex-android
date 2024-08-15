@@ -51,8 +51,8 @@ import xyz.jekyllex.ui.activities.editor.components.Preview
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.TerminalSheet
-import xyz.jekyllex.utils.Commands.Companion.guessDestinationUrl
-import xyz.jekyllex.utils.Commands.Companion.rm
+import xyz.jekyllex.utils.Commands.guessDestinationUrl
+import xyz.jekyllex.utils.Commands.rm
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings

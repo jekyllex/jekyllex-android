@@ -29,7 +29,7 @@ import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import xyz.jekyllex.utils.Commands.Companion.cat
+import xyz.jekyllex.utils.Commands.cat
 import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
 import xyz.jekyllex.utils.Constants.Companion.PREVIEW_URL
 import xyz.jekyllex.utils.NativeUtils

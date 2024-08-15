@@ -48,7 +48,6 @@ import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.activities.home.HomeActivity
 import xyz.jekyllex.ui.theme.JekyllExTheme
-import xyz.jekyllex.utils.Commands.Companion.shell
 import xyz.jekyllex.utils.Constants.Companion.FILES_DIR
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Constants.Companion.USR_DIR

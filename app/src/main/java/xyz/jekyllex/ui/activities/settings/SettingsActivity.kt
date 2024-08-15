@@ -59,7 +59,7 @@ import me.zhanghai.compose.preference.textFieldPreference
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.theme.JekyllExTheme
-import xyz.jekyllex.utils.Commands.Companion.git
+import xyz.jekyllex.utils.Commands.git
 import xyz.jekyllex.utils.Constants.Companion.PAT_SETTINGS_URL
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting.*

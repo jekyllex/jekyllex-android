@@ -24,50 +24,48 @@
 
 package xyz.jekyllex.utils
 
-class Commands {
-    companion object {
-        fun cat(vararg file: String): Array<String> = arrayOf("cat", *file)
-        fun rm(vararg files: String): Array<String> = arrayOf("rm", *files)
-        fun rmDir(vararg dirs: String): Array<String> = arrayOf("rm", "-rf", *dirs)
-        fun stat(vararg command: String): Array<String> = arrayOf("stat", *command)
-        fun echo(vararg command: String): Array<String> = arrayOf("echo", *command)
-        fun touch(vararg command: String): Array<String> = arrayOf("touch", *command)
-        fun mkDir(vararg command: String): Array<String> = arrayOf("mkdir", *command)
-        fun diskUsage(vararg command: String): Array<String> = arrayOf("du", *command)
-        fun shell(vararg command: String): Array<String> = arrayOf("/bin/sh", "-c", *command)
+object Commands {
+    fun cat(vararg file: String): Array<String> = arrayOf("cat", *file)
+    fun rm(vararg files: String): Array<String> = arrayOf("rm", *files)
+    fun rmDir(vararg dirs: String): Array<String> = arrayOf("rm", "-rf", *dirs)
+    fun stat(vararg command: String): Array<String> = arrayOf("stat", *command)
+    fun echo(vararg command: String): Array<String> = arrayOf("echo", *command)
+    fun touch(vararg command: String): Array<String> = arrayOf("touch", *command)
+    fun mkDir(vararg command: String): Array<String> = arrayOf("mkdir", *command)
+    fun diskUsage(vararg command: String): Array<String> = arrayOf("du", *command)
+    fun shell(vararg command: String): Array<String> = arrayOf("/bin/sh", "-c", *command)
 
-        fun git(vararg command: String): Array<String> = arrayOf("git", *command)
-        fun gem(vararg command: String): Array<String> = arrayOf("gem", *command)
-        fun ruby(vararg command: String): Array<String> = arrayOf("ruby", *command)
-        fun bundle(vararg command: String): Array<String> = arrayOf("bundle", *command)
-        fun jekyll(vararg command: String): Array<String> = arrayOf("jekyll", *command)
+    fun git(vararg command: String): Array<String> = arrayOf("git", *command)
+    fun gem(vararg command: String): Array<String> = arrayOf("gem", *command)
+    fun ruby(vararg command: String): Array<String> = arrayOf("ruby", *command)
+    fun bundle(vararg command: String): Array<String> = arrayOf("bundle", *command)
+    fun jekyll(vararg command: String): Array<String> = arrayOf("jekyll", *command)
 
-        fun git(progress: Boolean, vararg command: String): Array<String> = git(*command).let {
-            if (progress) it.plus("--progress") else it
-        }
-
-        fun getFromYAML(file: String, vararg properties: String): Array<String> = ruby(
-            "-e", "require 'safe_yaml';_=SafeYAML.load_file('${file}');p ${
-                properties.joinToString(", ") { "_['${it}']" }
-            };"
-        )
-
-        fun guessDestinationUrl(file: String) = ruby(
-            "-e",   "require 'jekyll';" +
-                    "Jekyll.logger.log_level=:error;"+
-                    "s=Jekyll::Site.new(Jekyll.configuration({'config': '_config.yml'}));" +
-                    "s.collections.each { |n,c| " +
-                        "if '$file'.include?(\"_#{n}/\") then " +
-                            "puts Jekyll::Document.new(" +
-                                "'$file'," + ":site=>s," +
-                                ":collection=>s.collections[n]" +
-                            ").tap(&:read).url; exit " +
-                        "end" +
-                    "}; " +
-                    "_p=Jekyll::Page.new(" +
-                        "s" + ",'.'," + "''," + "'$file'" +
-                    ");" +
-                    "puts _p.url",
-        )
+    fun git(progress: Boolean, vararg command: String): Array<String> = git(*command).let {
+        if (progress) it.plus("--progress") else it
     }
+
+    fun getFromYAML(file: String, vararg properties: String): Array<String> = ruby(
+        "-e", "require 'safe_yaml';_=SafeYAML.load_file('${file}');p ${
+            properties.joinToString(", ") { "_['${it}']" }
+        };"
+    )
+
+    fun guessDestinationUrl(file: String) = ruby(
+        "-e", "require 'jekyll';" +
+                "Jekyll.logger.log_level=:error;" +
+                "s=Jekyll::Site.new(Jekyll.configuration({'config': '_config.yml'}));" +
+                "s.collections.each { |n,c| " +
+                "if '$file'.include?(\"_#{n}/\") then " +
+                "puts Jekyll::Document.new(" +
+                "'$file'," + ":site=>s," +
+                ":collection=>s.collections[n]" +
+                ").tap(&:read).url; exit " +
+                "end" +
+                "}; " +
+                "_p=Jekyll::Page.new(" +
+                "s" + ",'.'," + "''," + "'$file'" +
+                ");" +
+                "puts _p.url",
+    )
 }

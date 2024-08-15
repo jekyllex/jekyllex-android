@@ -36,10 +36,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import java.io.File as JFile
 import xyz.jekyllex.models.File
-import xyz.jekyllex.utils.Commands.Companion.diskUsage
-import xyz.jekyllex.utils.Commands.Companion.getFromYAML
-import xyz.jekyllex.utils.Commands.Companion.shell
-import xyz.jekyllex.utils.Commands.Companion.stat
+import xyz.jekyllex.utils.Commands.diskUsage
+import xyz.jekyllex.utils.Commands.getFromYAML
+import xyz.jekyllex.utils.Commands.shell
+import xyz.jekyllex.utils.Commands.stat
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.formatDir

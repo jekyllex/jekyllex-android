@@ -28,8 +28,8 @@ import android.content.Context
 import android.icu.text.SimpleDateFormat
 import android.icu.util.TimeZone
 import android.util.Base64
-import xyz.jekyllex.utils.Commands.Companion.bundle
-import xyz.jekyllex.utils.Commands.Companion.jekyll
+import xyz.jekyllex.utils.Commands.bundle
+import xyz.jekyllex.utils.Commands.jekyll
 import xyz.jekyllex.utils.Constants.Companion.EDITOR_URL
 import xyz.jekyllex.utils.Constants.Companion.HOME_DIR
 import xyz.jekyllex.utils.Constants.Companion.PREVIEW_URL
