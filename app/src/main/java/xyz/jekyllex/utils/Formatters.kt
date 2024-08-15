@@ -56,8 +56,6 @@ fun String.toBase64(): String = Base64.encodeToString(
 
 fun String.fromBase64(): String = String(Base64.decode(this, Base64.NO_WRAP))
 
-fun String.encodeURIComponent(): String = URLEncoder.encode(this, "UTF-8")
-
 fun mergeCommands(vararg commands: Array<String>): String =
     commands.joinToString(";") { cmd -> cmd.joinToString(" ") }
 

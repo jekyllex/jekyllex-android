@@ -26,12 +26,18 @@ package xyz.jekyllex.ui.activities.editor.webview
 
 import java.io.File
 import android.webkit.JavascriptInterface
+import androidx.compose.runtime.MutableState
 import xyz.jekyllex.utils.fromBase64
 
-class IOBridge(val path: String) {
+class IOBridge(path: String, private val isLoading: MutableState<Boolean>) {
     private val file = File(path)
     private val isSymlink
         get() = file.let { it.canonicalPath != it.absolutePath }
+
+    @JavascriptInterface
+    fun setLoaded() {
+        isLoading.value = false
+    }
 
     @JavascriptInterface
     fun saveText(content: String) {

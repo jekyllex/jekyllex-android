@@ -36,7 +36,6 @@ import xyz.jekyllex.utils.Commands.cat
 import xyz.jekyllex.utils.Constants.EDITOR_URL
 import xyz.jekyllex.utils.Constants.PREVIEW_URL
 import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.encodeURIComponent
 import xyz.jekyllex.utils.toBase64
 
 class WebViewClient(
@@ -64,12 +63,10 @@ class WebViewClient(
         if (!url.contains(EDITOR_URL)) return
 
         NativeUtils.exec(cat(file), CoroutineScope(Dispatchers.IO)) { content ->
+            val text = content.ifBlank { "The editor is ready" }
+
             withContext(Dispatchers.Main) {
-                view.loadUrl(
-                    "javascript:setText('${
-                        content.toBase64().encodeURIComponent()
-                    }')"
-                )
+                view.loadUrl("javascript:setText('${text.toBase64()}')")
             }
         }
     }

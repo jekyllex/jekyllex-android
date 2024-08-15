@@ -32,11 +32,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import xyz.jekyllex.ui.activities.editor.webview.IOBridge
 import xyz.jekyllex.ui.activities.editor.webview.WebViewChromeClient
 import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
@@ -49,32 +55,43 @@ fun Editor(
     viewCache: SnapshotStateMap<Int, WebView>,
     file: String,
     timeout: Int,
-    padding: PaddingValues
+    padding: PaddingValues,
+    isLoading: MutableState<Boolean>
 ) {
     Surface {
-        AndroidView(
-            modifier = Modifier
-                .fillMaxSize()
-                .consumeWindowInsets(padding)
-                .imePadding(),
-            factory = {
-                viewCache.getOrPut(0) {
-                    WebView(it).apply {
-                        this.layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
+        Box(
+            Modifier.consumeWindowInsets(padding)
+            .imePadding()
+        ) {
+            if (isLoading.value) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center).zIndex(1f)
+                )
+            }
 
-                        webViewClient = WebViewClient(file)
-                        webChromeClient = WebViewChromeClient()
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = {
+                    viewCache.getOrPut(0) {
+                        WebView(it).apply {
+                            this.layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
 
-                        settings.javaScriptEnabled = true
+                            webViewClient = WebViewClient(file)
+                            webChromeClient = WebViewChromeClient()
 
-                        addJavascriptInterface(IOBridge(file), "IOBridge")
-                        loadUrl(file.buildEditorURL(timeout))
+                            settings.javaScriptEnabled = true
+
+                            val bridge = IOBridge(file, isLoading)
+                            addJavascriptInterface(bridge, "IOBridge")
+
+                            loadUrl(file.buildEditorURL(timeout))
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
     }
 }

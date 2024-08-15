@@ -169,6 +169,7 @@ fun EditorView(file: String = "", timeout: Int) {
         var guessedUrl by remember { mutableStateOf("") }
         var tabIndex by remember { mutableIntStateOf(0) }
         val viewCache = remember { mutableStateMapOf<Int, WebView>() }
+        val isEditorLoading = remember { mutableStateOf(true) }
         val canPreview by remember { derivedStateOf { isBound.value && service.isRunning } }
         val shouldGuessURLs = Settings(context).get<Boolean>(Setting.GUESS_URLS)
 
@@ -215,7 +216,7 @@ fun EditorView(file: String = "", timeout: Int) {
             }
 
             when (tabIndex) {
-                0 -> Editor(viewCache, file, timeout, innerPadding)
+                0 -> Editor(viewCache, file, timeout, innerPadding, isEditorLoading)
                 1 -> Preview(viewCache, file, guessedUrl, canPreview, innerPadding) {
                     file.getProjectDir()?.let { dir ->
                         service.exec(jekyll("serve"), dir)
