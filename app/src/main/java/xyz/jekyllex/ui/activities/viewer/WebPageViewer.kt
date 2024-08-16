@@ -33,10 +33,14 @@ import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,12 +50,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.theme.JekyllExTheme
@@ -70,6 +76,7 @@ class WebPageViewer: ComponentActivity() {
                 var currentUrl by remember {
                     mutableStateOf(intent.getStringExtra("url") ?: HOME_PAGE)
                 }
+                var isLoading by remember { mutableStateOf(true) }
                 val webView = remember {
                     WebView(this).apply {
                         webViewClient = object: WebViewClient() {
@@ -79,7 +86,10 @@ class WebPageViewer: ComponentActivity() {
                             ): Boolean {
                                 val url = request.url.toString()
                                 Log.d("WebPageViewer", "Loading $url")
-                                if (url.contains(DOMAIN)) return false
+                                if (url.contains(DOMAIN)) {
+                                    isLoading = true
+                                    return false
+                                }
 
                                 startActivity(Intent(Intent.ACTION_VIEW, request.url))
                                 return true
@@ -87,6 +97,7 @@ class WebPageViewer: ComponentActivity() {
 
                             override fun onPageFinished(view: WebView, url: String) {
                                 currentUrl = url
+                                isLoading = false
                                 view.title?.let { title = it }
                                 super.onPageFinished(view, url)
                             }
@@ -141,10 +152,21 @@ class WebPageViewer: ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
-                    AndroidView(
-                        factory = { webView },
-                        modifier = Modifier.fillMaxSize().padding(innerPadding),
-                    )
+
+                    Box(
+                        Modifier.fillMaxSize().padding(innerPadding)
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center).zIndex(1f)
+                            )
+                        }
+
+                        AndroidView(
+                            factory = { webView },
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
                 }
             }
         }
