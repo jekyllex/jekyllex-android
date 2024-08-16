@@ -48,6 +48,7 @@ import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.activities.home.HomeActivity
 import xyz.jekyllex.ui.theme.JekyllExTheme
+import xyz.jekyllex.utils.Commands.rmDir
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Constants.USR_DIR
 import xyz.jekyllex.utils.Constants.FILES_DIR
@@ -105,6 +106,8 @@ class BootstrapInstaller : ComponentActivity() {
         // https://github.com/termux/termux-app/blob/android-10/app/src/main/java/com/termux/app/TermuxPackageInstaller.java#L45
         CoroutineScope(Dispatchers.IO).launch {
             Log.d(LOG_TAG, "Starting bootstrap installation...")
+
+            NativeUtils.exec(rmDir(USR_DIR))
 
             val filesMapping = File(applicationInfo.nativeLibraryDir, "libfiles.so")
             var reader = BufferedReader(FileReader(filesMapping))
