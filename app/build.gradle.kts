@@ -262,26 +262,16 @@ fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
 tasks {
     val setupBootstraps by registering {
         doFirst {
-            setupBootstrap(
-                "aarch64",
-                "c7863b6e7830307099f89a8af4412b68191ae3c758ec0ad5a14a5279297b7089",
-                "v0.1.1"
+            val version = "v0.1.2"
+
+            val map = mapOf(
+                "aarch64" to "2a93c51def0ad9dbf1ba4aa43a6d6f6bc8bfcc453744a2b02ea1fe4257beeb6c",
+                "arm" to "e71ffdd400147e228c22449d93e642736a7b2f989767fc8fe78311dfdf3f04b6",
+                "i686" to "e1b9410140c455a2309ef727da10c9337fb846a837c7165796268ff311539a57",
+                "x86_64" to "966a0ac9bcb166de536ad26b84005efffff5e0b70c23831c8535238947ed214f"
             )
-            setupBootstrap(
-                "arm",
-                "bd53af8125ca969b476eaa22cec6918acaf60f272d70058cd46e95989765b8db",
-                "v0.1.1"
-            )
-            setupBootstrap(
-                "i686",
-                "d4eb484288e01e31a824852d659482e6c4254360fdd18ca23a93c6b57f9a6151",
-                "v0.1.1"
-            )
-            setupBootstrap(
-                "x86_64",
-                "740380a397636b8e93ff13c73a9d25e6b3503a18fecd7af7861638e1417442f4",
-                "v0.1.1"
-            )
+
+            map.forEach { (arch, checksum) -> setupBootstrap(arch, checksum, version) }
         }
     }
 }
