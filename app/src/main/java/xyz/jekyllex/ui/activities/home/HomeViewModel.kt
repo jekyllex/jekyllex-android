@@ -44,9 +44,9 @@ import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getFilesInDir
+import xyz.jekyllex.utils.parseOutput
 import xyz.jekyllex.utils.mergeCommands
 import xyz.jekyllex.utils.toDate
-import xyz.jekyllex.utils.trimQuotes
 
 class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
     companion object {
@@ -170,10 +170,10 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
                         "${it.path}/_config.yml",
                         "title", "description", "url", "baseurl"
                     )
-                ).split("\n").map { prop ->
-                    if (prop.isBlank()) null
-                    else prop.trimQuotes()
-                }
+                ).parseOutput()
+                else if (!it.isDir && _cwd.value.contains("/_")) NativeUtils.exec(
+                    getFromYAML(it.path, "title", "description")
+                ).parseOutput()
                 else listOf()
 
             it.copy(

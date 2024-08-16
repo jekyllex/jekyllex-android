@@ -27,10 +27,10 @@ package xyz.jekyllex.models
 data class File(
     val name: String,
     val path: String,
+    val isDir: Boolean,
     val url: String? = null,
     val size: String? = null,
     val title: String? = null,
-    val isDir: Boolean? = null,
     val description: String? = null,
     val lastModified: String? = null,
 )

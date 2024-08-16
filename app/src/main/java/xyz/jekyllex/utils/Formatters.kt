@@ -74,6 +74,10 @@ fun String.getFilesInDir(dir: String): List<String> = this.split("\n").map {
         it.replace(dir, "").replace("/", "")
     }.filter { it.isNotBlank() }
 
+fun String.parseOutput() = this.split("\n").map { prop ->
+    prop.trimQuotes().replace("nil", "").ifBlank { null }
+}
+
 fun String.toDate(): String {
     val dateFormat = SimpleDateFormat("hh:mm a yyyy-MM-dd", Locale.getDefault())
     dateFormat.timeZone = TimeZone.getDefault()
