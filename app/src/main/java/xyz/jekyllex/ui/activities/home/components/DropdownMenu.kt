@@ -25,6 +25,7 @@
 package xyz.jekyllex.ui.activities.home.components
 
 import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -56,6 +57,7 @@ import xyz.jekyllex.utils.formatDir
 fun DropDownMenu(
     homeViewModel: HomeViewModel,
     isCreating: MutableState<Boolean>,
+    picker: ActivityResultLauncher<String>,
     resetQuery: () -> Unit,
     serverIcon: @Composable () -> Unit,
     onCreateConfirmation: (String, MutableState<Boolean>) -> Unit,
@@ -76,6 +78,8 @@ fun DropDownMenu(
             )
         else
             CreateFileDialog(
+                picker = picker,
+                isOpen = openCreateDialog,
                 isCreating = isCreating.value,
                 onDismissRequest = { openCreateDialog.value = false },
                 onConfirmation = { input, isFolder ->

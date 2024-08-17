@@ -25,6 +25,7 @@
 package xyz.jekyllex.ui.activities.home.components
 
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +49,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,14 +63,17 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import java.net.URI
 
 @Composable
 fun CreateFileDialog(
     isCreating: Boolean,
+    isOpen: MutableState<Boolean>,
     onDismissRequest: () -> Unit,
+    picker: ActivityResultLauncher<String>,
     onConfirmation: (name: String, isFolder: Boolean) -> Unit,
 ) {
-    BasicAlertDialog(onDismissRequest = { }) {
+    BasicAlertDialog(onDismissRequest = { isOpen.value = false }) {
         val context = LocalContext.current
         var file by remember { mutableStateOf("") }
         var isFolder by remember { mutableStateOf(false) }
@@ -96,7 +101,7 @@ fun CreateFileDialog(
             shape = MaterialTheme.shapes.large
         ) {
             Column(modifier = Modifier.padding(18.dp)) {
-                Row (
+                Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -113,7 +118,9 @@ fun CreateFileDialog(
                     ) {
                         Text(
                             text = "Folder",
-                            modifier = Modifier.align(Alignment.CenterVertically).offset(x = 4.dp),
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .offset(x = 4.dp),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Checkbox(
@@ -141,29 +148,48 @@ fun CreateFileDialog(
                         keyboardActions = KeyboardActions(onDone = { onDone() }),
                     )
 
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                ) {
-                    TextButton(
-                        enabled = !isCreating,
-                        onClick = onDismissRequest,
-                        modifier = Modifier.padding(end = 8.dp)
+                if ((!isFolder && file.isNotBlank()) || isFolder)
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
                     ) {
-                        Text(text = "Cancel")
+                        TextButton(
+                            enabled = !isCreating,
+                            onClick = onDismissRequest,
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text(text = "Cancel")
+                        }
+                        Button(onClick = onDone) {
+                            if (isCreating)
+                                CircularProgressIndicator(
+                                    strokeWidth = 2.dp,
+                                    color = Color.White,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            else
+                                Text(text = "Create")
+                        }
                     }
-                    Button(onClick = onDone) {
-                        if (isCreating)
-                            CircularProgressIndicator(
-                                strokeWidth = 2.dp,
-                                color = Color.White,
-                                modifier = Modifier.size(18.dp),
-                            )
-                        else
-                            Text(text = "Create")
+                if (!isFolder && file.isBlank()) {
+                    Column {
+                        Text(
+                            text = "OR",
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                                .padding(top = 10.dp, bottom = 6.dp)
+                        )
+                        Button(
+                            onClick = {
+                                picker.launch("*/*")
+                                isOpen.value = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Choose from storage")
+                        }
                     }
                 }
             }

@@ -54,5 +54,11 @@ object Constants {
         "htm" to "md",
         "html" to "md",
         "lock" to "rb",
+        "yaml" to "yml",
     )
+
+    // mime types in android are a mess; somewhat based on
+    // https://android.googlesource.com/platform/external/mime-support/+/master/mime.types
+    val editorMimes = arrayOf("text/", "xml", "json")
+    val editorExtensions = arrayOf("sh", "js", "yml", "rb", "scss", "bat")
 }

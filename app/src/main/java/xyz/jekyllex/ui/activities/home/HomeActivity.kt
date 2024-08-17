@@ -28,12 +28,16 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
 import android.webkit.URLUtil
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
@@ -81,6 +85,12 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.core.content.FileProvider
+import androidx.documentfile.provider.DocumentFile
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import xyz.jekyllex.BuildConfig
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.activities.editor.EditorActivity
@@ -100,13 +110,19 @@ import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
+import xyz.jekyllex.utils.getExtension
 import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.utils.toCommand
-import java.io.File
+import xyz.jekyllex.models.File
+import xyz.jekyllex.utils.Constants.editorExtensions
+import xyz.jekyllex.utils.Constants.editorMimes
+import xyz.jekyllex.utils.mimeType
+import java.io.File as JFile
 
 private var isBound: Boolean = false
 private lateinit var service: ProcessService
 private var isCreating = mutableStateOf(false)
+private lateinit var pickFileLauncher: ActivityResultLauncher<String>
 
 class HomeActivity : ComponentActivity() {
     private lateinit var settings: Settings
@@ -140,6 +156,37 @@ class HomeActivity : ComponentActivity() {
             }
         ).value
 
+        pickFileLauncher = registerForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            uri?.let {
+                val document = DocumentFile.fromSingleUri(this, uri)
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val destination = JFile(viewModel.cwd.value, document?.name!!)
+                        val output = destination.outputStream()
+
+                        val input = contentResolver.openInputStream(document.uri)!!
+                        input.copyTo(output)
+
+                        input.close()
+                        output.close()
+
+                        viewModel.refresh()
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            this@HomeActivity, "Error copying file!", Toast.LENGTH_SHORT
+                        ).show()
+                        e.printStackTrace()
+                    }
+                }
+            } ?: run {
+                Toast.makeText(this, "No file selected!", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+
         setContent {
             JekyllExTheme {
                 HomeScreen(viewModel)
@@ -161,33 +208,6 @@ class HomeActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unbindService(connection)
-    }
-}
-
-private fun create(input: String, callBack: () -> Unit = {}) {
-    if (!isBound || isCreating.value) return
-    isCreating.value = true
-
-    val command: Array<String> =
-        if (input.startsWith("git clone ")) input.toCommand()
-        else {
-            val url = input.let {
-                if (it.contains("github.com") && !it.contains("://")) "https://$it"
-                else it
-            }
-            when (URLUtil.isValidUrl(url)) {
-                true -> git("clone", url)
-                false -> jekyll("new", input)
-            }
-        }
-
-    service.exec(command) {
-        if (command.contentEquals(jekyll("new", input))) {
-            File(HOME_DIR, input).removeSymlinks()
-        }
-
-        isCreating.value = false
-        callBack()
     }
 }
 
@@ -230,6 +250,7 @@ fun HomeScreen(
                     DropDownMenu(
                         homeViewModel,
                         isCreating,
+                        pickFileLauncher,
                         resetQuery = { resetQuery() },
                         onCreateConfirmation = { input, isDialogOpen ->
                             if (input.isNotBlank()) create(input) {
@@ -384,15 +405,10 @@ fun HomeScreen(
                             modifier = Modifier.padding(8.dp),
                             refresh = { homeViewModel.refresh() },
                             onClick = {
-                                if (files[it].isDir == true) {
+                                if (files[it].isDir) {
                                     resetQuery()
                                     homeViewModel.cd(files[it].name)
-                                } else {
-                                    context.startActivity(
-                                        Intent(context, EditorActivity::class.java)
-                                            .putExtra("file", files[it].path)
-                                    )
-                                }
+                                } else files[it].open(context)
                             }
                         )
                     }
@@ -417,4 +433,61 @@ fun HomeScreen(
             )
         }
     }
+}
+
+private fun create(input: String, callBack: () -> Unit = {}) {
+    if (!isBound || isCreating.value) return
+    isCreating.value = true
+
+    val command: Array<String> =
+        if (input.startsWith("git clone ")) input.toCommand()
+        else {
+            val url = input.let {
+                if (it.contains("github.com") && !it.contains("://")) "https://$it"
+                else it
+            }
+            when (URLUtil.isValidUrl(url)) {
+                true -> git("clone", url)
+                false -> jekyll("new", input)
+            }
+        }
+
+    service.exec(command) {
+        if (command.contentEquals(jekyll("new", input))) {
+            JFile(HOME_DIR, input).removeSymlinks()
+        }
+
+        isCreating.value = false
+        callBack()
+    }
+}
+
+fun File.open(context: Context) {
+    val defaultAction = {
+        context.startActivity(
+            Intent(context, EditorActivity::class.java)
+                .putExtra("file", this.path)
+        )
+    }
+    val file = JFile(this.path)
+    val uri = FileProvider.getUriForFile(
+        context,
+        BuildConfig.APPLICATION_ID + ".provider",
+        file
+    )
+
+    val ext = this.path.getExtension()
+    val mime = ext.mimeType()
+
+    if (
+        this.name.startsWith(".") ||
+        editorExtensions.contains(ext) ||
+        editorMimes.any { mime.contains(it) }
+    ) defaultAction()
+    else
+        context.startActivity(
+            Intent(Intent.ACTION_VIEW)
+                .setDataAndType(uri, mime)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        )
 }

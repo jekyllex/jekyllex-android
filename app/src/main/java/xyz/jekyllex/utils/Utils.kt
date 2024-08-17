@@ -26,6 +26,7 @@ package xyz.jekyllex.utils
 
 import java.io.File
 import android.content.Context
+import android.webkit.MimeTypeMap
 import xyz.jekyllex.utils.Commands.bundle
 import xyz.jekyllex.utils.Commands.git
 import xyz.jekyllex.utils.Commands.jekyll
@@ -97,3 +98,6 @@ fun File.removeSymlinks() {
         }
     }
 }
+
+fun String.mimeType(): String =
+    MimeTypeMap.getSingleton().getMimeTypeFromExtension(this) ?: "*/*"
