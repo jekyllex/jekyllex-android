@@ -60,10 +60,9 @@ class ProcessService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 420
         private const val LOG_TAG = "ProcessService"
-        private const val ACTION_KILL_PROCESS = "xyz.jekyllex.process_service_kill"
+        private const val ACTION_KILL_PROCESS = "xyz.jekyllex.process_kill"
     }
 
-    private var job: Job? = null
     private lateinit var process: Process
     private lateinit var outputReader: BufferedReader
     private lateinit var errorReader: BufferedReader
@@ -132,12 +131,12 @@ class ProcessService : Service() {
             return
         }
 
-        job = CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             if (_isRunning.value) {
                 appendLog("\nSome other process is already running\n")
                 return@launch
             }
-            // Start the process
+
             try {
                 _isRunning.value = true
                 runningCommand = command.joinToString(" ")
@@ -179,32 +178,30 @@ class ProcessService : Service() {
                     }
                 }
 
-                process.waitFor()
+                val exitCode = process.waitFor()
+                if (exitCode != 0) appendLog("Process exited with code $exitCode")
 
-                killProcess(cancel = false)
+                processStopped()
                 callBack()
             } catch (e: Exception) {
+                processStopped()
+                appendLog("${e.cause}")
+                if (::process.isInitialized) process.destroy()
                 Log.e(LOG_TAG, "Error while starting process: $e")
-                killProcess(e = e)
             }
         }
     }
 
-    fun killProcess(cancel: Boolean = true, e: Exception? = null) {
+    fun killProcess() {
         if (!_isRunning.value) {
             appendLog("No process is running")
             return
         }
 
-        if (cancel) job?.cancel()
+        if (::process.isInitialized) process.destroy()
+    }
 
-        if (e != null) appendLog("${e.cause}")
-        if (::process.isInitialized && cancel) {
-            process.destroy()
-            val exitCode = process.waitFor()
-            if (exitCode != 0) appendLog("Process exited with code $exitCode")
-        }
-
+    private fun processStopped() {
         runningCommand = ""
         _isRunning.value = false
 
