@@ -25,13 +25,10 @@
 package xyz.jekyllex.ui.components
 
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -44,6 +41,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -72,6 +70,9 @@ fun TerminalSheet(
     val context = LocalContext.current
     val listState = rememberLazyListState()
     var text by rememberSaveable { mutableStateOf("") }
+    val state = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
 
     LaunchedEffect(logs.size) {
         listState.animateScrollToItem(logs.size)
@@ -91,6 +92,7 @@ fun TerminalSheet(
     }
 
     ModalBottomSheet(
+        sheetState = state,
         onDismissRequest = onDismiss,
         modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
     ) {
@@ -116,9 +118,9 @@ fun TerminalSheet(
             }
             LazyColumn(
                 state = listState,
-                modifier = Modifier
-                    .weight(1.0f)
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().let {
+                    if (logs.size > 25) it.weight(1.0f) else it
+                }
             ) {
                 items(logs.size) {
                     Text(
