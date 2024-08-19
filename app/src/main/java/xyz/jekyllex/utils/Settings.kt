@@ -64,6 +64,7 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
 
     // General
     TRIM_LOGS("trim_logs", SettingType.BooleanValue(true)),
+    GUESS_URLS("guess_urls", SettingType.BooleanValue(true)),
     DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
     REDUCE_ANIMATIONS("reduce_animations", SettingType.BooleanValue(false)),
 
@@ -71,7 +72,6 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     LOCAL_GEMS("local_gems", SettingType.BooleanValue(true)),
 
     // Jekyll
-    GUESS_URLS("guess_urls", SettingType.BooleanValue(true)),
     JEKYLL_FLAGS("jekyll_flags", SettingType.StringValue("")),
     SKIP_BUNDLER("skip_bundle", SettingType.BooleanValue(false)),
     LIVERELOAD("enable_livereload", SettingType.BooleanValue(true)),

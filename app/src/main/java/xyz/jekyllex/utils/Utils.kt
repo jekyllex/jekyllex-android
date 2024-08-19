@@ -62,7 +62,7 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
                 if (skipBundle) jekyll(*this.drop(1), "--skip-bundle")
                 else this
             }
-            else if (this.getOrNull(1) == "serve" && this.size == 2) {
+            else if (this.getOrNull(1) == "serve") {
                 val liveReload = settings.get<Boolean>(Setting.LIVERELOAD)
                 val prefixBundler = settings.get<Boolean>(Setting.PREFIX_BUNDLER)
                 val flags = settings.get<String>(Setting.JEKYLL_FLAGS).split(" ")
@@ -75,6 +75,7 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
                 if (liveReload) command.add("-l")
                 command.addAll(flags)
 
+                command.addAll(this.drop(2))
                 command.toTypedArray()
             }
             else this
