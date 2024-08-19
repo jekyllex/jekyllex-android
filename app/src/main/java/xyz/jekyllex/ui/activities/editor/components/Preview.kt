@@ -56,7 +56,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import xyz.jekyllex.ui.activities.editor.webview.WebViewChromeClient
 import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
 import xyz.jekyllex.utils.Commands.rmDir
 import xyz.jekyllex.utils.Constants.WEBVIEW_CACHE
@@ -132,7 +131,6 @@ fun Preview(
                                     canGoBack = viewCache[1]?.canGoBack() ?: false
                                 }
 
-                                webChromeClient = WebViewChromeClient()
                                 settings.javaScriptEnabled = true
 
                                 NativeUtils.exec(rmDir(WEBVIEW_CACHE))

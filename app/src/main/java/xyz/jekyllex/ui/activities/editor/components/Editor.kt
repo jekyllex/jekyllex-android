@@ -44,7 +44,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import xyz.jekyllex.ui.activities.editor.webview.IOBridge
-import xyz.jekyllex.ui.activities.editor.webview.WebViewChromeClient
 import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
@@ -80,8 +79,6 @@ fun Editor(
                             )
 
                             webViewClient = WebViewClient(file)
-                            webChromeClient = WebViewChromeClient()
-
                             settings.javaScriptEnabled = true
 
                             val bridge = IOBridge(file, isLoading)
