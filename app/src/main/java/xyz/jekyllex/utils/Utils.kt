@@ -26,10 +26,19 @@ package xyz.jekyllex.utils
 
 import java.io.File
 import android.content.Context
+import android.content.Intent
+import android.content.ActivityNotFoundException
 import android.webkit.MimeTypeMap
-import xyz.jekyllex.utils.Commands.bundle
+import android.widget.Toast
+import androidx.core.content.FileProvider
+import xyz.jekyllex.BuildConfig
 import xyz.jekyllex.utils.Commands.git
+import xyz.jekyllex.utils.Commands.bundle
 import xyz.jekyllex.utils.Commands.jekyll
+import xyz.jekyllex.utils.Constants.editorMimes
+import xyz.jekyllex.utils.Constants.editorExtensions
+import xyz.jekyllex.models.File as FileModel
+import xyz.jekyllex.ui.activities.editor.EditorActivity
 
 private val denyList = arrayOf("ls", "ln", "cd")
 fun Array<String>.isDenied(): Boolean = this.any { it in denyList }
@@ -96,6 +105,43 @@ fun File.removeSymlinks() {
                 createNewFile()
                 writeText(text)
             }
+        }
+    }
+}
+
+fun FileModel.open(context: Context) {
+    val defaultAction = {
+        context.startActivity(
+            Intent(context, EditorActivity::class.java)
+                .putExtra("file", this.path)
+        )
+    }
+    val file = File(this.path)
+    val uri = FileProvider.getUriForFile(
+        context,
+        BuildConfig.APPLICATION_ID + ".provider",
+        file
+    )
+
+    val ext = this.path.getExtension()
+    val mime = ext.mimeType()
+
+    if (
+        this.name.startsWith(".") ||
+        editorExtensions.contains(ext) ||
+        editorMimes.any { mime.contains(it) }
+    ) defaultAction()
+    else {
+        try {
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW)
+                    .setDataAndType(uri, mime)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            )
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(context, "No app found to open this file!", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(context, "Can't open file!", Toast.LENGTH_SHORT).show()
         }
     }
 }

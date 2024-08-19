@@ -24,7 +24,6 @@
 
 package xyz.jekyllex.ui.activities.home
 
-import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -85,15 +84,12 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import xyz.jekyllex.BuildConfig
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
-import xyz.jekyllex.ui.activities.editor.EditorActivity
 import xyz.jekyllex.ui.activities.home.components.DropDownMenu
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.FileButton
@@ -105,19 +101,15 @@ import xyz.jekyllex.utils.Commands.jekyll
 import xyz.jekyllex.utils.Commands.rmDir
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.Constants.requiredBinaries
-import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.open
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
-import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.formatDir
-import xyz.jekyllex.utils.getExtension
-import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.utils.toCommand
-import xyz.jekyllex.models.File
+import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.getProjectDir
+import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.ui.components.GenericDialog
-import xyz.jekyllex.utils.Constants.editorExtensions
-import xyz.jekyllex.utils.Constants.editorMimes
-import xyz.jekyllex.utils.mimeType
 import java.io.File as JFile
 
 private var fileUri: Uri? = null
@@ -478,42 +470,5 @@ private fun create(input: String, callBack: () -> Unit = {}) {
 
         isCreating.value = false
         callBack()
-    }
-}
-
-fun File.open(context: Context) {
-    val defaultAction = {
-        context.startActivity(
-            Intent(context, EditorActivity::class.java)
-                .putExtra("file", this.path)
-        )
-    }
-    val file = JFile(this.path)
-    val uri = FileProvider.getUriForFile(
-        context,
-        BuildConfig.APPLICATION_ID + ".provider",
-        file
-    )
-
-    val ext = this.path.getExtension()
-    val mime = ext.mimeType()
-
-    if (
-        this.name.startsWith(".") ||
-        editorExtensions.contains(ext) ||
-        editorMimes.any { mime.contains(it) }
-    ) defaultAction()
-    else {
-        try {
-            context.startActivity(
-                Intent(Intent.ACTION_VIEW)
-                    .setDataAndType(uri, mime)
-                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            )
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(context, "No app found to open this file!", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Toast.makeText(context, "Can't open file!", Toast.LENGTH_SHORT).show()
-        }
     }
 }
