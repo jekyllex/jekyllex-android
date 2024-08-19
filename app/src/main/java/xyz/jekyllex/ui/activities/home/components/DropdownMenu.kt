@@ -45,7 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import xyz.jekyllex.ui.activities.home.HomeViewModel
 import xyz.jekyllex.ui.activities.settings.SettingsActivity
-import xyz.jekyllex.ui.components.DeleteDialog
+import xyz.jekyllex.ui.components.GenericDialog
 import xyz.jekyllex.utils.Commands.bundle
 import xyz.jekyllex.utils.Commands.mkDir
 import xyz.jekyllex.utils.Commands.touch
@@ -95,7 +95,7 @@ fun DropDownMenu(
             )
     }
 
-    if (openDeleteDialog.value) DeleteDialog(
+    if (openDeleteDialog.value) GenericDialog(
         dialogTitle = "Delete",
         dialogText = "Are you sure you want to delete the current directory?",
         onDismissRequest = { openDeleteDialog.value = false },

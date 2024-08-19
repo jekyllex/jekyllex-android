@@ -76,7 +76,7 @@ fun FileButton(
     if (openDeleteDialog.value) {
         val jFile = JFile(file.path)
 
-        DeleteDialog(
+        GenericDialog(
             dialogTitle = "Delete",
             dialogText = "Are you sure you want to delete " +
                     "this ${if (jFile.isDirectory) "folder" else "file"}?",

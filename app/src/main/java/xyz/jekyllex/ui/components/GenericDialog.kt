@@ -30,11 +30,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 
 @Composable
-fun DeleteDialog(
+fun GenericDialog(
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
     dialogTitle: String,
     dialogText: String,
+    isCancellable: Boolean = true
 ) {
     AlertDialog(
         title = {
@@ -44,7 +45,7 @@ fun DeleteDialog(
             Text(text = dialogText)
         },
         onDismissRequest = {
-            onDismissRequest()
+            if (isCancellable) onDismissRequest()
         },
         confirmButton = {
             TextButton(

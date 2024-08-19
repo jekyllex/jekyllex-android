@@ -76,7 +76,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -115,14 +114,17 @@ import xyz.jekyllex.utils.getExtension
 import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.utils.toCommand
 import xyz.jekyllex.models.File
+import xyz.jekyllex.ui.components.GenericDialog
 import xyz.jekyllex.utils.Constants.editorExtensions
 import xyz.jekyllex.utils.Constants.editorMimes
 import xyz.jekyllex.utils.mimeType
 import java.io.File as JFile
 
+private var fileUri: Uri? = null
 private var isBound: Boolean = false
 private lateinit var service: ProcessService
 private var isCreating = mutableStateOf(false)
+private var copyFileConfirmation by mutableStateOf(false)
 private lateinit var pickFileLauncher: ActivityResultLauncher<String>
 
 class HomeActivity : ComponentActivity() {
@@ -161,27 +163,8 @@ class HomeActivity : ComponentActivity() {
             ActivityResultContracts.GetContent()
         ) { uri: Uri? ->
             uri?.let {
-                val document = DocumentFile.fromSingleUri(this, uri)
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        val destination = JFile(viewModel.cwd.value, document?.name!!)
-                        val output = destination.outputStream()
-
-                        val input = contentResolver.openInputStream(document.uri)!!
-                        input.copyTo(output)
-
-                        input.close()
-                        output.close()
-
-                        viewModel.refresh()
-                    } catch (e: Exception) {
-                        Toast.makeText(
-                            this@HomeActivity, "Error copying file!", Toast.LENGTH_SHORT
-                        ).show()
-                        e.printStackTrace()
-                    }
-                }
+                fileUri = uri
+                copyFileConfirmation = true
             } ?: run {
                 Toast.makeText(this, "No file selected!", Toast.LENGTH_SHORT)
                     .show()
@@ -213,9 +196,7 @@ class HomeActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomeScreen(
-    homeViewModel: HomeViewModel = viewModel()
-) {
+fun HomeScreen(homeViewModel: HomeViewModel) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     var query by remember { mutableStateOf("") }
@@ -421,6 +402,42 @@ fun HomeScreen(
                 }
             }
         }
+
+        if (copyFileConfirmation) GenericDialog(
+            isCancellable = false,
+            dialogTitle = "Copy",
+            dialogText = "Are you sure you want to copy this file here?",
+            onDismissRequest = {
+                fileUri = null
+                copyFileConfirmation = false
+            },
+            onConfirmation = confirmation@{
+                val document = DocumentFile.fromSingleUri(context, fileUri!!)
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val destination = JFile(homeViewModel.cwd.value, document?.name!!)
+                        val output = destination.outputStream()
+
+                        val input = context.contentResolver.openInputStream(document.uri)!!
+                        input.copyTo(output)
+
+                        input.close()
+                        output.close()
+
+                        homeViewModel.refresh()
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            context, "Error copying file!", Toast.LENGTH_SHORT
+                        ).show()
+                        e.printStackTrace()
+                    } finally {
+                        fileUri = null
+                        copyFileConfirmation = false
+                    }
+                }
+            }
+        )
 
         if (showTerminalSheet) {
             TerminalSheet(
