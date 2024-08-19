@@ -101,4 +101,4 @@ fun File.removeSymlinks() {
 }
 
 fun String.mimeType(): String =
-    MimeTypeMap.getSingleton().getMimeTypeFromExtension(this) ?: "*/*"
+    MimeTypeMap.getSingleton().getMimeTypeFromExtension(this) ?: "text/*"
