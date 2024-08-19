@@ -92,7 +92,7 @@ fun CreateProjectDialog(
                         singleLine = true,
                         onValueChange = { text = it },
                         label = { Text(text = "Name / URL / git command") },
-                        modifier = Modifier.padding(top = 16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                         textStyle = MaterialTheme.typography.bodySmall,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text,

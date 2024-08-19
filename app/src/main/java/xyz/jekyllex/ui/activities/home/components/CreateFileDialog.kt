@@ -139,7 +139,7 @@ fun CreateFileDialog(
                         label = {
                             Text("Enter the name of the ${if (isFolder) "folder" else "file"}")
                         },
-                        modifier = Modifier.padding(top = 4.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                         textStyle = MaterialTheme.typography.bodySmall,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text,
