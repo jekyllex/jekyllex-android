@@ -262,6 +262,7 @@ fun HomeScreen(
                             if (service.isRunning) service.killProcess()
                             val folder = homeViewModel.cwd.value
                             NativeUtils.exec(rmDir(folder))
+                            resetQuery()
                             homeViewModel.cd("..")
                             service.appendLog(
                                 homeViewModel.cwd.value.formatDir("/") +
