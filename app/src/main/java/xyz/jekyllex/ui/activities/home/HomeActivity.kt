@@ -24,6 +24,7 @@
 
 package xyz.jekyllex.ui.activities.home
 
+import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -485,10 +486,17 @@ fun File.open(context: Context) {
         editorExtensions.contains(ext) ||
         editorMimes.any { mime.contains(it) }
     ) defaultAction()
-    else
-        context.startActivity(
-            Intent(Intent.ACTION_VIEW)
-                .setDataAndType(uri, mime)
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        )
+    else {
+        try {
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW)
+                    .setDataAndType(uri, mime)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            )
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(context, "No app found to open this file!", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(context, "Can't open file!", Toast.LENGTH_SHORT).show()
+        }
+    }
 }
