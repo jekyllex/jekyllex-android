@@ -154,6 +154,7 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
     private suspend fun fetchStats() {
         _availableFiles.value = _availableFiles.value.map {
             yield()
+            val cwd = _cwd.value
 
             val stats = NativeUtils.exec(
                 shell(
@@ -165,15 +166,17 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
             ).split("\n")
 
             val properties =
-                if (_cwd.value == HOME_DIR) NativeUtils.exec(
-                    getFromYAML(
-                        "${it.path}/_config.yml",
-                        "title", "description", "url", "baseurl"
-                    )
-                ).parseOutput()
-                else if (!it.isDir && _cwd.value.contains("/_")) NativeUtils.exec(
-                    getFromYAML(it.path, "title", "description")
-                ).parseOutput()
+                if (cwd == HOME_DIR)
+                    NativeUtils.exec(
+                        getFromYAML(
+                            "${it.path}/_config.yml",
+                            "title", "description", "url", "baseurl"
+                        )
+                    ).parseOutput()
+                else if (!it.isDir && cwd.contains("/_") && !cwd.contains("/_site"))
+                    NativeUtils.exec(
+                        getFromYAML(it.path, "title", "description")
+                    ).parseOutput()
                 else listOf()
 
             it.copy(
