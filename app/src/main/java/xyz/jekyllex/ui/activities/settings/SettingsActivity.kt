@@ -367,8 +367,9 @@ fun SettingsView() {
                 footerPreference(
                     key = "footer",
                     summary = {
-                        Text("${BuildConfig.APPLICATION_ID} (${BuildConfig.BUILD_TYPE})")
-                        Text("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
+                        Text("Bootstrap ${BuildConfig.BOOTSTRAP}")
+                        Text("JekyllEx ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
+                        Text("${BuildConfig.APPLICATION_ID} (${BuildConfig.BUILD_TYPE}@${BuildConfig.GIT_HASH})")
                     },
                 )
             }

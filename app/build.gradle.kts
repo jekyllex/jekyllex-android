@@ -3,6 +3,7 @@ import java.io.BufferedWriter
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.BufferedOutputStream
+import java.io.ByteArrayOutputStream
 
 import java.net.URL
 import java.net.HttpURLConnection
@@ -21,6 +22,8 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
 }
 
+val bootstrapVersion = "v0.1.2"
+
 android {
     namespace = "xyz.jekyllex"
     compileSdk = 34
@@ -31,26 +34,15 @@ android {
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0.0"
+        versionName = "v0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
 
-        externalNativeBuild {
-            ndkBuild {
-                cFlags += listOf(
-                    "-std=c11",
-                    "-Wall",
-                    "-Wextra",
-                    "-Werror",
-                    "-Os",
-                    "-fno-stack-protector",
-                    "-Wl,--gc-sections"
-                )
-            }
-        }
+        buildConfigField("String", "GIT_HASH", getGitHash())
+        buildConfigField("String", "BOOTSTRAP", "\"$bootstrapVersion\"")
     }
 
     buildTypes {
@@ -142,6 +134,17 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+fun getGitHash(): String {
+    val stdout = ByteArrayOutputStream()
+
+    exec {
+        commandLine("git", "rev-parse", "--short", "HEAD")
+        standardOutput = stdout
+    }
+
+    return "\"" + stdout.toString().trim() + "\""
 }
 
 // Adapted from https://github.com/termux/termux-app/blob/android-10/app/build.gradle#L84
@@ -262,8 +265,6 @@ fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
 tasks {
     val setupBootstraps by registering {
         doFirst {
-            val version = "v0.1.2"
-
             val map = mapOf(
                 "aarch64" to "2a93c51def0ad9dbf1ba4aa43a6d6f6bc8bfcc453744a2b02ea1fe4257beeb6c",
                 "arm" to "e71ffdd400147e228c22449d93e642736a7b2f989767fc8fe78311dfdf3f04b6",
@@ -271,7 +272,7 @@ tasks {
                 "x86_64" to "966a0ac9bcb166de536ad26b84005efffff5e0b70c23831c8535238947ed214f"
             )
 
-            map.forEach { (arch, checksum) -> setupBootstrap(arch, checksum, version) }
+            map.forEach { (arch, checksum) -> setupBootstrap(arch, checksum, bootstrapVersion) }
         }
     }
 }
