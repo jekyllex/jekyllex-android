@@ -65,6 +65,7 @@ import xyz.jekyllex.utils.Setting.*
 import xyz.jekyllex.utils.trimQuotes
 import xyz.jekyllex.BuildConfig
 import xyz.jekyllex.ui.activities.viewer.WebPageViewer
+import xyz.jekyllex.utils.Constants.DOCS
 import xyz.jekyllex.utils.Constants.LICENSES
 import xyz.jekyllex.utils.Constants.PRIVACY
 import xyz.jekyllex.utils.Constants.TERMS
@@ -323,6 +324,19 @@ fun SettingsView() {
                 preferenceCategory(
                     key = "other",
                     title = { Text("Other") }
+                )
+
+                preference(
+                    key = "docs",
+                    onClick = {
+                        context.startActivity(
+                            Intent(context, WebPageViewer::class.java).apply {
+                                putExtra("url", DOCS)
+                                putExtra("title", context.getString(R.string.docs))
+                            }
+                        )
+                    },
+                    title = { Text(context.getString(R.string.docs)) },
                 )
 
                 preference(

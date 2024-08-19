@@ -36,6 +36,7 @@ object Constants {
     const val WEBVIEW_CACHE = "$PREFIX/app_webview"
     const val DOMAIN = "jekyllex.xyz"
     const val HOME_PAGE = "https://$DOMAIN"
+    const val DOCS = "https://docs.$DOMAIN"
     const val LICENSES = "$HOME_PAGE/licenses"
     const val PRIVACY = "$HOME_PAGE/privacy-policy"
     const val TERMS = "$HOME_PAGE/terms-and-conditions"

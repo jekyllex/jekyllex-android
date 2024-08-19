@@ -93,6 +93,7 @@
         Time to wait before saving changes to the file being edited (debounce delay).
     </string>
 
+    <string name="docs">Docs</string>
     <string name="licenses">Licenses</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="terms_and_conditions">Terms &amp; Conditions</string>
