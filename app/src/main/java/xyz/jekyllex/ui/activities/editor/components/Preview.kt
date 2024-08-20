@@ -142,7 +142,7 @@ fun Preview(
                 Row(Modifier.fillMaxWidth().padding(4.dp)) {
                     IconButton(
                         onClick = { viewCache[1]?.goBack() },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(0.5f),
                         enabled = canGoBack
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Go Back")
@@ -150,14 +150,14 @@ fun Preview(
 
                     if (defaultUrl.isNotBlank())
                         Button(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(0.8f),
                             onClick = {
                                 viewCache[1]?.loadUrl(defaultUrl.buildPreviewURL())
                                 canGoBack = false
                             },
                         ) { Text(text = "Load default") }
 
-                    IconButton(onClick = { viewCache[1]?.reload() }, Modifier.weight(1f)) {
+                    IconButton(onClick = { viewCache[1]?.reload() }, Modifier.weight(0.5f)) {
                         Icon(Icons.Default.Refresh, "Refresh")
                     }
                 }
