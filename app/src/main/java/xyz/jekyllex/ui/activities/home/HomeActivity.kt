@@ -141,6 +141,7 @@ class HomeActivity : ComponentActivity() {
 
         if (!NativeUtils.areUsable(requiredBinaries)) NativeUtils.launchInstaller(this)
 
+        startService(Intent(this, ProcessService::class.java))
         Intent(this, ProcessService::class.java).also { intent ->
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }

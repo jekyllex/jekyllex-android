@@ -27,10 +27,7 @@ package xyz.jekyllex
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Intent
 import android.os.Build
-import xyz.jekyllex.services.ProcessService
-import xyz.jekyllex.utils.NativeUtils
 
 class JekyllEx : Application() {
 
@@ -39,20 +36,15 @@ class JekyllEx : Application() {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
-        val importance = NotificationManager.IMPORTANCE_LOW
-
         val channel = NotificationChannel(
             getString(R.string.process_notifications_id),
             getString(R.string.process_notifications),
-            importance
+            NotificationManager.IMPORTANCE_LOW
         )
 
         channel.description = getString(R.string.process_notifications_desc)
         val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
         manager.createNotificationChannel(channel)
-
-        if (!NativeUtils.isUsable("jekyll")) return
-
-        startService(Intent(this, ProcessService::class.java))
     }
 }

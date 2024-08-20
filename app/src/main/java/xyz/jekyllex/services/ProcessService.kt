@@ -37,11 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.utils.Constants.BIN_DIR
@@ -61,6 +57,7 @@ class ProcessService : Service() {
         private const val NOTIFICATION_ID = 420
         private const val LOG_TAG = "ProcessService"
         private const val ACTION_KILL_PROCESS = "xyz.jekyllex.process_kill"
+        private const val ACTION_STOP_SERVICE = "xyz.jekyllex.service_stop"
     }
 
     private lateinit var process: Process
@@ -69,6 +66,7 @@ class ProcessService : Service() {
     private lateinit var notifBuilder: NotificationCompat.Builder
 
     private var runningCommand = ""
+    private var hasConnections = false
     private var _isRunning = mutableStateOf(false)
     private val _logs = MutableStateFlow(listOf<String>())
 
@@ -84,7 +82,19 @@ class ProcessService : Service() {
     private val binder = LocalBinder()
 
     override fun onBind(intent: Intent): IBinder {
+        hasConnections = true
         return binder
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        hasConnections = false
+        updateKillActionOnNotif()
+        return true
+    }
+
+    override fun onRebind(intent: Intent?) {
+        hasConnections = true
+        super.onRebind(intent)
     }
 
     override fun onCreate() {
@@ -106,8 +116,9 @@ class ProcessService : Service() {
         val action = intent?.action
         Log.d(LOG_TAG, "Received action: $action")
 
-        if (action == ACTION_KILL_PROCESS) {
-            killProcess()
+        when (action) {
+            ACTION_KILL_PROCESS -> killProcess()
+            ACTION_STOP_SERVICE -> stopSelf()
         }
 
         return START_NOT_STICKY
@@ -231,25 +242,36 @@ class ProcessService : Service() {
         Log.d(LOG_TAG, "Updating notification")
 
         notifBuilder.mActions.clear()
+        val exitIntent = Intent(this, ProcessService::class.java)
+
+        val killProcess = NotificationCompat.Action(
+            R.drawable.ic_notif_logo,
+            getString(R.string.notification_action_kill),
+            PendingIntent.getService(
+                this,
+                0,
+                exitIntent.setAction(ACTION_KILL_PROCESS),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        )
+
+        val stopService = NotificationCompat.Action(
+            R.drawable.ic_notif_logo,
+            getString(R.string.notification_action_stop),
+            PendingIntent.getService(
+                this,
+                0,
+                exitIntent.setAction(ACTION_STOP_SERVICE),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        )
 
         if (_isRunning.value) {
-            val exitIntent = Intent(this, ProcessService::class.java)
-                .setAction(ACTION_KILL_PROCESS)
-
             notifBuilder.setContentText("Currently running:\n$runningCommand")
-
-            notifBuilder.addAction(
-                R.drawable.ic_notif_logo,
-                getString(R.string.notification_action_kill),
-                PendingIntent.getService(
-                    this,
-                    0,
-                    exitIntent,
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                )
-            )
+            notifBuilder.addAction(killProcess)
         } else {
             notifBuilder.setContentText(getText(R.string.notification_text_waiting))
+            if (!hasConnections) notifBuilder.addAction(stopService)
         }
 
         val notifManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
