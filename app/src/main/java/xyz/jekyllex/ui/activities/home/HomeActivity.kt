@@ -33,6 +33,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.webkit.URLUtil
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -162,6 +163,8 @@ class HomeActivity : ComponentActivity() {
                     .show()
             }
         }
+
+        enableEdgeToEdge()
 
         setContent {
             JekyllExTheme {
