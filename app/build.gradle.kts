@@ -51,7 +51,7 @@ android {
     signingConfigs {
         create("release") {
             storeFile = file("keystore.jks")
-            keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+            keyAlias = System.getenv("KEYSTORE_ALIAS")
             keyPassword = System.getenv("KEYSTORE_PASSWORD")
             storePassword = System.getenv("KEYSTORE_PASSWORD")
         }
@@ -68,6 +68,14 @@ android {
             )
 
             signingConfig = signingConfigs.getByName("release")
+        }
+
+        create("staging") {
+            initWith(getByName("debug"))
+
+            ndk {
+                abiFilters.add("arm64-v8a")
+            }
         }
     }
 
@@ -100,28 +108,14 @@ android {
 
     project.tasks.preBuild.dependsOn("setupBootstraps")
 
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
-        }
-    }
-
     applicationVariants.configureEach {
-        val archMap = mapOf(
-            "x86" to "i686",
-            "x86_64" to "x86_64",
-            "armeabi-v7a" to "arm",
-            "arm64-v8a" to "aarch64"
-        )
-
         // rename the output APK file
         outputs.configureEach {
-            (this as? ApkVariantOutputImpl)?.outputFileName =
-                "${rootProject.name.lowercase()}-${
-                    archMap[filters.find { it.filterType == "ABI" }?.identifier] ?: "universal"
-                }${if (buildType.name == "debug") "-debug" else ""}.apk"
+            (this as ApkVariantOutputImpl).outputFileName =
+                "${rootProject.name.lowercase()}${
+                    if (buildType.name == "release") "-"
+                    else "-${buildType.name}-"
+                }${defaultConfig.versionName}.apk"
         }
     }
 }
