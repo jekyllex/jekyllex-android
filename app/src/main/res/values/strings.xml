@@ -94,6 +94,16 @@
         Time to wait before saving changes to the file being edited (debounce delay).
     </string>
 
+    <string name="crash_reports_title">Report crashes</string>
+    <string name="crash_reports_summary">
+        Log crash reports to help improve the app. Changes apply after a restart.
+    </string>
+
+    <string name="analytics_title">Analytics</string>
+    <string name="analytics_summary">
+        Log basic usage stats to help understand the user base. Changes apply after a restart.
+    </string>
+
     <string name="docs">Docs</string>
     <string name="licenses">Licenses</string>
     <string name="privacy_policy">Privacy Policy</string>

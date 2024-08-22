@@ -18,7 +18,10 @@ import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 
 plugins {
+    alias(libs.plugins.googleServices)
+    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.firebaseCrashlytics)
     alias(libs.plugins.jetbrainsKotlinAndroid)
 }
 
@@ -71,10 +74,6 @@ android {
         buildConfig = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
-
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -82,6 +81,7 @@ android {
 
         jniLibs {
             useLegacyPackaging = true
+            keepDebugSymbols += "*/**/*.so"
         }
     }
 
@@ -127,6 +127,9 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.compose.preference)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

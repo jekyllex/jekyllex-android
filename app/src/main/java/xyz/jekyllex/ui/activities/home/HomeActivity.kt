@@ -31,6 +31,7 @@ import android.content.ServiceConnection
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import android.webkit.URLUtil
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -86,6 +87,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.documentfile.provider.DocumentFile
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -117,6 +120,8 @@ private var fileUri: Uri? = null
 private var isBound: Boolean = false
 private lateinit var service: ProcessService
 private var isCreating = mutableStateOf(false)
+private lateinit var firebaseAnalytics: FirebaseAnalytics
+private lateinit var firebaseCrashlytics: FirebaseCrashlytics
 private var copyFileConfirmation by mutableStateOf(false)
 private lateinit var pickFileLauncher: ActivityResultLauncher<String>
 
@@ -163,6 +168,14 @@ class HomeActivity : ComponentActivity() {
                 Toast.makeText(this, "No file selected!", Toast.LENGTH_SHORT)
                     .show()
             }
+        }
+
+        firebaseCrashlytics = FirebaseCrashlytics.getInstance().apply {
+            setCrashlyticsCollectionEnabled(settings.get(Setting.CRASH_REPORTS))
+        }
+
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this).apply {
+            setAnalyticsCollectionEnabled(settings.get(Setting.LOG_ANALYTICS))
         }
 
         enableEdgeToEdge()

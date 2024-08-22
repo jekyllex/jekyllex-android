@@ -26,6 +26,7 @@ package xyz.jekyllex.utils
 
 import android.content.Context
 import android.preference.PreferenceManager
+import xyz.jekyllex.BuildConfig
 
 class Settings(context: Context) {
     @Suppress("DEPRECATION")
@@ -61,6 +62,8 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     GIT_EMAIL("git_email", SettingType.StringValue("")),
     GITHUB_PAT("github_pat", SettingType.StringValue("")),
     LOG_PROGRESS("log_progress", SettingType.BooleanValue(true)),
+    LOG_ANALYTICS("log_analytics", SettingType.BooleanValue(!BuildConfig.DEBUG)),
+    CRASH_REPORTS("crash_reports", SettingType.BooleanValue(!BuildConfig.DEBUG)),
 
     // General
     TRIM_LOGS("trim_logs", SettingType.BooleanValue(true)),

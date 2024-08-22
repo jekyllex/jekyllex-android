@@ -48,6 +48,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.google.firebase.analytics.FirebaseAnalytics
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import me.zhanghai.compose.preference.footerPreference
 import me.zhanghai.compose.preference.preference
@@ -71,9 +72,13 @@ import xyz.jekyllex.utils.Constants.PRIVACY
 import xyz.jekyllex.utils.Constants.TERMS
 import xyz.jekyllex.utils.Constants.PAT_SETTINGS_URL
 
+private lateinit var firebaseAnalytics: FirebaseAnalytics
+
 class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         setContent {
             JekyllExTheme {
@@ -319,6 +324,25 @@ fun SettingsView() {
                         Text(context.getString(R.string.jekyll_flags_summary))
                         it.takeIf { it.isNotBlank() }?.let { flag -> Text(flag) }
                     },
+                )
+
+                preferenceCategory(
+                    key = "telemetry",
+                    title = { Text("Telemetry") }
+                )
+
+                switchPreference(
+                    key = CRASH_REPORTS.key,
+                    defaultValue = CRASH_REPORTS.defaultValue.get(),
+                    title = { Text(context.getString(R.string.crash_reports_title)) },
+                    summary = { Text(context.getString(R.string.crash_reports_summary)) },
+                )
+
+                switchPreference(
+                    key = LOG_ANALYTICS.key,
+                    defaultValue = LOG_ANALYTICS.defaultValue.get(),
+                    title = { Text(context.getString(R.string.analytics_title)) },
+                    summary = { Text(context.getString(R.string.analytics_summary)) },
                 )
 
                 preferenceCategory(
