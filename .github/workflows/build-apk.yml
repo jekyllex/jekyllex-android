@@ -4,12 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       buildType:
-        description: "Build Type"
+        type: choice
         required: true
-        default: "release"
+        default: "debug"
+        description: "Build Type"
         options:
-        - "release"
         - "debug"
+        - "release"
+      release:
+        type: boolean
+        description: "Release built APKs"
+      tag:
+        type: string
+        description: "Tag for the release"
 
 jobs:
   build:
@@ -57,3 +64,28 @@ jobs:
         with:
           name: Build Artifacts
           path: ${{ env.APK_PATH }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.inputs.buildType == "release" && github.event.inputs.release == "true" && startsWith(github.event.inputs.tag, "v")
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch APKs
+        uses: actions/download-artifact@v4
+        with:
+          path: ./
+          merge-multiple: true
+
+      - name: Create new tag
+        run: |
+          git tag "${{ github.event.inputs.tag }}"
+          git push --tags
+
+      - name: Delete APK artifact
+        run: rm -rf $GITHUB_WORKSPACE/*.apk
