@@ -51,18 +51,21 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
           if [ "$BUILD_TYPE" = "release" ]; then
-            echo "APK_PATH=app/build/outputs/apk/release/*.apk" >> $GITHUB_ENV
-            ./gradlew assembleRelease
+            ./gradlew assembleRelease assemble32Bit assemble64Bit
+            mv app/build/outputs/apk/release/*.apk .
           elif [ "$BUILD_TYPE" = "debug" ]; then
-            echo "APK_PATH=app/build/outputs/apk/debug/*.apk" >> $GITHUB_ENV
-            ./gradlew assembleDebug
+            ./gradlew assembleDebug assemble32Bit assemble64Bit
+            mv app/build/outputs/apk/release/*.apk .
           fi
+
+          mv app/build/outputs/apk/32bit/*.apk .
+          mv app/build/outputs/apk/64bit/*.apk .
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: APKs
-          path: ${{ env.APK_PATH }}
+          path: ./*.apk
 
   release:
     needs: build
