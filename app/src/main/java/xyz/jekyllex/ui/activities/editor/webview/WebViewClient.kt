@@ -63,10 +63,8 @@ class WebViewClient(
         if (!url.contains(EDITOR_URL)) return
 
         NativeUtils.exec(cat(file), CoroutineScope(Dispatchers.IO)) { content ->
-            val text = content.ifBlank { "The editor is ready" }
-
             withContext(Dispatchers.Main) {
-                view.loadUrl("javascript:setText('${text.toBase64()}')")
+                view.loadUrl("javascript:setText('${content.toBase64()}')")
             }
         }
     }
