@@ -55,7 +55,7 @@ jobs:
             mv app/build/outputs/apk/release/*.apk .
           elif [ "$BUILD_TYPE" = "debug" ]; then
             ./gradlew assembleDebug assemble32Bit assemble64Bit
-            mv app/build/outputs/apk/release/*.apk .
+            mv app/build/outputs/apk/debug/*.apk .
           fi
 
           mv app/build/outputs/apk/32bit/*.apk .
