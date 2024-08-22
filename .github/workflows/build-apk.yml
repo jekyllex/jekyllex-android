@@ -51,20 +51,17 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
           if [ "$BUILD_TYPE" = "release" ]; then
-            ./gradlew assembleRelease # assemble32Bit assemble64Bit
+            ./gradlew assembleRelease
             mv app/build/outputs/apk/release/*.apk .
           elif [ "$BUILD_TYPE" = "debug" ]; then
-            ./gradlew assembleDebug # assemble32Bit assemble64Bit
+            ./gradlew assembleDebug
             mv app/build/outputs/apk/debug/*.apk .
           fi
-
-          # mv app/build/outputs/apk/32bit/*.apk .
-          # mv app/build/outputs/apk/64bit/*.apk .
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: APKs
+          name: Build output
           path: ./*.apk
 
   release:

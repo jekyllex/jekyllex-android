@@ -26,7 +26,6 @@ plugins {
 }
 
 val bootstrapVersion = "v0.1.2"
-val envBuildType = System.getenv("BUILD_TYPE") ?: "debug"
 
 android {
     namespace = "xyz.jekyllex"
@@ -57,14 +56,6 @@ android {
             storePassword = System.getenv("KEYSTORE_PASSWORD")
         }
     }
-//
-//    splits {
-//        abi {
-//            isEnable = true
-//            reset()
-//            include("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
-//        }
-//    }
 
     buildTypes {
         release {
@@ -79,35 +70,13 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
 
-//        create("32bit") {
-//            initWith(getByName(envBuildType))
-//
-//            splits {
-//                abi {
-//                    isEnable = false
-//                }
-//            }
-//
-//            ndk {
-//                abiFilters.add("x86_64")
-//                abiFilters.add("arm64-v8a")
-//            }
-//        }
-//
-//        create("64bit") {
-//            initWith(getByName(envBuildType))
-//
-//            splits {
-//                abi {
-//                    isEnable = false
-//                }
-//            }
-//
-//            ndk {
-//                abiFilters.add("x86")
-//                abiFilters.add("armeabi-v7a")
-//            }
-//        }
+        create("staging") {
+            initWith(getByName("debug"))
+
+            ndk {
+                abiFilters.add("arm64-v8a")
+            }
+        }
     }
 
     compileOptions {
@@ -140,20 +109,13 @@ android {
     project.tasks.preBuild.dependsOn("setupBootstraps")
 
     applicationVariants.configureEach {
-        val archMap = mapOf(
-            "x86" to "i686",
-            "x86_64" to "x86_64",
-            "armeabi-v7a" to "arm",
-            "arm64-v8a" to "aarch64"
-        )
-
         // rename the output APK file
         outputs.configureEach {
-            (this as? ApkVariantOutputImpl)?.outputFileName =
-                "${rootProject.name.lowercase()}-${
-                    archMap[filters.find { it.filterType == "ABI" }?.identifier] ?: 
-                    buildType.name.takeIf { it.contains("bit") } ?: ""
-                }${if (envBuildType == "debug") "-debug" else ""}.apk"
+            (this as ApkVariantOutputImpl).outputFileName =
+                "${rootProject.name.lowercase()}${
+                    if (buildType.name == "release") "-"
+                    else "-${buildType.name}-"
+                }${defaultConfig.versionName}.apk"
         }
     }
 }
