@@ -48,13 +48,26 @@ android {
         buildConfigField("String", "BOOTSTRAP", "\"$bootstrapVersion\"")
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("keystore.jks")
+            keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+            keyPassword = System.getenv("KEYSTORE_PASSWORD")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 

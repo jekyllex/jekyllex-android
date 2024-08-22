@@ -1,0 +1,59 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      buildType:
+        description: "Build Type"
+        required: true
+        default: "release"
+        options:
+        - "release"
+        - "debug"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup environment
+        working-directory: ./app
+        env:
+          ENCODED_STRING: ${{ secrets.KEYSTORE }}
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+        run: |
+          echo $GOOGLE_SERVICES > google-services.json
+          echo $ENCODED_STRING | base64 --decode > keystore.jks
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          cache: "gradle"
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build APK
+        env:
+          BUILD_TYPE: ${{ github.event.inputs.buildType }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+        run: |
+          if [ "$BUILD_TYPE" = "release" ]; then
+            echo "APK_PATH=app/build/outputs/apk/release/*.apk" >> $GITHUB_ENV
+            ./gradlew assembleRelease
+          elif [ "$BUILD_TYPE" = "debug" ]; then
+            echo "APK_PATH=app/build/outputs/apk/debug/*.apk" >> $GITHUB_ENV
+            ./gradlew assembleDebug
+          fi
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Build Artifacts
+          path: ${{ env.APK_PATH }}

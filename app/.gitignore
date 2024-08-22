@@ -1,3 +1,4 @@
 /build
 src/main/jniLibs
 google-services.json
+*.jks
