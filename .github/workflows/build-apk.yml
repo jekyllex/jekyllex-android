@@ -68,7 +68,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event.inputs.buildType == "release" && github.event.inputs.release == "true" && startsWith(github.event.inputs.tag, "v")
+    if: github.event.inputs.buildType == 'release' && github.event.inputs.release == 'true' && startsWith(github.event.inputs.tag, 'v')
 
     steps:
       - name: Clone repository
