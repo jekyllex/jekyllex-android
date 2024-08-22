@@ -61,7 +61,7 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Build Artifacts
+          name: APKs
           path: ${{ env.APK_PATH }}
 
   release:
@@ -89,5 +89,6 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
+          draft: true
           files: "*.apk"
           generate_release_notes: true
