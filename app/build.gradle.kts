@@ -57,14 +57,14 @@ android {
             storePassword = System.getenv("KEYSTORE_PASSWORD")
         }
     }
-
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
-        }
-    }
+//
+//    splits {
+//        abi {
+//            isEnable = true
+//            reset()
+//            include("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
+//        }
+//    }
 
     buildTypes {
         release {
@@ -79,35 +79,35 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
 
-        create("32bit") {
-            initWith(getByName(envBuildType))
-
-            splits {
-                abi {
-                    isEnable = false
-                }
-            }
-
-            ndk {
-                abiFilters.add("x86_64")
-                abiFilters.add("arm64-v8a")
-            }
-        }
-
-        create("64bit") {
-            initWith(getByName(envBuildType))
-
-            splits {
-                abi {
-                    isEnable = false
-                }
-            }
-
-            ndk {
-                abiFilters.add("x86")
-                abiFilters.add("armeabi-v7a")
-            }
-        }
+//        create("32bit") {
+//            initWith(getByName(envBuildType))
+//
+//            splits {
+//                abi {
+//                    isEnable = false
+//                }
+//            }
+//
+//            ndk {
+//                abiFilters.add("x86_64")
+//                abiFilters.add("arm64-v8a")
+//            }
+//        }
+//
+//        create("64bit") {
+//            initWith(getByName(envBuildType))
+//
+//            splits {
+//                abi {
+//                    isEnable = false
+//                }
+//            }
+//
+//            ndk {
+//                abiFilters.add("x86")
+//                abiFilters.add("armeabi-v7a")
+//            }
+//        }
     }
 
     compileOptions {
