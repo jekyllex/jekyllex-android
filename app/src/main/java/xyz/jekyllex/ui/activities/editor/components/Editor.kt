@@ -24,7 +24,6 @@
 
 package xyz.jekyllex.ui.activities.editor.components
 
-import android.view.Surface
 import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Box
@@ -36,8 +35,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,8 +42,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import xyz.jekyllex.ui.activities.editor.webview.IOBridge
 import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
-import xyz.jekyllex.utils.Setting
-import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.buildEditorURL
 
 @Composable

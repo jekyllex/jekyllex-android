@@ -33,7 +33,6 @@ import xyz.jekyllex.utils.Constants.PREVIEW_URL
 import xyz.jekyllex.utils.Constants.extensionAliases
 import xyz.jekyllex.utils.Constants.defaultExtensions
 import xyz.jekyllex.utils.Setting.DEBOUNCE_DELAY
-import java.net.URLEncoder
 import java.util.Locale
 
 fun String.getExtension(): String = this
