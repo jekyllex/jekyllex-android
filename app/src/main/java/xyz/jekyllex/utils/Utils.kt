@@ -40,8 +40,7 @@ import xyz.jekyllex.utils.Constants.editorExtensions
 import xyz.jekyllex.models.File as FileModel
 import xyz.jekyllex.ui.activities.editor.EditorActivity
 
-private val denyList = arrayOf("ls", "ln", "cd")
-fun Array<String>.isDenied(): Boolean = this.any { it in denyList }
+fun Array<String>.isDenied(): Boolean = Constants.denyList.any { this.getOrNull(0) == it }
 fun Array<String>.drop(n: Int): Array<String> = this.toList().drop(n).toTypedArray()
 
 fun Array<String>.transform(context: Context): Array<String> = this.let {
@@ -61,7 +60,7 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
             if (enableProgress && this.any {
                     it in arrayOf("clone", "fetch", "pull", "push")
                 }) {
-                git(true, *this.drop(1))
+                git( *this.drop(1), "--progress")
             } else this
         }
 

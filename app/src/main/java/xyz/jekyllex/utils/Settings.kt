@@ -72,7 +72,7 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     GIT_NAME("git_name", SettingType.StringValue("")),
     GIT_EMAIL("git_email", SettingType.StringValue("")),
     GITHUB_PAT("github_pat", SettingType.StringValue("")),
-    LOG_PROGRESS("log_progress", SettingType.BooleanValue(true)),
+    LOG_PROGRESS("log_progress", SettingType.BooleanValue(false)),
     ASK_NOTIF_PERM("ask_notif_perm", SettingType.BooleanValue(true)),
     LOG_ANALYTICS("log_analytics", SettingType.BooleanValue(!BuildConfig.DEBUG)),
     CRASH_REPORTS("crash_reports", SettingType.BooleanValue(!BuildConfig.DEBUG)),

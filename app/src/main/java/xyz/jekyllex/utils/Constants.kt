@@ -44,6 +44,7 @@ object Constants {
     const val PREVIEW_URL = "http://localhost:4000"
     const val PAT_SETTINGS_URL = "https://github.com/settings/tokens/new"
 
+    val denyList = arrayOf("ls", "ln", "cd")
     val requiredBinaries = arrayOf("ruby", "gem", "bundler", "jekyll")
 
     val defaultExtensions = mapOf(
