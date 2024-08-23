@@ -24,14 +24,16 @@
 
 package xyz.jekyllex.ui.activities.home
 
+import android.Manifest
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import android.webkit.URLUtil
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -86,6 +88,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -118,16 +121,19 @@ import java.io.File as JFile
 
 private var fileUri: Uri? = null
 private var isBound: Boolean = false
+private lateinit var settings: Settings
 private lateinit var service: ProcessService
 private var isCreating = mutableStateOf(false)
 private lateinit var firebaseAnalytics: FirebaseAnalytics
 private lateinit var firebaseCrashlytics: FirebaseCrashlytics
 private var copyFileConfirmation by mutableStateOf(false)
+private var notificationRationale = mutableStateOf(false)
 private lateinit var pickFileLauncher: ActivityResultLauncher<String>
+private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
 class HomeActivity : ComponentActivity() {
-    private lateinit var settings: Settings
     private lateinit var viewModel: HomeViewModel
+
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
             isBound = true
@@ -170,12 +176,42 @@ class HomeActivity : ComponentActivity() {
             }
         }
 
+        requestPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission(),
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                settings.set(Setting.ASK_NOTIF_PERM, false)
+                val message = "Notifications set up successfully!"
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            } else {
+                if (!settings.get<Boolean>(Setting.ASK_NOTIF_PERM)) {
+                    Toast.makeText(
+                        this,
+                        "You will have to enable notifications from the settings!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+
         firebaseCrashlytics = FirebaseCrashlytics.getInstance().apply {
             setCrashlyticsCollectionEnabled(settings.get(Setting.CRASH_REPORTS))
         }
 
         firebaseAnalytics = FirebaseAnalytics.getInstance(this).apply {
             setAnalyticsCollectionEnabled(settings.get(Setting.LOG_ANALYTICS))
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && settings.get(Setting.ASK_NOTIF_PERM)) {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                notificationRationale.value = true
+                settings.set(Setting.ASK_NOTIF_PERM, false)
+            } else if (
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
 
         enableEdgeToEdge()
@@ -447,6 +483,30 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                 }
             }
         )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && notificationRationale.value) {
+            GenericDialog(
+                isCancellable = false,
+                dialogTitle = "Permission request",
+                dialogText = "This app requires the notification permission to let you know " +
+                        "about running background tasks and control them from the notification.",
+                confirmText = "OK",
+                dismissText = "No thanks",
+                onDismissRequest = {
+                    notificationRationale.value = false
+
+                    Toast.makeText(
+                        context,
+                        "You will not be asked again!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                },
+                onConfirmation = {
+                    notificationRationale.value = false
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            )
+        }
 
         if (showTerminalSheet) {
             TerminalSheet(

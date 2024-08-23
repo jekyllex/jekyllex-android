@@ -35,7 +35,9 @@ fun GenericDialog(
     onConfirmation: () -> Unit,
     dialogTitle: String,
     dialogText: String,
-    isCancellable: Boolean = true
+    isCancellable: Boolean = true,
+    confirmText: String = "Confirm",
+    dismissText: String = "Dismiss"
 ) {
     AlertDialog(
         title = {
@@ -53,7 +55,7 @@ fun GenericDialog(
                     onConfirmation()
                 }
             ) {
-                Text("Confirm")
+                Text(confirmText)
             }
         },
         dismissButton = {
@@ -62,7 +64,7 @@ fun GenericDialog(
                     onDismissRequest()
                 }
             ) {
-                Text("Dismiss")
+                Text(dismissText)
             }
         }
     )

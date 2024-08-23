@@ -40,6 +40,17 @@ class Settings(context: Context) {
             is SettingType.BooleanValue -> sharedPreferences.getBoolean(setting.key, type.value) as T
         }
     }
+
+    fun <T> set(setting: Setting, value: T) {
+        with(sharedPreferences.edit()) {
+            when (value) {
+                is Float -> putFloat(setting.key, value)
+                is String -> putString(setting.key, value)
+                is Boolean -> putBoolean(setting.key, value)
+            }
+            apply()
+        }
+    }
 }
 
 sealed class SettingType {
@@ -62,6 +73,7 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     GIT_EMAIL("git_email", SettingType.StringValue("")),
     GITHUB_PAT("github_pat", SettingType.StringValue("")),
     LOG_PROGRESS("log_progress", SettingType.BooleanValue(true)),
+    ASK_NOTIF_PERM("ask_notif_perm", SettingType.BooleanValue(true)),
     LOG_ANALYTICS("log_analytics", SettingType.BooleanValue(!BuildConfig.DEBUG)),
     CRASH_REPORTS("crash_reports", SettingType.BooleanValue(!BuildConfig.DEBUG)),
 
