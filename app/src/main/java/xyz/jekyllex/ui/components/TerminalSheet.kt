@@ -97,7 +97,7 @@ fun TerminalSheet(
         modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
     ) {
         Column(
-            modifier = Modifier
+            modifier = Modifier.navigationBarsPadding()
                 .padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
         ) {
             Row(
@@ -131,9 +131,7 @@ fun TerminalSheet(
                 }
             }
             if (isServiceBound)
-                Row(
-                    modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp)
-                ) {
+                Row(modifier = Modifier.padding(8.dp)) {
                     OutlinedTextField(
                         value = text,
                         singleLine = true,
@@ -152,7 +150,6 @@ fun TerminalSheet(
                         onClick = { run() },
                     ) { Text(text = "Run") }
                 }
-            Spacer(modifier = Modifier.navigationBarsPadding())
         }
     }
 }

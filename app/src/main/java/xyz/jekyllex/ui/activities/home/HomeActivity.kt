@@ -214,8 +214,6 @@ class HomeActivity : ComponentActivity() {
             }
         }
 
-        enableEdgeToEdge()
-
         setContent {
             JekyllExTheme {
                 HomeScreen(viewModel)

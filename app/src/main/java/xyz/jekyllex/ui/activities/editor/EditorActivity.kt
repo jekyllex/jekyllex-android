@@ -88,8 +88,6 @@ class EditorActivity : ComponentActivity() {
         val timeout = Settings(this).get<Float>(Setting.DEBOUNCE_DELAY)
             .times(1000).toInt()
 
-        enableEdgeToEdge()
-
         setContent {
             JekyllExTheme {
                 EditorView(file, timeout)
@@ -199,7 +197,6 @@ fun EditorView(file: String = "", timeout: Int) {
                 }
             }
         }
-
 
         Column(
             modifier = Modifier
