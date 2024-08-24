@@ -76,6 +76,7 @@ import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.TerminalSheet
 import xyz.jekyllex.utils.Commands.guessDestinationUrl
 import xyz.jekyllex.utils.Commands.jekyll
+import xyz.jekyllex.utils.Commands.mv
 import xyz.jekyllex.utils.Commands.rm
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting
@@ -178,8 +179,24 @@ fun EditorView(file: String = "", timeout: Int) {
                         openTerminal = {
                             showTerminalSheet = true
                         },
+                        renameFile = { newName ->
+                            val destination = file.substringBeforeLast("/") + "/" + newName
+
+                            NativeUtils.exec(mv(file, destination), CoroutineScope(Dispatchers.IO)) {
+                                withContext(Dispatchers.Main) {
+                                    val intent = context.intent
+                                    intent.putExtra("file", destination)
+                                    context.finish()
+                                    context.startActivity(intent)
+                                }
+                            }
+                        },
                         deleteFile = {
-                            service.exec(rm(file)) { context.finish() }
+                            NativeUtils.exec(rm(file), CoroutineScope(Dispatchers.IO)) {
+                                withContext(Dispatchers.Main) {
+                                    context.finish()
+                                }
+                            }
                         }
                     )
                 }

@@ -28,6 +28,7 @@ object Commands {
     fun cat(vararg file: String): Array<String> = arrayOf("cat", *file)
     fun rm(vararg files: String): Array<String> = arrayOf("rm", *files)
     fun rmDir(vararg dirs: String): Array<String> = arrayOf("rm", "-rf", *dirs)
+    fun mv(src: String, dest: String): Array<String> = arrayOf("mv", src, dest)
     fun stat(vararg command: String): Array<String> = arrayOf("stat", *command)
     fun echo(vararg command: String): Array<String> = arrayOf("echo", *command)
     fun touch(vararg command: String): Array<String> = arrayOf("touch", *command)
