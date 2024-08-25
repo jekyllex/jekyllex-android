@@ -79,7 +79,7 @@ fun String.parseOutput() = this.split("\n").map { prop ->
 }
 
 fun String.toDate(): String {
-    val dateFormat = SimpleDateFormat("hh:mm a yyyy-MM-dd", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("hh:mm a dd MMM yyyy", Locale.getDefault())
     dateFormat.timeZone = TimeZone.getDefault()
     return dateFormat.format(this.toLong() * 1000)
 }
