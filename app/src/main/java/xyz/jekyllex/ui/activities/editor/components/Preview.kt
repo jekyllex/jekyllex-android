@@ -70,6 +70,7 @@ fun Preview(
     guessedUrl: String,
     canPreview: Boolean,
     padding: PaddingValues,
+    updateDescription: (String) -> Unit,
     runServer: () -> Unit = {}
 ) {
     if (!canPreview)
@@ -121,6 +122,8 @@ fun Preview(
                                 )
 
                                 webViewClient = WebViewClient(file) { url ->
+                                    updateDescription(url)
+
                                     if (
                                         defaultUrl.isNotBlank() &&
                                         url.contains(defaultUrl) &&

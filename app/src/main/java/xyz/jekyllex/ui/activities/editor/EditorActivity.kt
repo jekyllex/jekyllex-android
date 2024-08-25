@@ -29,11 +29,14 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
+import android.webkit.URLUtil
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -129,6 +132,13 @@ class EditorActivity : ComponentActivity() {
 fun EditorView(file: String = "", timeout: Int) {
     val context = LocalContext.current as Activity
     var showTerminalSheet by remember { mutableStateOf(false) }
+    var description by remember { mutableStateOf(file.formatDir("/")) }
+
+    val updateDescription: (String?) -> Unit = { url ->
+        url?.let { description = it.ifBlank { "/" } } ?: run {
+            description = file.formatDir("/")
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -146,9 +156,16 @@ fun EditorView(file: String = "", timeout: Int) {
                         Text(
                             maxLines = 1,
                             fontSize = 14.sp,
+                            text = description,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(0.dp),
-                            text = file.formatDir("/"),
+                            modifier = Modifier.padding(0.dp).let {
+                                if (!URLUtil.isValidUrl(description)) it
+                                else it.clickable {
+                                    context.startActivity(
+                                        Intent(Intent.ACTION_VIEW, Uri.parse(description))
+                                    )
+                                }
+                            },
                             style = MaterialTheme.typography.labelSmall,
                         )
                     }
@@ -232,6 +249,8 @@ fun EditorView(file: String = "", timeout: Int) {
                     ) return@run
 
                     guessedUrl = url
+                    if (tabIndex == 1) updateDescription(url)
+
                     withContext(Dispatchers.Main) {
                         viewCache[1]?.loadUrl(url.buildPreviewURL())
                     }
@@ -248,14 +267,20 @@ fun EditorView(file: String = "", timeout: Int) {
                 tabs.forEachIndexed { index, title ->
                     Tab(text = { Text(title) },
                         selected = tabIndex == index,
-                        onClick = { tabIndex = index }
+                        onClick = {
+                            tabIndex = index
+                            updateDescription(
+                                if (index == 0) file.formatDir("/")
+                                else viewCache[1]?.url ?: guessedUrl
+                            )
+                        }
                     )
                 }
             }
 
             when (tabIndex) {
                 0 -> Editor(viewCache, file, timeout, innerPadding, isEditorLoading)
-                1 -> Preview(viewCache, file, previewPort, guessedUrl, canPreview, innerPadding) {
+                1 -> Preview(viewCache, file, previewPort, guessedUrl, canPreview, innerPadding, updateDescription) {
                     file.getProjectDir()?.let { dir ->
                         service.exec(jekyll("serve"), dir)
                     }
