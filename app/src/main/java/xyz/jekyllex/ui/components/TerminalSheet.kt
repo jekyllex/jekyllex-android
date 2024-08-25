@@ -52,7 +52,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -69,6 +71,7 @@ fun TerminalSheet(
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
+    val clipboardManager = LocalClipboardManager.current
     var text by rememberSaveable { mutableStateOf("") }
     val state = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -110,6 +113,24 @@ fun TerminalSheet(
                     modifier = Modifier.align(Alignment.CenterVertically),
                 )
                 Spacer(Modifier.weight(1f))
+                if (logs.isNotEmpty()) {
+                    TextButton(
+                        onClick = {
+                            clipboardManager.setText(
+                                AnnotatedString(logs.joinToString("\n"))
+                            )
+
+                            Toast.makeText(
+                                context,
+                                "Copied to clipboard!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        modifier = Modifier.padding(end = 8.dp),
+                    ) {
+                        Text("Copy")
+                    }
+                }
                 Button(
                     onClick = clearLogs,
                 ) {
