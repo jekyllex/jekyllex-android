@@ -66,6 +66,7 @@ import xyz.jekyllex.utils.buildPreviewURL
 fun Preview(
     viewCache: SnapshotStateMap<Int, WebView>,
     file: String,
+    port: Int,
     guessedUrl: String,
     canPreview: Boolean,
     padding: PaddingValues,
@@ -134,7 +135,7 @@ fun Preview(
                                 settings.javaScriptEnabled = true
 
                                 NativeUtils.exec(rmDir(WEBVIEW_CACHE))
-                                loadUrl(defaultUrl.buildPreviewURL())
+                                loadUrl(defaultUrl.buildPreviewURL(port))
                             }
                         }
                     },
@@ -152,7 +153,7 @@ fun Preview(
                         Button(
                             modifier = Modifier.weight(0.8f),
                             onClick = {
-                                viewCache[1]?.loadUrl(defaultUrl.buildPreviewURL())
+                                viewCache[1]?.loadUrl(defaultUrl.buildPreviewURL(port))
                                 canGoBack = false
                             },
                         ) { Text(text = "Load default") }

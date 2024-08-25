@@ -35,6 +35,7 @@ class Settings(context: Context) {
     @Suppress("UNCHECKED_CAST")
     fun <T> get(setting: Setting): T {
         return when (val type = setting.defaultValue) {
+            is SettingType.IntValue -> sharedPreferences.getInt(setting.key, type.value) as T
             is SettingType.FloatValue -> sharedPreferences.getFloat(setting.key, type.value) as T
             is SettingType.StringValue -> sharedPreferences.getString(setting.key, type.value) as T
             is SettingType.BooleanValue -> sharedPreferences.getBoolean(setting.key, type.value) as T
@@ -56,12 +57,14 @@ class Settings(context: Context) {
 sealed class SettingType {
     inline fun <reified T> get(): T {
         return when (this) {
+            is IntValue -> value as T
             is FloatValue -> value as T
             is StringValue -> value as T
             is BooleanValue -> value as T
         }
     }
 
+    data class IntValue(val value: Int) : SettingType()
     data class FloatValue(val value: Float) : SettingType()
     data class StringValue(val value: String) : SettingType()
     data class BooleanValue(val value: Boolean) : SettingType()
@@ -81,6 +84,7 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     TRIM_LOGS("trim_logs", SettingType.BooleanValue(true)),
     GUESS_URLS("guess_urls", SettingType.BooleanValue(true)),
     DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
+    PREVIEW_PORT("default_port", SettingType.IntValue(4000)),
     REDUCE_ANIMATIONS("reduce_animations", SettingType.BooleanValue(false)),
 
     // Bundler

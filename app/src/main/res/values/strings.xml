@@ -58,6 +58,11 @@
         Skip rendering the file/folder details on the home page.
     </string>
 
+    <string name="preview_port_title">Preview port</string>
+    <string name="preview_port_summary">
+        The localhost port number to load in the preview tab.
+    </string>
+
     <string name="git_name_title">Name</string>
     <string name="git_name_summary">
         Global name to use for git operations.

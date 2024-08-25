@@ -28,6 +28,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.PaddingValues
@@ -165,6 +166,30 @@ fun SettingsView() {
                     valueText = { Text(text = "%.2fs".format(it)) },
                     title = { Text(context.getString(R.string.debounce_setting_title)) },
                     summary = { Text(context.getString(R.string.debounce_setting_summary)) },
+                )
+
+                textFieldPreference(
+                    key = PREVIEW_PORT.key,
+                    textToValue = {
+                        val port = it.toIntOrNull()
+
+                        if (port == null || port !in 1024..65535) {
+                            Toast.makeText(
+                                context,
+                                "Invalid port number, must be between 1024 and 65535",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            PREVIEW_PORT.defaultValue.get()
+                        } else port
+                    },
+                    valueToText = { it.toString() },
+                    defaultValue = PREVIEW_PORT.defaultValue.get(),
+                    title = { Text(context.getString(R.string.preview_port_title)) },
+                    summary = {
+                        Text(context.getString(R.string.preview_port_summary))
+                        Text(it.toString())
+                    },
                 )
 
                 preferenceCategory(

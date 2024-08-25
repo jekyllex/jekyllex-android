@@ -41,7 +41,7 @@ object Constants {
     const val PRIVACY = "$HOME_PAGE/privacy-policy"
     const val TERMS = "$HOME_PAGE/terms-and-conditions"
     const val EDITOR_URL = "https://editor.jekyllex.xyz"
-    const val PREVIEW_URL = "http://localhost:4000"
+    const val PREVIEW_URL = "http://localhost"
     const val PAT_SETTINGS_URL = "https://github.com/settings/tokens/new"
 
     val denyList = arrayOf("ls", "ln", "cd")

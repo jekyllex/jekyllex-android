@@ -33,6 +33,7 @@ import xyz.jekyllex.utils.Constants.PREVIEW_URL
 import xyz.jekyllex.utils.Constants.extensionAliases
 import xyz.jekyllex.utils.Constants.defaultExtensions
 import xyz.jekyllex.utils.Setting.DEBOUNCE_DELAY
+import xyz.jekyllex.utils.Setting.PREVIEW_PORT
 import java.util.Locale
 
 fun String.getExtension(): String = this
@@ -94,8 +95,8 @@ fun buildStatsString(isDir: Boolean?, size: String?, lastMod: String?): String? 
 fun String.buildEditorURL(timeout: Int = DEBOUNCE_DELAY.defaultValue.get()): String =
     "$EDITOR_URL/?lang=${this.getExtension()}&timeout=$timeout"
 
-fun String.buildPreviewURL(): String =
-    PREVIEW_URL + this.let { if ((it.getOrNull(0) ?: "") == '/') it else "/$it" }
+fun String.buildPreviewURL(port: Int = PREVIEW_PORT.defaultValue.get()): String =
+    "$PREVIEW_URL:$port" + this.let { if ((it.getOrNull(0) ?: "") == '/') it else "/$it" }
 
 fun String.toCommand(): Array<String> {
     val command = mutableListOf<String>()
