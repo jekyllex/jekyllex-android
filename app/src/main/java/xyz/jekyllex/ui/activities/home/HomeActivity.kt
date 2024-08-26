@@ -282,18 +282,6 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                                 homeViewModel.refresh()
                             }
                         },
-                        onDeleteConfirmation = { isDialogOpen ->
-                            if (service.isRunning) service.killProcess()
-                            val folder = homeViewModel.cwd.value
-                            NativeUtils.exec(rmDir(folder))
-                            resetQuery()
-                            homeViewModel.cd("..")
-                            service.appendLog(
-                                homeViewModel.cwd.value.formatDir("/") +
-                                        "$ rm -rf $folder"
-                            )
-                            isDialogOpen.value = false
-                        },
                         serverIcon = {
                             IconButton(onClick = {
                                 if (!isBound) return@IconButton

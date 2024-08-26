@@ -43,6 +43,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import xyz.jekyllex.R
 import xyz.jekyllex.ui.activities.home.HomeViewModel
 import xyz.jekyllex.ui.activities.settings.SettingsActivity
 import xyz.jekyllex.ui.components.GenericDialog
@@ -61,12 +62,10 @@ fun DropDownMenu(
     resetQuery: () -> Unit,
     serverIcon: @Composable () -> Unit,
     onCreateConfirmation: (String, MutableState<Boolean>) -> Unit,
-    onDeleteConfirmation: (MutableState<Boolean>) -> Unit,
     exec: (Array<String>, String, (() -> Unit)?) -> Unit,
 ) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    val openDeleteDialog = remember { mutableStateOf(false) }
     val openCreateDialog = remember { mutableStateOf(false) }
 
     if (openCreateDialog.value) {
@@ -94,13 +93,6 @@ fun DropDownMenu(
                 }
             )
     }
-
-    if (openDeleteDialog.value) GenericDialog(
-        dialogTitle = "Delete",
-        dialogText = "Are you sure you want to delete the current directory?",
-        onDismissRequest = { openDeleteDialog.value = false },
-        onConfirmation = { onDeleteConfirmation(openDeleteDialog) },
-    )
 
     if (homeViewModel.cwd.value != HOME_DIR) {
         IconButton(onClick = { resetQuery(); homeViewModel.cd(HOME_DIR) }) {
@@ -134,22 +126,6 @@ fun DropDownMenu(
                     homeViewModel.refresh()
                 }
             )
-            if (homeViewModel.cwd.value.contains("$HOME_DIR/")) {
-                DropdownMenuItem(
-                    text = { Text("Bundler") },
-                    onClick = {
-                        expanded = !expanded
-                        exec(bundle("install"), homeViewModel.cwd.value, null)
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Delete dir") },
-                    onClick = {
-                        expanded = !expanded
-                        openDeleteDialog.value = true
-                    },
-                )
-            }
             DropdownMenuItem(
                 text = { Text("Settings") },
                 onClick = {
@@ -159,6 +135,29 @@ fun DropDownMenu(
                     )
                 }
             )
+            if (homeViewModel.cwd.value.contains("$HOME_DIR/")) {
+                DropdownMenuItem(
+                    text = { Text("bundle install") },
+                    onClick = {
+                        expanded = !expanded
+                        exec(bundle("install"), homeViewModel.cwd.value, null)
+                    }
+                )
+            } else {
+                DropdownMenuItem(
+                    text = { Text("Share app") },
+                    onClick = {
+                        expanded = !expanded
+                        context.startActivity(
+                            Intent().apply {
+                                type = "text/plain"
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_text))
+                            }
+                        )
+                    }
+                )
+            }
         }
     }
 }

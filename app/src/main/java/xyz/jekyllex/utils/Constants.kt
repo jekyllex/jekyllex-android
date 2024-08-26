@@ -35,6 +35,7 @@ object Constants {
     const val GEM_DIR = "$LIB_DIR/ruby/gems/3.3.0"
     const val WEBVIEW_CACHE = "$PREFIX/app_webview"
     const val DOMAIN = "jekyllex.xyz"
+    const val GITHUB_DOMAIN = "github.com"
     const val HOME_PAGE = "https://$DOMAIN"
     const val DOCS = "https://docs.$DOMAIN"
     const val LICENSES = "$HOME_PAGE/licenses"
@@ -42,7 +43,8 @@ object Constants {
     const val TERMS = "$HOME_PAGE/terms-and-conditions"
     const val EDITOR_URL = "https://editor.jekyllex.xyz"
     const val PREVIEW_URL = "http://localhost"
-    const val PAT_SETTINGS_URL = "https://github.com/settings/tokens/new"
+    const val PAT_SETTINGS_URL = "https://$GITHUB_DOMAIN/settings/tokens/new"
+    const val ISSUES_URL = "https://$GITHUB_DOMAIN/jekyllex/jekyllex-android/issues/new/choose"
 
     val denyList = arrayOf("ls", "ln", "cd")
     val requiredBinaries = arrayOf("ruby", "gem", "bundler", "jekyll")

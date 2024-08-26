@@ -68,9 +68,10 @@ import xyz.jekyllex.utils.trimQuotes
 import xyz.jekyllex.BuildConfig
 import xyz.jekyllex.ui.activities.viewer.WebPageViewer
 import xyz.jekyllex.utils.Constants.DOCS
-import xyz.jekyllex.utils.Constants.LICENSES
-import xyz.jekyllex.utils.Constants.PRIVACY
 import xyz.jekyllex.utils.Constants.TERMS
+import xyz.jekyllex.utils.Constants.PRIVACY
+import xyz.jekyllex.utils.Constants.LICENSES
+import xyz.jekyllex.utils.Constants.ISSUES_URL
 import xyz.jekyllex.utils.Constants.PAT_SETTINGS_URL
 
 private lateinit var firebaseAnalytics: FirebaseAnalytics
@@ -386,6 +387,16 @@ fun SettingsView() {
                         )
                     },
                     title = { Text(context.getString(R.string.docs)) },
+                )
+
+                preference(
+                    key = "report",
+                    onClick = {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse(ISSUES_URL))
+                        )
+                    },
+                    title = { Text(context.getString(R.string.report)) },
                 )
 
                 preference(

@@ -25,6 +25,7 @@
 package xyz.jekyllex.ui.activities.viewer
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.webkit.WebResourceRequest
@@ -38,6 +39,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,6 +62,7 @@ import xyz.jekyllex.R
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.Constants.DOMAIN
+import xyz.jekyllex.utils.Constants.GITHUB_DOMAIN
 import xyz.jekyllex.utils.Constants.HOME_PAGE
 
 class WebPageViewer: ComponentActivity() {
@@ -84,7 +87,8 @@ class WebPageViewer: ComponentActivity() {
                             ): Boolean {
                                 val url = request.url.toString()
                                 Log.d("WebPageViewer", "Loading $url")
-                                if (url.contains(DOMAIN)) {
+
+                                if (url.contains(DOMAIN) || url.contains(GITHUB_DOMAIN)) {
                                     isLoading = true
                                     return false
                                 }
@@ -147,6 +151,17 @@ class WebPageViewer: ComponentActivity() {
                                     )
                                 }
                             },
+                            actions = {
+                                IconButton(onClick = {
+                                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(webView.url)))
+                                }) {
+                                    Icon(
+                                        modifier = Modifier.size(20.dp),
+                                        contentDescription = "Open in browser",
+                                        painter = painterResource(R.drawable.open_url)
+                                    )
+                                }
+                            }
                         )
                     }
                 ) { innerPadding ->
