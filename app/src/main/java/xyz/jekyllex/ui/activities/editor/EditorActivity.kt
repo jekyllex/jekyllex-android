@@ -81,6 +81,7 @@ import xyz.jekyllex.utils.Commands.guessDestinationUrl
 import xyz.jekyllex.utils.Commands.jekyll
 import xyz.jekyllex.utils.Commands.mv
 import xyz.jekyllex.utils.Commands.rm
+import xyz.jekyllex.utils.Constants.ignoreGuessesIn
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
@@ -230,9 +231,9 @@ fun EditorView(file: String = "", timeout: Int) {
         val previewPort = Settings(context).get<Int>(Setting.PREVIEW_PORT)
 
         LaunchedEffect(Unit) effect@{
-            if (!shouldGuessURLs) return@effect
-
             CoroutineScope(Dispatchers.IO).launch run@{
+                if (!shouldGuessURLs || ignoreGuessesIn.any { file.contains(it) }) return@run
+
                 file.getProjectDir()?.let {
                     val path = file.pathInProject()
                     val url = NativeUtils.exec(

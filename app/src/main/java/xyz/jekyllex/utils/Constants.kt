@@ -47,6 +47,11 @@ object Constants {
     val denyList = arrayOf("ls", "ln", "cd")
     val requiredBinaries = arrayOf("ruby", "gem", "bundler", "jekyll")
 
+    val ignoreGuessesIn = arrayOf(
+        "_site/", "_data/", "_includes/", "_layouts/", "_plugins/", "assets/",
+        ".scss", ".css", ".yml", ".js", ".rb", ".xml", ".json"
+    )
+
     val defaultExtensions = mapOf(
         "Gemfile" to "rb",
         "Rakefile" to "rb",
