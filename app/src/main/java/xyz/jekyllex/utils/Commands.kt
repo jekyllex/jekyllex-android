@@ -51,18 +51,20 @@ object Commands {
     fun guessDestinationUrl(file: String) = ruby(
         "-e", "require 'jekyll';" +
                 "Jekyll.logger.log_level=:error;" +
-                "s=Jekyll::Site.new(Jekyll.configuration({'config': '_config.yml'}));" +
-                "s.collections.each { |n,c| " +
-                "if '$file'.include?(\"_#{n}/\") then " +
-                "puts Jekyll::Document.new(" +
-                "'$file'," + ":site=>s," +
-                ":collection=>s.collections[n]" +
-                ").tap(&:read).url; exit " +
-                "end" +
+                "c=Jekyll.configuration({'config': '_config.yml'});" +
+                "base=c['baseurl'] || '';" +
+                "s=Jekyll::Site.new(c);" +
+                "s.collections.each { |n,_| " +
+                    "if '$file'.include?(\"_#{n}/\") then " +
+                        "puts Jekyll::Document.new(" +
+                            "'$file'," + ":site=>s," +
+                            ":collection=>s.collections[n]" +
+                        ").tap(&:read).url.prepend(base); exit; " +
+                    "end" +
                 "}; " +
                 "_p=Jekyll::Page.new(" +
-                "s" + ",'.'," + "''," + "'$file'" +
+                    "s" + ",'.'," + "''," + "'$file'" +
                 ");" +
-                "puts _p.url",
+                "puts _p.url.prepend(base);",
     )
 }
