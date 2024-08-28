@@ -79,15 +79,18 @@ fun CreateFileDialog(
         val keyboardController = LocalSoftwareKeyboardController.current
 
         val onDone: () -> Unit = run@{
-            if (file.trim().contains(" ")) {
-                Toast.makeText(
-                    context,
-                    "Name can't contain spaces",
-                    Toast.LENGTH_SHORT
-                ).show()
+            val msg = when {
+                file.isBlank() -> "Name can't by empty"
+                file.trim().contains("/") -> "Name can't contain '/'"
+                file.trim().contains(" ") -> "Name can't contain spaces"
+                else -> ""
+            }
 
+            if (msg.isNotBlank()) {
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 return@run
             }
+
             keyboardController?.hide()
             onConfirmation(file.trim(), isFolder)
             file = ""
