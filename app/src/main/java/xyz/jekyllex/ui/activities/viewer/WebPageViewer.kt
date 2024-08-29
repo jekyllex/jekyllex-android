@@ -105,6 +105,8 @@ class WebPageViewer: ComponentActivity() {
                             }
                         }
 
+                        settings.javaScriptEnabled = true
+
                         loadUrl(intent.getStringExtra("url") ?: HOME_PAGE)
                     }
                 }
