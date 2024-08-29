@@ -31,11 +31,14 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,8 +46,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -93,6 +98,7 @@ class SettingsActivity : ComponentActivity() {
 @Composable
 fun SettingsView() {
     val context = LocalContext.current as Activity
+    val clipboardManager = LocalClipboardManager.current
 
     Scaffold(
         topBar = {
@@ -251,7 +257,10 @@ fun SettingsView() {
                         )
                         ClickableText(
                             text = buildAnnotatedString {
-                                pushStringAnnotation(tag = "token_link", annotation = PAT_SETTINGS_URL)
+                                pushStringAnnotation(
+                                    tag = "token_link",
+                                    annotation = PAT_SETTINGS_URL
+                                )
                                 withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                                     append("Generate a new token >")
                                 }
@@ -266,8 +275,8 @@ fun SettingsView() {
                         )
                         Text(
                             "\n" +
-                            (it.take(10) + it.drop(10).map { '*' }.joinToString(""))
-                                .ifBlank { "Empty or not set" }
+                                    (it.take(10) + it.drop(10).map { '*' }.joinToString(""))
+                                        .ifBlank { "Empty or not set" }
                         )
                     },
                     textToValue = {
@@ -445,6 +454,23 @@ fun SettingsView() {
                         Text("JekyllEx ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
                         Text("${BuildConfig.APPLICATION_ID} (${BuildConfig.BUILD_TYPE}@${BuildConfig.GIT_HASH})")
                     },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "Info",
+                            modifier = Modifier.clickable {
+                                clipboardManager.setText(
+                                    AnnotatedString(
+                                        "Bootstrap ${BuildConfig.BOOTSTRAP}\n" +
+                                                "JekyllEx ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n" +
+                                                "${BuildConfig.APPLICATION_ID} (${BuildConfig.BUILD_TYPE}@${BuildConfig.GIT_HASH})"
+                                    )
+                                )
+
+                                Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
                 )
             }
         }
