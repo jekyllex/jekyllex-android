@@ -450,9 +450,9 @@ fun SettingsView() {
                 footerPreference(
                     key = "footer",
                     summary = {
-                        Text("Bootstrap ${BuildConfig.BOOTSTRAP}")
-                        Text("JekyllEx ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
-                        Text("${BuildConfig.APPLICATION_ID} (${BuildConfig.BUILD_TYPE}@${BuildConfig.GIT_HASH})")
+                        Text("bootstrap ${BuildConfig.BOOTSTRAP}")
+                        Text("${BuildConfig.APPLICATION_ID} ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) " +
+                                "(${BuildConfig.BUILD_TYPE}@${BuildConfig.GIT_HASH})")
                     },
                     icon = {
                         Icon(
@@ -461,9 +461,9 @@ fun SettingsView() {
                             modifier = Modifier.clickable {
                                 clipboardManager.setText(
                                     AnnotatedString(
-                                        "Bootstrap ${BuildConfig.BOOTSTRAP}\n" +
-                                                "JekyllEx ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n" +
-                                                "${BuildConfig.APPLICATION_ID} (${BuildConfig.BUILD_TYPE}@${BuildConfig.GIT_HASH})"
+                                        "bootstrap ${BuildConfig.BOOTSTRAP}\n" +
+                                                "${BuildConfig.APPLICATION_ID} ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) " +
+                                                "(${BuildConfig.BUILD_TYPE}@${BuildConfig.GIT_HASH})"
                                     )
                                 )
 
