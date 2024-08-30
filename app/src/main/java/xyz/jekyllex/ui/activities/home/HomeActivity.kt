@@ -299,7 +299,12 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                                     Icon(painterResource(R.drawable.stop), "Stop server")
                             }
                         }
-                    ) { cmd, dir, call -> if (isBound) service.exec(cmd, dir) { call?.invoke() } }
+                    ) exec@{ cmd ->
+                        if (!isBound) return@exec
+
+                        service.exec(cmd, homeViewModel.cwd.value)
+                        showTerminalSheet = true
+                    }
                 },
                 navigationIcon = {
                     if (homeViewModel.cwd.value.contains("$HOME_DIR/"))

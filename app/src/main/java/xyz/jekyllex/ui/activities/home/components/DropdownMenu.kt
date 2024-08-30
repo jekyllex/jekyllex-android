@@ -62,7 +62,7 @@ fun DropDownMenu(
     resetQuery: () -> Unit,
     serverIcon: @Composable () -> Unit,
     onCreateConfirmation: (String, MutableState<Boolean>) -> Unit,
-    exec: (Array<String>, String, (() -> Unit)?) -> Unit,
+    exec: (Array<String>) -> Unit,
 ) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
@@ -131,7 +131,7 @@ fun DropDownMenu(
             if (homeViewModel.cwd.value.contains("$HOME_DIR/")) {
                 DropdownMenuItem(text = { Text("bundle install") }, onClick = {
                     expanded = !expanded
-                    exec(bundle("install"), homeViewModel.cwd.value, null)
+                    exec(bundle("install"))
                 })
             } else {
                 DropdownMenuItem(text = { Text("Share app") }, onClick = {
