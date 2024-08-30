@@ -66,11 +66,11 @@ class BootstrapInstaller : ComponentActivity() {
 
         setContent {
             JekyllExTheme {
-                Column (
+                Column(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxSize(),
-                ){
+                ) {
                     Text(
                         getString(R.string.installer_title),
                         style = MaterialTheme.typography.bodyLarge

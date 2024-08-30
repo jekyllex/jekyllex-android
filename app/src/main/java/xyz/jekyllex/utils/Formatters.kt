@@ -39,10 +39,12 @@ import java.util.Locale
 fun String.getExtension(): String = this
     .substringAfterLast("/")
     .let {
-        defaultExtensions[it] ?:
-        if (it.contains(".")) it.substringAfterLast(".") else "txt"
+        defaultExtensions[it] ?: run {
+            if (it.contains(".")) it.substringAfterLast(".")
+            else "txt"
+        }
     }
-    .let { extensionAliases[it] ?: it}
+    .let { extensionAliases[it] ?: it }
 
 fun String.trimQuotes(): String =
     if (this.length < 2) this

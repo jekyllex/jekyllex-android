@@ -133,8 +133,11 @@ class ProcessService : Service() {
     }
 
     fun exec(cmd: Array<String>, dir: String = HOME_DIR, callBack: () -> Unit = {}) {
-        val command = if (cmd[0].contains("/bin")) cmd
-            else cmd.transform(this@ProcessService)
+        val command = cmd.let {
+            if (it[0].contains("/bin")) it
+            else it.transform(this)
+        }
+
         appendLog("${dir.formatDir("/")} $ ${command.joinToString(" ")}")
 
         if (command.isDenied()) {
@@ -216,7 +219,7 @@ class ProcessService : Service() {
         runningCommand = ""
         _isRunning.value = false
 
-        Settings(this@ProcessService).get<Boolean>(Setting.TRIM_LOGS).let {
+        Settings(this).get<Boolean>(Setting.TRIM_LOGS).let {
             if (it) _logs.value = _logs.value.takeLast(200)
         }
 
@@ -238,7 +241,7 @@ class ProcessService : Service() {
 
     @SuppressLint("RestrictedApi")
     fun updateKillActionOnNotif() {
-        if(!::notifBuilder.isInitialized) return
+        if (!::notifBuilder.isInitialized) return
         Log.d(LOG_TAG, "Updating notification")
 
         notifBuilder.mActions.clear()

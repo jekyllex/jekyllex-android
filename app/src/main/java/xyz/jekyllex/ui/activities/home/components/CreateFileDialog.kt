@@ -133,24 +133,25 @@ fun CreateFileDialog(
                     }
                 }
 
-                if (!isCreating)
+                if (!isCreating) {
                     OutlinedTextField(
                         value = file,
                         singleLine = true,
                         onValueChange = { file = it },
-                        label = {
-                            Text("Enter the name of the ${if (isFolder) "folder" else "file"}")
-                        },
                         modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                         textStyle = MaterialTheme.typography.bodySmall,
+                        keyboardActions = KeyboardActions(onDone = { onDone() }),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text,
                             imeAction = ImeAction.Done
                         ),
-                        keyboardActions = KeyboardActions(onDone = { onDone() }),
+                        label = {
+                            Text("Enter the name of the ${if (isFolder) "folder" else "file"}")
+                        },
                     )
+                }
 
-                if ((!isFolder && file.isNotBlank()) || isFolder)
+                if ((!isFolder && file.isNotBlank()) || isFolder) {
                     Row(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically,
@@ -176,11 +177,14 @@ fun CreateFileDialog(
                                 Text(text = "Create")
                         }
                     }
+                }
+
                 if (!isFolder && file.isBlank()) {
                     Column {
                         Text(
                             text = "OR",
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
                                 .padding(top = 10.dp, bottom = 6.dp)
                         )
                         Button(

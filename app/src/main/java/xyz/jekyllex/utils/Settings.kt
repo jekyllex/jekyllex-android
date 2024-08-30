@@ -71,6 +71,13 @@ sealed class SettingType {
 }
 
 enum class Setting(val key: String, val defaultValue: SettingType) {
+    // General
+    TRIM_LOGS("trim_logs", SettingType.BooleanValue(true)),
+    GUESS_URLS("guess_urls", SettingType.BooleanValue(true)),
+    DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
+    PREVIEW_PORT("default_port", SettingType.IntValue(4000)),
+    REDUCE_ANIMATIONS("reduce_animations", SettingType.BooleanValue(false)),
+
     // Git
     GIT_NAME("git_name", SettingType.StringValue("")),
     GIT_EMAIL("git_email", SettingType.StringValue("")),
@@ -79,13 +86,6 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     ASK_NOTIF_PERM("ask_notif_perm", SettingType.BooleanValue(true)),
     LOG_ANALYTICS("log_analytics", SettingType.BooleanValue(!BuildConfig.DEBUG)),
     CRASH_REPORTS("crash_reports", SettingType.BooleanValue(!BuildConfig.DEBUG)),
-
-    // General
-    TRIM_LOGS("trim_logs", SettingType.BooleanValue(true)),
-    GUESS_URLS("guess_urls", SettingType.BooleanValue(true)),
-    DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
-    PREVIEW_PORT("default_port", SettingType.IntValue(4000)),
-    REDUCE_ANIMATIONS("reduce_animations", SettingType.BooleanValue(false)),
 
     // Bundler
     LOCAL_GEMS("local_gems", SettingType.BooleanValue(true)),

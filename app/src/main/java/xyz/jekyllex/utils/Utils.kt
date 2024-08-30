@@ -32,12 +32,12 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import xyz.jekyllex.BuildConfig
+import xyz.jekyllex.models.File as FileModel
 import xyz.jekyllex.utils.Commands.git
 import xyz.jekyllex.utils.Commands.bundle
 import xyz.jekyllex.utils.Commands.jekyll
 import xyz.jekyllex.utils.Constants.editorMimes
 import xyz.jekyllex.utils.Constants.editorExtensions
-import xyz.jekyllex.models.File as FileModel
 import xyz.jekyllex.ui.activities.editor.EditorActivity
 
 fun Array<String>.isDenied(): Boolean = Constants.denyList.any { this.getOrNull(0) == it }
@@ -60,7 +60,7 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
             if (enableProgress && this.any {
                     it in arrayOf("clone", "fetch", "pull", "push")
                 }) {
-                git( *this.drop(1), "--progress")
+                git(*this.drop(1), "--progress")
             } else this
         }
 
@@ -69,8 +69,7 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
                 val skipBundle = settings.get<Boolean>(Setting.SKIP_BUNDLER)
                 if (skipBundle) jekyll(*this.drop(1), "--skip-bundle")
                 else this
-            }
-            else if (this.getOrNull(1) == "serve") {
+            } else if (this.getOrNull(1) == "serve") {
                 val liveReload = settings.get<Boolean>(Setting.LIVERELOAD)
                 val prefixBundler = settings.get<Boolean>(Setting.PREFIX_BUNDLER)
                 val flags = settings.get<String>(Setting.JEKYLL_FLAGS).split(" ")
@@ -85,8 +84,7 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
 
                 command.addAll(this.drop(2))
                 command.toTypedArray()
-            }
-            else this
+            } else this
         }
 
         else -> this

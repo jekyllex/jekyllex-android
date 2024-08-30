@@ -65,7 +65,7 @@ import xyz.jekyllex.utils.Constants.DOMAIN
 import xyz.jekyllex.utils.Constants.GITHUB_DOMAIN
 import xyz.jekyllex.utils.Constants.HOME_PAGE
 
-class WebPageViewer: ComponentActivity() {
+class WebPageViewer : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -80,7 +80,7 @@ class WebPageViewer: ComponentActivity() {
                 var isLoading by remember { mutableStateOf(true) }
                 val webView = remember {
                     WebView(this).apply {
-                        webViewClient = object: WebViewClient() {
+                        webViewClient = object : WebViewClient() {
                             override fun shouldOverrideUrlLoading(
                                 view: WebView,
                                 request: WebResourceRequest
@@ -155,7 +155,9 @@ class WebPageViewer: ComponentActivity() {
                             },
                             actions = {
                                 IconButton(onClick = {
-                                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(webView.url)))
+                                    startActivity(
+                                        Intent(Intent.ACTION_VIEW, Uri.parse(webView.url))
+                                    )
                                 }) {
                                     Icon(
                                         modifier = Modifier.size(20.dp),

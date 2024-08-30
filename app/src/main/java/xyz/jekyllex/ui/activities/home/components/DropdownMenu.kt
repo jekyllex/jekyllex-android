@@ -69,13 +69,14 @@ fun DropDownMenu(
     val openCreateDialog = remember { mutableStateOf(false) }
 
     if (openCreateDialog.value) {
-        if (homeViewModel.cwd.value == HOME_DIR)
+        if (homeViewModel.cwd.value == HOME_DIR) {
             CreateProjectDialog(
                 isCreating = isCreating.value,
                 onDismissRequest = { openCreateDialog.value = false },
                 onConfirmation = { onCreateConfirmation(it, openCreateDialog) }
             )
-        else
+        }
+        else {
             CreateFileDialog(
                 picker = picker,
                 isOpen = openCreateDialog,
@@ -92,6 +93,7 @@ fun DropDownMenu(
                     openCreateDialog.value = false
                 }
             )
+        }
     }
 
     if (homeViewModel.cwd.value != HOME_DIR) {
@@ -100,18 +102,15 @@ fun DropDownMenu(
         }
         serverIcon()
     }
-    IconButton(
-        enabled = !isCreating.value,
-        onClick = { openCreateDialog.value = true }
-    ) {
+
+    IconButton(enabled = !isCreating.value, onClick = { openCreateDialog.value = true }) {
         Icon(Icons.Default.AddCircle, "Create new project")
     }
 
     Box {
         IconButton(onClick = { expanded = !expanded }) {
             Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = "More"
+                imageVector = Icons.Default.MoreVert, contentDescription = "More"
             )
         }
 
@@ -119,44 +118,30 @@ fun DropDownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
-            DropdownMenuItem(
-                text = { Text("Refresh") },
-                onClick = {
-                    expanded = !expanded
-                    homeViewModel.refresh()
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Settings") },
-                onClick = {
-                    expanded = !expanded
-                    context.startActivity(
-                        Intent(context, SettingsActivity::class.java)
-                    )
-                }
-            )
+            DropdownMenuItem(text = { Text("Refresh") }, onClick = {
+                expanded = !expanded
+                homeViewModel.refresh()
+            })
+            DropdownMenuItem(text = { Text("Settings") }, onClick = {
+                expanded = !expanded
+                context.startActivity(
+                    Intent(context, SettingsActivity::class.java)
+                )
+            })
             if (homeViewModel.cwd.value.contains("$HOME_DIR/")) {
-                DropdownMenuItem(
-                    text = { Text("bundle install") },
-                    onClick = {
-                        expanded = !expanded
-                        exec(bundle("install"), homeViewModel.cwd.value, null)
-                    }
-                )
+                DropdownMenuItem(text = { Text("bundle install") }, onClick = {
+                    expanded = !expanded
+                    exec(bundle("install"), homeViewModel.cwd.value, null)
+                })
             } else {
-                DropdownMenuItem(
-                    text = { Text("Share app") },
-                    onClick = {
-                        expanded = !expanded
-                        context.startActivity(
-                            Intent().apply {
-                                type = "text/plain"
-                                action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_text))
-                            }
-                        )
-                    }
-                )
+                DropdownMenuItem(text = { Text("Share app") }, onClick = {
+                    expanded = !expanded
+                    context.startActivity(Intent().apply {
+                        type = "text/plain"
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_text))
+                    })
+                })
             }
         }
     }

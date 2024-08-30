@@ -151,7 +151,7 @@ fun DropDownMenu(
     ) {
         DropdownMenuItem(
             text = { Text(serverItemText) },
-            onClick = { runServer() }
+            onClick = { expanded = false; runServer() }
         )
         DropdownMenuItem(
             text = { Text("Show logs") },

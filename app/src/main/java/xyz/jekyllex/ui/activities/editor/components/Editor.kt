@@ -54,8 +54,7 @@ fun Editor(
 ) {
     Surface {
         Box(
-            Modifier.consumeWindowInsets(padding)
-            .imePadding()
+            Modifier.consumeWindowInsets(padding).imePadding()
         ) {
             if (isLoading.value) {
                 CircularProgressIndicator(

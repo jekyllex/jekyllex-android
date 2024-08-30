@@ -183,40 +183,45 @@ fun EditorView(file: String = "", timeout: Int) {
                     }
                 },
                 actions = {
-                    if (isBound.value)
-                    DropDownMenu(
-                        serverItemText = if (service.isRunning) "Stop server" else "Start server",
-                        runServer = {
-                            if (!service.isRunning)
-                                file.getProjectDir()?.let { dir ->
-                                    service.exec(jekyll("serve"), dir)
-                                }
-                            else
-                                service.killProcess()
-                        },
-                        openTerminal = {
-                            showTerminalSheet = true
-                        },
-                        renameFile = { newName ->
-                            val destination = file.substringBeforeLast("/") + "/" + newName
+                    if (isBound.value) {
+                        DropDownMenu(
+                            serverItemText = if (service.isRunning) "Stop server" else "Start server",
+                            runServer = {
+                                if (!service.isRunning)
+                                    file.getProjectDir()?.let { dir ->
+                                        service.exec(jekyll("serve"), dir)
+                                        showTerminalSheet = true
+                                    }
+                                else
+                                    service.killProcess()
+                            },
+                            openTerminal = {
+                                showTerminalSheet = true
+                            },
+                            renameFile = { newName ->
+                                val destination = file.substringBeforeLast("/") + "/" + newName
 
-                            NativeUtils.exec(mv(file, destination), CoroutineScope(Dispatchers.IO)) {
-                                withContext(Dispatchers.Main) {
-                                    val intent = context.intent
-                                    intent.putExtra("file", destination)
-                                    context.finish()
-                                    context.startActivity(intent)
+                                NativeUtils.exec(
+                                    mv(file, destination),
+                                    CoroutineScope(Dispatchers.IO)
+                                ) {
+                                    withContext(Dispatchers.Main) {
+                                        val intent = context.intent
+                                        intent.putExtra("file", destination)
+                                        context.finish()
+                                        context.startActivity(intent)
+                                    }
+                                }
+                            },
+                            deleteFile = {
+                                NativeUtils.exec(rm(file), CoroutineScope(Dispatchers.IO)) {
+                                    withContext(Dispatchers.Main) {
+                                        context.finish()
+                                    }
                                 }
                             }
-                        },
-                        deleteFile = {
-                            NativeUtils.exec(rm(file), CoroutineScope(Dispatchers.IO)) {
-                                withContext(Dispatchers.Main) {
-                                    context.finish()
-                                }
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             )
         }
@@ -284,6 +289,7 @@ fun EditorView(file: String = "", timeout: Int) {
                 1 -> Preview(viewCache, file, previewPort, guessedUrl, canPreview, innerPadding, updateDescription) {
                     file.getProjectDir()?.let { dir ->
                         service.exec(jekyll("serve"), dir)
+                        showTerminalSheet = true
                     }
                 }
             }
