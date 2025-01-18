@@ -24,6 +24,7 @@
 
 package xyz.jekyllex.ui.activities.home.components
 
+import android.webkit.URLUtil
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.clickable
@@ -81,8 +82,8 @@ fun CreateFileDialog(
         val onDone: () -> Unit = run@{
             val msg = when {
                 file.isBlank() -> "Name can't by empty"
-                file.trim().contains("/") -> "Name can't contain '/'"
                 file.trim().contains(" ") -> "Name can't contain spaces"
+                !URLUtil.isValidUrl(file) && file.trim().contains("/") -> "Name can't contain '/'"
                 else -> ""
             }
 
@@ -146,7 +147,8 @@ fun CreateFileDialog(
                             imeAction = ImeAction.Done
                         ),
                         label = {
-                            Text("Enter the name of the ${if (isFolder) "folder" else "file"}")
+                            Text("Enter the name${if (isFolder) "" else " or URL"} " +
+                                    "of the ${if (isFolder) "folder" else "file"}")
                         },
                     )
                 }

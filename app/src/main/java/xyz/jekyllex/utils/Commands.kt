@@ -39,6 +39,7 @@ object Commands {
     fun git(vararg command: String): Array<String> = arrayOf("git", *command)
     fun gem(vararg command: String): Array<String> = arrayOf("gem", *command)
     fun ruby(vararg command: String): Array<String> = arrayOf("ruby", *command)
+    fun curl(vararg command: String): Array<String> = arrayOf("curl", *command)
     fun bundle(vararg command: String): Array<String> = arrayOf("bundle", *command)
     fun jekyll(vararg command: String): Array<String> = arrayOf("jekyll", *command)
 

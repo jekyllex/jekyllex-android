@@ -25,6 +25,7 @@
 package xyz.jekyllex.ui.activities.home.components
 
 import android.content.Intent
+import android.webkit.URLUtil
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
@@ -46,8 +47,8 @@ import androidx.compose.ui.platform.LocalContext
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.activities.home.HomeViewModel
 import xyz.jekyllex.ui.activities.settings.SettingsActivity
-import xyz.jekyllex.ui.components.GenericDialog
 import xyz.jekyllex.utils.Commands.bundle
+import xyz.jekyllex.utils.Commands.curl
 import xyz.jekyllex.utils.Commands.mkDir
 import xyz.jekyllex.utils.Commands.touch
 import xyz.jekyllex.utils.Constants.HOME_DIR
@@ -84,7 +85,11 @@ fun DropDownMenu(
                 onDismissRequest = { openCreateDialog.value = false },
                 onConfirmation = { input, isFolder ->
                     val cwd = homeViewModel.cwd.value
-                    val command = if (isFolder) mkDir(input) else touch(input)
+                    val isValidURL = URLUtil.isValidUrl(input)
+                    val command =
+                        if (isFolder) mkDir(input)
+                        else if (isValidURL) curl("-s", "-O", input)
+                        else touch(input)
                     homeViewModel.appendLog(
                         "${cwd.formatDir("/")} $ ${command.joinToString(" ")}"
                     )
