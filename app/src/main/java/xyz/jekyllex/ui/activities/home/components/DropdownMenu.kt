@@ -25,7 +25,6 @@
 package xyz.jekyllex.ui.activities.home.components
 
 import android.content.Intent
-import android.webkit.URLUtil
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
@@ -48,12 +47,7 @@ import xyz.jekyllex.R
 import xyz.jekyllex.ui.activities.home.HomeViewModel
 import xyz.jekyllex.ui.activities.settings.SettingsActivity
 import xyz.jekyllex.utils.Commands.bundle
-import xyz.jekyllex.utils.Commands.curl
-import xyz.jekyllex.utils.Commands.mkDir
-import xyz.jekyllex.utils.Commands.touch
 import xyz.jekyllex.utils.Constants.HOME_DIR
-import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.formatDir
 
 @Composable
 fun DropDownMenu(
@@ -62,7 +56,8 @@ fun DropDownMenu(
     picker: ActivityResultLauncher<String>,
     resetQuery: () -> Unit,
     serverIcon: @Composable () -> Unit,
-    onCreateConfirmation: (String, MutableState<Boolean>) -> Unit,
+    onCreateProjectConfirmation: (String, MutableState<Boolean>) -> Unit,
+    onCreateFileConfirmation: (String, Boolean, MutableState<Boolean>) -> Unit,
     exec: (Array<String>) -> Unit,
 ) {
     val context = LocalContext.current
@@ -74,7 +69,7 @@ fun DropDownMenu(
             CreateProjectDialog(
                 isCreating = isCreating.value,
                 onDismissRequest = { openCreateDialog.value = false },
-                onConfirmation = { onCreateConfirmation(it, openCreateDialog) }
+                onConfirmation = { onCreateProjectConfirmation(it, openCreateDialog) }
             )
         }
         else {
@@ -84,18 +79,7 @@ fun DropDownMenu(
                 isCreating = isCreating.value,
                 onDismissRequest = { openCreateDialog.value = false },
                 onConfirmation = { input, isFolder ->
-                    val cwd = homeViewModel.cwd.value
-                    val isValidURL = URLUtil.isValidUrl(input)
-                    val command =
-                        if (isFolder) mkDir(input)
-                        else if (isValidURL) curl("-s", "-O", input)
-                        else touch(input)
-                    homeViewModel.appendLog(
-                        "${cwd.formatDir("/")} $ ${command.joinToString(" ")}"
-                    )
-                    NativeUtils.exec(command, cwd)
-                    homeViewModel.refresh()
-                    openCreateDialog.value = false
+                    onCreateFileConfirmation(input, isFolder, openCreateDialog)
                 }
             )
         }

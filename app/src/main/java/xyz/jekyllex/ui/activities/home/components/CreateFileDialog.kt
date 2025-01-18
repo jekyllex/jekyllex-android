@@ -73,17 +73,20 @@ fun CreateFileDialog(
     picker: ActivityResultLauncher<String>,
     onConfirmation: (name: String, isFolder: Boolean) -> Unit,
 ) {
-    BasicAlertDialog(onDismissRequest = { isOpen.value = false }) {
+    BasicAlertDialog(onDismissRequest = { if(!isCreating) isOpen.value = false }) {
         val context = LocalContext.current
         var file by remember { mutableStateOf("") }
         var isFolder by remember { mutableStateOf(false) }
         val keyboardController = LocalSoftwareKeyboardController.current
 
         val onDone: () -> Unit = run@{
+            val isURL = URLUtil.isValidUrl(file)
+
             val msg = when {
                 file.isBlank() -> "Name can't by empty"
+                isURL && isFolder -> "Can't create a folder from URL"
                 file.trim().contains(" ") -> "Name can't contain spaces"
-                !URLUtil.isValidUrl(file) && file.trim().contains("/") -> "Name can't contain '/'"
+                !isURL && file.trim().contains("/") -> "Name can't contain '/'"
                 else -> ""
             }
 
@@ -94,7 +97,6 @@ fun CreateFileDialog(
 
             keyboardController?.hide()
             onConfirmation(file.trim(), isFolder)
-            file = ""
         }
 
         Surface(
@@ -113,45 +115,45 @@ fun CreateFileDialog(
                         modifier = Modifier.align(Alignment.CenterVertically),
                         style = MaterialTheme.typography.headlineSmall
                     )
-                    Row(
-                        modifier = Modifier.clickable(
-                            indication = null, onClick = { isFolder = !isFolder },
-                            interactionSource = remember { MutableInteractionSource() }
-                        )
-                    ) {
-                        Text(
-                            text = "Folder",
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .offset(x = 4.dp),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Checkbox(
-                            checked = isFolder,
-                            modifier = Modifier.scale(0.75f),
-                            onCheckedChange = { isFolder = it },
-                        )
+                    if (!isCreating) {
+                        Row(
+                            modifier = Modifier.clickable(
+                                indication = null, onClick = { isFolder = !isFolder },
+                                interactionSource = remember { MutableInteractionSource() }
+                            )
+                        ) {
+                            Text(
+                                text = "Folder",
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .offset(x = 4.dp),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Checkbox(
+                                checked = isFolder,
+                                modifier = Modifier.scale(0.75f),
+                                onCheckedChange = { isFolder = it }
+                            )
+                        }
                     }
                 }
 
-                if (!isCreating) {
-                    OutlinedTextField(
-                        value = file,
-                        singleLine = true,
-                        onValueChange = { file = it },
-                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                        textStyle = MaterialTheme.typography.bodySmall,
-                        keyboardActions = KeyboardActions(onDone = { onDone() }),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done
-                        ),
-                        label = {
-                            Text("Enter the name${if (isFolder) "" else " or URL"} " +
-                                    "of the ${if (isFolder) "folder" else "file"}")
-                        },
-                    )
-                }
+                OutlinedTextField(
+                    value = file,
+                    singleLine = true,
+                    onValueChange = { file = it },
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    textStyle = MaterialTheme.typography.bodySmall,
+                    keyboardActions = KeyboardActions(onDone = { onDone() }),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
+                    ),
+                    label = {
+                        Text("Enter the name${if (isFolder) "" else " or URL"} " +
+                                "of the ${if (isFolder) "folder" else "file"}")
+                    }
+                )
 
                 if ((!isFolder && file.isNotBlank()) || isFolder) {
                     Row(

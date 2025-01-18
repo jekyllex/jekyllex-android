@@ -104,7 +104,9 @@ import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.Commands.echo
 import xyz.jekyllex.utils.Commands.git
 import xyz.jekyllex.utils.Commands.jekyll
-import xyz.jekyllex.utils.Commands.rmDir
+import xyz.jekyllex.utils.Commands.curl
+import xyz.jekyllex.utils.Commands.mkDir
+import xyz.jekyllex.utils.Commands.touch
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.Constants.requiredBinaries
 import xyz.jekyllex.utils.open
@@ -276,10 +278,25 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                         isCreating,
                         pickFileLauncher,
                         resetQuery = { resetQuery() },
-                        onCreateConfirmation = { input, isDialogOpen ->
+                        onCreateProjectConfirmation = { input, isDialogOpen ->
                             if (input.isNotBlank()) create(input) {
                                 isDialogOpen.value = false
                                 homeViewModel.refresh()
+                            }
+                        },
+                        onCreateFileConfirmation = onCreateFileConfirmation@{ input, isFolder, isDialogOpen ->
+                            if (isCreating.value) return@onCreateFileConfirmation
+                            isCreating.value = true
+                            val cwd = homeViewModel.cwd.value
+                            val isValidURL = URLUtil.isValidUrl(input)
+                            val command =
+                                if (isFolder) mkDir(input)
+                                else if (isValidURL) curl("-s", "-O", input)
+                                else touch(input)
+                            service.exec(command, cwd) {
+                                homeViewModel.refresh()
+                                isCreating.value = false
+                                isDialogOpen.value = false
                             }
                         },
                         serverIcon = {
