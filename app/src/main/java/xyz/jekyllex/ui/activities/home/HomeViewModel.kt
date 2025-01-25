@@ -24,8 +24,11 @@
 
 package xyz.jekyllex.ui.activities.home
 
+import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -63,9 +66,14 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
         }
     }
 
+    var fileUri: Uri? = null
     private var query: String = ""
     private var statsJob: Job? = null
+    var isBound by mutableStateOf(false)
     private var _cwd = mutableStateOf("")
+    var isCreating by mutableStateOf(false)
+    var copyFileConfirmation by mutableStateOf(false)
+    var notificationRationale by mutableStateOf(false)
     private val _availableFiles = MutableStateFlow(listOf<File>())
     private val _searchedFiles = MutableStateFlow(listOf<File>())
 

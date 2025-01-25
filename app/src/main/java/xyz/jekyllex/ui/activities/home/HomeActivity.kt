@@ -120,31 +120,26 @@ import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.ui.components.GenericDialog
 import java.io.File as JFile
 
-private var fileUri: Uri? = null
-private var isBound: Boolean = false
-private lateinit var settings: Settings
 private lateinit var service: ProcessService
-private var isCreating = mutableStateOf(false)
-private lateinit var firebaseAnalytics: FirebaseAnalytics
-private lateinit var firebaseCrashlytics: FirebaseCrashlytics
-private var copyFileConfirmation by mutableStateOf(false)
-private var notificationRationale = mutableStateOf(false)
-private lateinit var pickFileLauncher: ActivityResultLauncher<String>
-private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
 class HomeActivity : ComponentActivity() {
+    private lateinit var settings: Settings
     private lateinit var viewModel: HomeViewModel
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+    private lateinit var firebaseCrashlytics: FirebaseCrashlytics
+    private lateinit var pickFileLauncher: ActivityResultLauncher<String>
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
-            isBound = true
+            viewModel.isBound = true
             service = (binder as ProcessService.LocalBinder).service
             viewModel.appendLog = { service.appendLog(it) }
             service.exec(echo("Welcome to JekyllEx!"))
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            isBound = false
+            viewModel.isBound = false
         }
     }
 
@@ -169,8 +164,8 @@ class HomeActivity : ComponentActivity() {
             ActivityResultContracts.GetContent()
         ) { uri: Uri? ->
             uri?.let {
-                fileUri = uri
-                copyFileConfirmation = true
+                viewModel.fileUri = uri
+                viewModel.copyFileConfirmation = true
             } ?: run {
                 Toast.makeText(this, "No file selected!", Toast.LENGTH_SHORT)
                     .show()
@@ -205,7 +200,7 @@ class HomeActivity : ComponentActivity() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && settings.get(Setting.ASK_NOTIF_PERM)) {
             if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-                notificationRationale.value = true
+                viewModel.notificationRationale = true
                 settings.set(Setting.ASK_NOTIF_PERM, false)
             } else if (
                 ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
@@ -217,7 +212,7 @@ class HomeActivity : ComponentActivity() {
 
         setContent {
             JekyllExTheme {
-                HomeScreen(viewModel)
+                HomeScreen(viewModel, pickFileLauncher, requestPermissionLauncher)
             }
         }
     }
@@ -240,11 +235,42 @@ class HomeActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel) {
+fun HomeScreen(
+    homeViewModel: HomeViewModel,
+    pickFileLauncher: ActivityResultLauncher<String>,
+    requestPermissionLauncher: ActivityResultLauncher<String>
+) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     var query by remember { mutableStateOf("") }
     var showTerminalSheet by remember { mutableStateOf(false) }
+
+    val create: (input: String, callback: () -> Unit) -> Unit = create@{ input, callback ->
+        if (!homeViewModel.isBound || homeViewModel.isCreating) return@create
+        homeViewModel.isCreating = true
+
+        val command: Array<String> =
+            if (input.startsWith("git clone ")) input.toCommand()
+            else {
+                val url = input.let {
+                    if (it.contains("github.com") && !it.contains("://")) "https://$it"
+                    else it
+                }
+                when (URLUtil.isValidUrl(url)) {
+                    true -> git("clone", url)
+                    false -> jekyll("new", input)
+                }
+            }
+
+        service.exec(command) {
+            if (command.contentEquals(jekyll("new", input))) {
+                JFile(HOME_DIR, input).removeSymlinks()
+            }
+
+            homeViewModel.isCreating = false
+            callback()
+        }
+    }
 
     val resetQuery = {
         query = ""
@@ -275,7 +301,6 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                 actions = {
                     DropDownMenu(
                         homeViewModel,
-                        isCreating,
                         pickFileLauncher,
                         resetQuery = { resetQuery() },
                         onCreateProjectConfirmation = { input, isDialogOpen ->
@@ -285,8 +310,8 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                             }
                         },
                         onCreateFileConfirmation = onCreateFileConfirmation@{ input, isFolder, isDialogOpen ->
-                            if (isCreating.value) return@onCreateFileConfirmation
-                            isCreating.value = true
+                            if (homeViewModel.isCreating) return@onCreateFileConfirmation
+                            homeViewModel.isCreating = true
                             val cwd = homeViewModel.cwd.value
                             val isValidURL = URLUtil.isValidUrl(input)
                             val command =
@@ -295,13 +320,13 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                                 else touch(input)
                             service.exec(command, cwd) {
                                 homeViewModel.refresh()
-                                isCreating.value = false
+                                homeViewModel.isCreating = false
                                 isDialogOpen.value = false
                             }
                         },
                         serverIcon = {
                             IconButton(onClick = {
-                                if (!isBound) return@IconButton
+                                if (!homeViewModel.isBound) return@IconButton
                                 if (!service.isRunning)
                                     service.exec(
                                         jekyll("serve"),
@@ -317,7 +342,7 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                             }
                         }
                     ) exec@{ cmd ->
-                        if (!isBound) return@exec
+                        if (!homeViewModel.isBound) return@exec
 
                         service.exec(cmd, homeViewModel.cwd.value)
                         showTerminalSheet = true
@@ -389,7 +414,7 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                                 defaultElevation = 4.dp
                             )
                         ) {
-                            if (isCreating.value)
+                            if (homeViewModel.isCreating)
                                 CircularProgressIndicator(
                                     strokeWidth = 2.dp,
                                     color = Color.White,
@@ -455,16 +480,16 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
             }
         }
 
-        if (copyFileConfirmation) GenericDialog(
+        if (homeViewModel.copyFileConfirmation) GenericDialog(
             isCancellable = false,
             dialogTitle = "Copy",
             dialogText = "Are you sure you want to copy this file here?",
             onDismissRequest = {
-                fileUri = null
-                copyFileConfirmation = false
+                homeViewModel.fileUri = null
+                homeViewModel.copyFileConfirmation = false
             },
             onConfirmation = confirmation@{
-                val document = DocumentFile.fromSingleUri(context, fileUri!!)
+                val document = DocumentFile.fromSingleUri(context, homeViewModel.fileUri!!)
 
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
@@ -484,14 +509,14 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                         ).show()
                         e.printStackTrace()
                     } finally {
-                        fileUri = null
-                        copyFileConfirmation = false
+                        homeViewModel.fileUri = null
+                        homeViewModel.copyFileConfirmation = false
                     }
                 }
             }
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && notificationRationale.value) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && homeViewModel.notificationRationale) {
             GenericDialog(
                 isCancellable = false,
                 dialogTitle = "Permission request",
@@ -500,7 +525,7 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                 confirmText = "OK",
                 dismissText = "No thanks",
                 onDismissRequest = {
-                    notificationRationale.value = false
+                    homeViewModel.notificationRationale = false
 
                     Toast.makeText(
                         context,
@@ -509,7 +534,7 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                     ).show()
                 },
                 onConfirmation = {
-                    notificationRationale.value = false
+                    homeViewModel.notificationRationale = false
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             )
@@ -517,8 +542,8 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
 
         if (showTerminalSheet) {
             TerminalSheet(
-                isServiceBound = isBound,
                 isRunning = service.isRunning,
+                isServiceBound = homeViewModel.isBound,
                 onDismiss = { showTerminalSheet = false },
                 clearLogs = { service.clearLogs() },
                 logs = service.logs.collectAsState().value,
@@ -527,32 +552,5 @@ fun HomeScreen(homeViewModel: HomeViewModel) {
                 },
             )
         }
-    }
-}
-
-private fun create(input: String, callBack: () -> Unit = {}) {
-    if (!isBound || isCreating.value) return
-    isCreating.value = true
-
-    val command: Array<String> =
-        if (input.startsWith("git clone ")) input.toCommand()
-        else {
-            val url = input.let {
-                if (it.contains("github.com") && !it.contains("://")) "https://$it"
-                else it
-            }
-            when (URLUtil.isValidUrl(url)) {
-                true -> git("clone", url)
-                false -> jekyll("new", input)
-            }
-        }
-
-    service.exec(command) {
-        if (command.contentEquals(jekyll("new", input))) {
-            JFile(HOME_DIR, input).removeSymlinks()
-        }
-
-        isCreating.value = false
-        callBack()
     }
 }

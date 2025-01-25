@@ -52,7 +52,6 @@ import xyz.jekyllex.utils.Constants.HOME_DIR
 @Composable
 fun DropDownMenu(
     homeViewModel: HomeViewModel,
-    isCreating: MutableState<Boolean>,
     picker: ActivityResultLauncher<String>,
     resetQuery: () -> Unit,
     serverIcon: @Composable () -> Unit,
@@ -67,7 +66,7 @@ fun DropDownMenu(
     if (openCreateDialog.value) {
         if (homeViewModel.cwd.value == HOME_DIR) {
             CreateProjectDialog(
-                isCreating = isCreating.value,
+                isCreating = homeViewModel.isCreating,
                 onDismissRequest = { openCreateDialog.value = false },
                 onConfirmation = { onCreateProjectConfirmation(it, openCreateDialog) }
             )
@@ -76,7 +75,7 @@ fun DropDownMenu(
             CreateFileDialog(
                 picker = picker,
                 isOpen = openCreateDialog,
-                isCreating = isCreating.value,
+                isCreating = homeViewModel.isCreating,
                 onDismissRequest = { openCreateDialog.value = false },
                 onConfirmation = { input, isFolder ->
                     onCreateFileConfirmation(input, isFolder, openCreateDialog)
@@ -92,7 +91,7 @@ fun DropDownMenu(
         serverIcon()
     }
 
-    IconButton(enabled = !isCreating.value, onClick = { openCreateDialog.value = true }) {
+    IconButton(enabled = !homeViewModel.isCreating, onClick = { openCreateDialog.value = true }) {
         Icon(Icons.Default.AddCircle, "Create new project")
     }
 
