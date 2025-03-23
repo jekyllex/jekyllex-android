@@ -11,6 +11,7 @@ on:
         options:
         - "debug"
         - "release"
+        - "staging"
       release:
         type: boolean
         description: "Release built APKs"
@@ -53,6 +54,9 @@ jobs:
           if [ "$BUILD_TYPE" = "release" ]; then
             ./gradlew assembleRelease
             mv app/build/outputs/apk/release/*.apk .
+          elif [ "$BUILD_TYPE" = "staging" ]; then
+            ./gradlew assembleStaging
+            mv app/build/outputs/apk/staging/*.apk .
           elif [ "$BUILD_TYPE" = "debug" ]; then
             ./gradlew assembleDebug
             mv app/build/outputs/apk/debug/*.apk .
