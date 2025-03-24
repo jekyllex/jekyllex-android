@@ -48,8 +48,8 @@ import xyz.jekyllex.utils.buildEditorURL
 fun Editor(
     viewCache: SnapshotStateMap<Int, WebView>,
     file: String,
-    timeout: Int,
     theme: Int,
+    timeout: Int,
     padding: PaddingValues,
     isLoading: MutableState<Boolean>
 ) {
