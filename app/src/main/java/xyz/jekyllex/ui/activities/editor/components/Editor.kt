@@ -79,8 +79,7 @@ fun Editor(
                             val bridge = IOBridge(file, isLoading)
                             addJavascriptInterface(bridge, "IOBridge")
 
-                            loadUrl(file.buildEditorURL(timeout))
-                            loadUrl(file.buildEditorURL(theme))
+                            loadUrl(file.buildEditorURL(theme, timeout))
                         }
                     }
                 }

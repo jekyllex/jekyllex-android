@@ -74,7 +74,6 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     // General
     TRIM_LOGS("trim_logs", SettingType.BooleanValue(true)),
     GUESS_URLS("guess_urls", SettingType.BooleanValue(true)),
-    DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
     PREVIEW_PORT("default_port", SettingType.IntValue(4000)),
     REDUCE_ANIMATIONS("reduce_animations", SettingType.BooleanValue(false)),
 
@@ -97,6 +96,7 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     PREFIX_BUNDLER("prefix_bundler", SettingType.BooleanValue(true)),
     JEKYLL_ENV("jekyll_env", SettingType.StringValue("development")),
 
-
+    //Editor
     EDITOR_THEME("set_theme", SettingType.IntValue(1)),
+    DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f))
 }

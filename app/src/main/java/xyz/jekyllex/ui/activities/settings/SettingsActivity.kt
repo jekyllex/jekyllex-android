@@ -169,7 +169,7 @@ fun SettingsView() {
                 )
 
                 preferenceCategory(
-                    key = "Editor",
+                    key = "editor_settings",
                     title = { Text("Editor") }
                 )
 
@@ -210,7 +210,7 @@ fun SettingsView() {
                 listPreference(
                     key = EDITOR_THEME.key,
                     values = themeMap.keys.toList(),
-                    title = { Text("Theme Mapping") },
+                    title = { Text(context.getString(R.string.theme_setting_title)) },
                     defaultValue = EDITOR_THEME.defaultValue.get()
                 )
 
