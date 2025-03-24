@@ -2,8 +2,6 @@
 agp = "8.5.2"
 kotlin = "2.0.0"
 google = "4.4.2"
-firebase = "33.1.2"
-crashlytics = "3.0.2"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -38,14 +36,9 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 compose-preference = { group = "me.zhanghai.compose.preference", name = "library", version.ref = "composePreference" }
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase" }
-firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
-firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "google" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
