@@ -89,8 +89,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -125,8 +123,6 @@ private lateinit var service: ProcessService
 class HomeActivity : ComponentActivity() {
     private lateinit var settings: Settings
     private lateinit var viewModel: HomeViewModel
-    private lateinit var firebaseAnalytics: FirebaseAnalytics
-    private lateinit var firebaseCrashlytics: FirebaseCrashlytics
     private lateinit var pickFileLauncher: ActivityResultLauncher<String>
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
@@ -188,14 +184,6 @@ class HomeActivity : ComponentActivity() {
                     ).show()
                 }
             }
-        }
-
-        firebaseCrashlytics = FirebaseCrashlytics.getInstance().apply {
-            setCrashlyticsCollectionEnabled(settings.get(Setting.CRASH_REPORTS))
-        }
-
-        firebaseAnalytics = FirebaseAnalytics.getInstance(this).apply {
-            setAnalyticsCollectionEnabled(settings.get(Setting.LOG_ANALYTICS))
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && settings.get(Setting.ASK_NOTIF_PERM)) {

@@ -30,9 +30,7 @@ jobs:
         working-directory: ./app
         env:
           ENCODED_STRING: ${{ secrets.KEYSTORE }}
-          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
         run: |
-          echo $GOOGLE_SERVICES > google-services.json
           echo $ENCODED_STRING | base64 --decode > keystore.jks
 
       - name: Set up JDK
