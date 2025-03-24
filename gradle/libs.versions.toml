@@ -1,7 +1,6 @@
 [versions]
 agp = "8.5.2"
 kotlin = "2.0.0"
-google = "4.4.2"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -39,6 +38,5 @@ leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", v
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-googleServices = { id = "com.google.gms.google-services", version.ref = "google" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

@@ -18,7 +18,6 @@ import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 
 plugins {
-    alias(libs.plugins.googleServices)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
