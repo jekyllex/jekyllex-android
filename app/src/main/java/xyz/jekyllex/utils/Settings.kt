@@ -96,7 +96,7 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     PREFIX_BUNDLER("prefix_bundler", SettingType.BooleanValue(true)),
     JEKYLL_ENV("jekyll_env", SettingType.StringValue("development")),
 
-    //Editor
+    // Editor
     EDITOR_THEME("set_theme", SettingType.IntValue(1)),
     DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f))
 }

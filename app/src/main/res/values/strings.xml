@@ -124,10 +124,10 @@
     </string>
 
     <string name="debounce_setting_title">Editor delay</string>
-    <string name="theme_setting_title">Theme Mapping</string>
     <string name="debounce_setting_summary">
         Time to wait before saving changes to the file being edited (debounce delay).
     </string>
+    <string name="theme_setting_title">Theme Mapping</string>
 
     <string name="crash_reports_title">Report crashes</string>
     <string name="crash_reports_summary">
