@@ -116,6 +116,8 @@ class EditorActivity : ComponentActivity() {
         val timeout = Settings(this).get<Float>(Setting.DEBOUNCE_DELAY)
             .times(1000).toInt()
 
+        val theme = Settings(this).get<Int>(Setting.EDITOR_THEME)
+
         setContent {
             JekyllExTheme {
                 EditorView(file, timeout)

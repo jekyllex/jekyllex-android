@@ -49,6 +49,7 @@ fun Editor(
     viewCache: SnapshotStateMap<Int, WebView>,
     file: String,
     timeout: Int,
+    theme: Int,
     padding: PaddingValues,
     isLoading: MutableState<Boolean>
 ) {
@@ -79,6 +80,7 @@ fun Editor(
                             addJavascriptInterface(bridge, "IOBridge")
 
                             loadUrl(file.buildEditorURL(timeout))
+                            loadUrl(file.buildEditorURL(theme))
                         }
                     }
                 }

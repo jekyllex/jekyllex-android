@@ -55,8 +55,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.google.firebase.analytics.FirebaseAnalytics
+import me.zhanghai.compose.preference.ListPreference
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import me.zhanghai.compose.preference.footerPreference
+import me.zhanghai.compose.preference.listPreference
 import me.zhanghai.compose.preference.preference
 import me.zhanghai.compose.preference.preferenceCategory
 import me.zhanghai.compose.preference.preferenceTheme
@@ -78,6 +80,7 @@ import xyz.jekyllex.utils.Constants.PRIVACY
 import xyz.jekyllex.utils.Constants.LICENSES
 import xyz.jekyllex.utils.Constants.ISSUES_URL
 import xyz.jekyllex.utils.Constants.PAT_SETTINGS_URL
+import xyz.jekyllex.utils.Constants.themeMap
 
 private lateinit var firebaseAnalytics: FirebaseAnalytics
 
@@ -165,14 +168,9 @@ fun SettingsView() {
                     summary = { Text(context.getString(R.string.guess_urls_summary)) },
                 )
 
-                sliderPreference(
-                    valueSteps = 10,
-                    defaultValue = DEBOUNCE_DELAY.defaultValue.get(),
-                    valueRange = .25f..3f,
-                    key = DEBOUNCE_DELAY.key,
-                    valueText = { Text(text = "%.2fs".format(it)) },
-                    title = { Text(context.getString(R.string.debounce_setting_title)) },
-                    summary = { Text(context.getString(R.string.debounce_setting_summary)) },
+                preferenceCategory(
+                    key = "Editor",
+                    title = { Text("Editor") }
                 )
 
                 textFieldPreference(
@@ -197,6 +195,23 @@ fun SettingsView() {
                         Text(context.getString(R.string.preview_port_summary))
                         Text(it.toString())
                     },
+                )
+
+                sliderPreference(
+                    valueSteps = 10,
+                    defaultValue = DEBOUNCE_DELAY.defaultValue.get(),
+                    valueRange = .25f..3f,
+                    key = DEBOUNCE_DELAY.key,
+                    valueText = { Text(text = "%.2fs".format(it)) },
+                    title = { Text(context.getString(R.string.debounce_setting_title)) },
+                    summary = { Text(context.getString(R.string.debounce_setting_summary)) },
+                )
+
+                listPreference(
+                    key = EDITOR_THEME.key,
+                    values = themeMap.keys.toList(),
+                    title = { Text("Theme Mapping") },
+                    defaultValue = EDITOR_THEME.defaultValue.get()
                 )
 
                 preferenceCategory(

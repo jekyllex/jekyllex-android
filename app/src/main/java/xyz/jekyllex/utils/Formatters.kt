@@ -34,6 +34,7 @@ import xyz.jekyllex.utils.Constants.extensionAliases
 import xyz.jekyllex.utils.Constants.defaultExtensions
 import xyz.jekyllex.utils.Setting.DEBOUNCE_DELAY
 import xyz.jekyllex.utils.Setting.PREVIEW_PORT
+import xyz.jekyllex.utils.Setting.EDITOR_THEME
 import java.util.Locale
 
 fun String.getExtension(): String = this
@@ -94,8 +95,10 @@ fun buildStatsString(isDir: Boolean?, size: String?, lastMod: String?): String? 
     return "$dirTag$sizeTag$lastModTag"
 }
 
-fun String.buildEditorURL(timeout: Int = DEBOUNCE_DELAY.defaultValue.get()): String =
-    "$EDITOR_URL/?lang=${this.getExtension()}&timeout=$timeout"
+fun String.buildEditorURL(
+    theme: Int = EDITOR_THEME.defaultValue.get(),
+    timeout: Int = DEBOUNCE_DELAY.defaultValue.get()
+): String = "$EDITOR_URL/?lang=${this.getExtension()}&timeout=$timeout&theme=$theme"
 
 fun String.buildPreviewURL(port: Int = PREVIEW_PORT.defaultValue.get()): String =
     "$PREVIEW_URL:$port" + this.let { if ((it.getOrNull(0) ?: "") == '/') it else "/$it" }
