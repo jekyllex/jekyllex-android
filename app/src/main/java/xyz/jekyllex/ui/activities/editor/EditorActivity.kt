@@ -116,9 +116,11 @@ class EditorActivity : ComponentActivity() {
         val timeout = Settings(this).get<Float>(Setting.DEBOUNCE_DELAY)
             .times(1000).toInt()
 
+        val theme = Settings(this).get<Int>(Setting.EDITOR_THEME)
+
         setContent {
             JekyllExTheme {
-                EditorView(file, timeout)
+                EditorView(file, theme, timeout)
             }
         }
     }
@@ -130,7 +132,7 @@ class EditorActivity : ComponentActivity() {
 }
 
 @Composable
-fun EditorView(file: String = "", timeout: Int) {
+fun EditorView(file: String = "", theme: Int, timeout: Int) {
     val context = LocalContext.current as Activity
     var showTerminalSheet by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf(file.formatDir("/")) }
@@ -285,7 +287,7 @@ fun EditorView(file: String = "", timeout: Int) {
             }
 
             when (tabIndex) {
-                0 -> Editor(viewCache, file, timeout, innerPadding, isEditorLoading)
+                0 -> Editor(viewCache, file, theme, timeout, innerPadding, isEditorLoading)
                 1 -> Preview(viewCache, file, previewPort, guessedUrl, canPreview, innerPadding, updateDescription) {
                     file.getProjectDir()?.let { dir ->
                         service.exec(jekyll("serve"), dir)

@@ -48,6 +48,7 @@ import xyz.jekyllex.utils.buildEditorURL
 fun Editor(
     viewCache: SnapshotStateMap<Int, WebView>,
     file: String,
+    theme: Int,
     timeout: Int,
     padding: PaddingValues,
     isLoading: MutableState<Boolean>
@@ -78,7 +79,7 @@ fun Editor(
                             val bridge = IOBridge(file, isLoading)
                             addJavascriptInterface(bridge, "IOBridge")
 
-                            loadUrl(file.buildEditorURL(timeout))
+                            loadUrl(file.buildEditorURL(theme, timeout))
                         }
                     }
                 }
