@@ -67,12 +67,12 @@ object Constants {
     )
 
     val themeMap = mapOf(
-        1 to "one-light",
-        2 to "one-dark",
-        3 to "duotone-dark",
-        4 to "duotone-space",
-
+        1 to "One Light",
+        2 to "One Dark",
+        3 to "Duotone Dark",
+        4 to "Duotone Space",
     )
+
     // mime types in android are a mess; somewhat based on
     // https://android.googlesource.com/platform/external/mime-support/+/master/mime.types
     val editorMimes = arrayOf("text/", "xml", "json")

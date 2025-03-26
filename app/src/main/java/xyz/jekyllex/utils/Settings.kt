@@ -26,7 +26,6 @@ package xyz.jekyllex.utils
 
 import android.content.Context
 import android.preference.PreferenceManager
-import xyz.jekyllex.BuildConfig
 
 class Settings(context: Context) {
     @Suppress("DEPRECATION")
@@ -77,12 +76,15 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     PREVIEW_PORT("default_port", SettingType.IntValue(4000)),
     REDUCE_ANIMATIONS("reduce_animations", SettingType.BooleanValue(false)),
 
+    // Editor
+    EDITOR_THEME("set_theme", SettingType.IntValue(1)),
+    DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
+
     // Git
     GIT_NAME("git_name", SettingType.StringValue("")),
     GIT_EMAIL("git_email", SettingType.StringValue("")),
     GITHUB_PAT("github_pat", SettingType.StringValue("")),
     LOG_PROGRESS("log_progress", SettingType.BooleanValue(false)),
-    ASK_NOTIF_PERM("ask_notif_perm", SettingType.BooleanValue(true)),
 
     // Bundler
     LOCAL_GEMS("local_gems", SettingType.BooleanValue(true)),
@@ -94,7 +96,6 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     PREFIX_BUNDLER("prefix_bundler", SettingType.BooleanValue(true)),
     JEKYLL_ENV("jekyll_env", SettingType.StringValue("development")),
 
-    // Editor
-    EDITOR_THEME("set_theme", SettingType.IntValue(1)),
-    DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f))
+    // Other
+    ASK_NOTIF_PERM("ask_notif_perm", SettingType.BooleanValue(true)),
 }

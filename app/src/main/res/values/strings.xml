@@ -127,7 +127,8 @@
     <string name="debounce_setting_summary">
         Time to wait before saving changes to the file being edited (debounce delay).
     </string>
-    <string name="theme_setting_title">Theme Mapping</string>
+
+    <string name="theme_setting_title">Color theme</string>
 
     <string name="docs">Docs</string>
     <string name="report">Report</string>

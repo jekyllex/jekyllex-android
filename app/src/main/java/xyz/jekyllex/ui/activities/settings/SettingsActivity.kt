@@ -167,6 +167,15 @@ fun SettingsView() {
                     title = { Text("Editor") }
                 )
 
+                listPreference(
+                    key = EDITOR_THEME.key,
+                    values = themeMap.keys.toList(),
+                    defaultValue = EDITOR_THEME.defaultValue.get(),
+                    summary = { Text(themeMap[it] ?: "Unknown theme") },
+                    valueToText = { buildAnnotatedString { append(themeMap[it]) }},
+                    title = { Text(context.getString(R.string.theme_setting_title)) },
+                )
+
                 textFieldPreference(
                     key = PREVIEW_PORT.key,
                     textToValue = {
@@ -199,13 +208,6 @@ fun SettingsView() {
                     valueText = { Text(text = "%.2fs".format(it)) },
                     title = { Text(context.getString(R.string.debounce_setting_title)) },
                     summary = { Text(context.getString(R.string.debounce_setting_summary)) },
-                )
-
-                listPreference(
-                    key = EDITOR_THEME.key,
-                    values = themeMap.keys.toList(),
-                    title = { Text(context.getString(R.string.theme_setting_title)) },
-                    defaultValue = EDITOR_THEME.defaultValue.get()
                 )
 
                 preferenceCategory(
