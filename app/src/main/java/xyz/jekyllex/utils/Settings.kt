@@ -76,7 +76,7 @@ enum class Setting(val key: String, val defaultValue: SettingType) {
     REDUCE_ANIMATIONS("reduce_animations", SettingType.BooleanValue(false)),
 
     // Editor
-    EDITOR_THEME("set_theme", SettingType.IntValue(1)),
+    EDITOR_THEME("editor_theme", SettingType.IntValue(0)),
     PREVIEW_PORT("default_port", SettingType.IntValue(4000)),
     DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
 

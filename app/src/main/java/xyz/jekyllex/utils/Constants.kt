@@ -44,6 +44,7 @@ object Constants {
     const val EDITOR_URL = "https://editor.jekyllex.xyz"
     const val PREVIEW_URL = "http://localhost"
     const val PAT_SETTINGS_URL = "https://$GITHUB_DOMAIN/settings/tokens/new"
+    const val EDITOR_PREVIEWS_URL = "https://$GITHUB_DOMAIN/jekyllex/editor#previews"
     const val ISSUES_URL = "https://$GITHUB_DOMAIN/jekyllex/jekyllex-android/issues/new/choose"
 
     val denyList = arrayOf("ls", "ln", "cd")
@@ -67,10 +68,14 @@ object Constants {
     )
 
     val themeMap = mapOf(
-        1 to "One Light",
-        2 to "One Dark",
-        3 to "Duotone Dark",
-        4 to "Duotone Space",
+        0 to "One Light",
+        1 to "One Dark",
+        2 to "Duotone Dark",
+        3 to "Duotone Space",
+        4 to "Coldark Cold",
+        5 to "Coldark Dark",
+        6 to "Solarized Light",
+        7 to "Tomorrow Night",
     )
 
     // mime types in android are a mess; somewhat based on

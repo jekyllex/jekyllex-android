@@ -76,9 +76,10 @@ import xyz.jekyllex.utils.Constants.DOCS
 import xyz.jekyllex.utils.Constants.TERMS
 import xyz.jekyllex.utils.Constants.PRIVACY
 import xyz.jekyllex.utils.Constants.LICENSES
+import xyz.jekyllex.utils.Constants.themeMap
 import xyz.jekyllex.utils.Constants.ISSUES_URL
 import xyz.jekyllex.utils.Constants.PAT_SETTINGS_URL
-import xyz.jekyllex.utils.Constants.themeMap
+import xyz.jekyllex.utils.Constants.EDITOR_PREVIEWS_URL
 
 class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -171,9 +172,25 @@ fun SettingsView() {
                     key = EDITOR_THEME.key,
                     values = themeMap.keys.toList(),
                     defaultValue = EDITOR_THEME.defaultValue.get(),
-                    summary = { Text(themeMap[it] ?: "Unknown theme") },
                     valueToText = { buildAnnotatedString { append(themeMap[it]) }},
                     title = { Text(context.getString(R.string.theme_setting_title)) },
+                    summary = {
+                        Text("Choose from a variety of themes to customize the editing experience.")
+                        ClickableText(
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                                    append("Show previews >")
+                                }
+                            },
+                            onClick = {
+                                context.startActivity(
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(EDITOR_PREVIEWS_URL))
+                                )
+                            },
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        Text("\nCurrent theme: " + (themeMap[it] ?: "Unknown"))
+                    },
                 )
 
                 textFieldPreference(
@@ -268,14 +285,9 @@ fun SettingsView() {
                         )
                         ClickableText(
                             text = buildAnnotatedString {
-                                pushStringAnnotation(
-                                    tag = "token_link",
-                                    annotation = PAT_SETTINGS_URL
-                                )
                                 withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                                     append("Generate a new token >")
                                 }
-                                pop()
                             },
                             onClick = {
                                 context.startActivity(
