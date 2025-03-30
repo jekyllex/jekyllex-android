@@ -89,6 +89,7 @@ fun TerminalSheet(
     }
 
     fun run() {
+        if (text.isBlank()) return
         if (isRunning) {
             Toast.makeText(
                 context,
