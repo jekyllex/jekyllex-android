@@ -530,10 +530,11 @@ fun HomeScreen(
 
         if (showTerminalSheet) {
             TerminalSheet(
+                cwd = homeViewModel.cwd.value,
                 isRunning = service.isRunning,
+                clearLogs = { service.clearLogs() },
                 isServiceBound = homeViewModel.isBound,
                 onDismiss = { showTerminalSheet = false },
-                clearLogs = { service.clearLogs() },
                 logs = service.logs.collectAsState().value,
                 exec = { command: Array<String> ->
                     service.exec(command, homeViewModel.cwd.value)

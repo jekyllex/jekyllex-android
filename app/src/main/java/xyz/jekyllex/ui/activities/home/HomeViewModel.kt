@@ -119,7 +119,7 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
 
     fun cd(dir: String) {
         statsJob?.let { it.cancel(); statsJob = null; Log.d(LOG_TAG, "Cancelled stats job") }
-        appendLog("${_cwd.value.formatDir("/")}$ cd ${dir.formatDir("/")}")
+        appendLog("${_cwd.value.formatDir("/")} $ cd ${dir.formatDir("/")}")
 
         if (dir == "..")
             _cwd.value = _cwd.value.substringBeforeLast('/')
@@ -129,7 +129,6 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
             _cwd.value += "/$dir"
 
         refresh()
-        appendLog("${_cwd.value.formatDir("/")}$")
     }
 
     fun refresh() {

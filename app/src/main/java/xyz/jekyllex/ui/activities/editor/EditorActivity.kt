@@ -299,10 +299,11 @@ fun EditorView(file: String = "", theme: Int, timeout: Int) {
 
         if (showTerminalSheet) {
             TerminalSheet(
-                isServiceBound = isBound.value,
                 isRunning = service.isRunning,
-                onDismiss = { showTerminalSheet = false },
+                isServiceBound = isBound.value,
+                cwd = file.getProjectDir() ?: "",
                 clearLogs = { service.clearLogs() },
+                onDismiss = { showTerminalSheet = false },
                 logs = service.logs.collectAsState().value,
                 exec = { command: Array<String> ->
                     file.getProjectDir()?.let { dir ->
