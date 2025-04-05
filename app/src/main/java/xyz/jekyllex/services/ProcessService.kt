@@ -33,24 +33,14 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import xyz.jekyllex.R
-import xyz.jekyllex.utils.Constants.BIN_DIR
+import xyz.jekyllex.models.Session
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils.buildEnvironment
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
-import xyz.jekyllex.utils.drop
-import xyz.jekyllex.utils.formatDir
-import xyz.jekyllex.utils.isDenied
 import xyz.jekyllex.utils.transform
-import java.io.BufferedReader
-import java.io.File
 
 class ProcessService : Service() {
     companion object {
@@ -60,20 +50,19 @@ class ProcessService : Service() {
         private const val ACTION_STOP_SERVICE = "xyz.jekyllex.service_stop"
     }
 
-    private lateinit var process: Process
-    private lateinit var outputReader: BufferedReader
-    private lateinit var errorReader: BufferedReader
+    private val sessions = Array(1) {
+        Session(
+            notificationCallback = { updateKillActionOnNotif() }
+        )
+    }
     private lateinit var notifBuilder: NotificationCompat.Builder
 
-    private var runningCommand = ""
     private var hasConnections = false
-    private var _isRunning = mutableStateOf(false)
-    private val _logs = MutableStateFlow(listOf<String>())
 
     val isRunning
-        get() = _isRunning.value
+        get() = sessions[0].isRunning
     val logs
-        get() = _logs
+        get() = sessions[0].logs
 
     inner class LocalBinder : Binder() {
         val service: ProcessService = this@ProcessService
@@ -104,11 +93,7 @@ class ProcessService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-
-        if (::process.isInitialized) process.destroy()
-        if (::errorReader.isInitialized) errorReader.close()
-        if (::outputReader.isInitialized) outputReader.close()
-
+        sessions.forEach { it.killSelf() }
         Log.d(LOG_TAG, "Service destroyed")
     }
 
@@ -125,11 +110,11 @@ class ProcessService : Service() {
     }
 
     fun appendLog(log: String) {
-        _logs.value += log
+        sessions.forEach { it.appendLog(log) }
     }
 
     fun clearLogs() {
-        _logs.value = listOf()
+        sessions.forEach { it.clearLogs() }
     }
 
     fun exec(cmd: Array<String>, dir: String = HOME_DIR, callBack: () -> Unit = {}) {
@@ -138,92 +123,12 @@ class ProcessService : Service() {
             else it.transform(this)
         }
 
-        appendLog("${dir.formatDir("/")} $ ${command.joinToString(" ")}")
-
-        if (command.isDenied()) {
-            appendLog("Command not allowed!")
-            return
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            if (_isRunning.value) {
-                appendLog("\nSome other process is already running\n")
-                return@launch
-            }
-
-            try {
-                _isRunning.value = true
-                runningCommand = command.joinToString(" ")
-                updateKillActionOnNotif()
-
-                Log.d(LOG_TAG, "Starting process with command:\n\"${command.toList()}\"")
-
-                process = Runtime.getRuntime().exec(
-                    if (command[0].contains("/bin")) command
-                    else arrayOf("$BIN_DIR/${command.getOrNull(0)}", *command.drop(1)),
-                    buildEnvironment(dir, this@ProcessService),
-                    File(dir)
-                )
-
-                outputReader = process.inputStream.bufferedReader()
-                errorReader = process.errorStream.bufferedReader()
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        var out: String? = outputReader.readLine()
-                        while (out != null) {
-                            appendLog(out)
-                            out = outputReader.readLine()
-                        }
-                    } catch (e: Exception) {
-                        Log.d(LOG_TAG, "Exception while reading output: $e")
-                    }
-                }
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        var err: String? = errorReader.readLine()
-                        while (err != null) {
-                            appendLog(err)
-                            err = errorReader.readLine()
-                        }
-                    } catch (e: Exception) {
-                        Log.d(LOG_TAG, "Exception while reading error: $e")
-                    }
-                }
-
-                val exitCode = process.waitFor()
-                if (exitCode != 0) appendLog("Process exited with code $exitCode")
-
-                processStopped()
-                callBack()
-            } catch (e: Exception) {
-                processStopped()
-                appendLog("${e.cause}")
-                if (::process.isInitialized) process.destroy()
-                Log.e(LOG_TAG, "Error while starting process: $e")
-            }
-        }
+        sessions[0].setLogTrimming(Settings(this).get(Setting.TRIM_LOGS))
+        sessions[0].exec(command, dir, buildEnvironment(dir, this), callBack)
     }
 
     fun killProcess() {
-        if (!_isRunning.value) {
-            appendLog("No process is running")
-            return
-        }
-
-        if (::process.isInitialized) process.destroy()
-    }
-
-    private fun processStopped() {
-        runningCommand = ""
-        _isRunning.value = false
-
-        Settings(this).get<Boolean>(Setting.TRIM_LOGS).let {
-            if (it) _logs.value = _logs.value.takeLast(200)
-        }
-
-        updateKillActionOnNotif()
+        sessions.forEach { it.killProcess() }
     }
 
     private fun createNotification(): Notification {
@@ -269,8 +174,8 @@ class ProcessService : Service() {
             )
         )
 
-        if (_isRunning.value) {
-            notifBuilder.setContentText("Currently running:\n$runningCommand")
+        if (sessions[0].isRunning) {
+            notifBuilder.setContentText("Currently running:\n${sessions[0].runningCommand}")
             notifBuilder.addAction(killProcess)
         } else {
             notifBuilder.setContentText(getText(R.string.notification_text_waiting))
