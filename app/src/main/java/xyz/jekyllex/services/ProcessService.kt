@@ -34,6 +34,9 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import xyz.jekyllex.R
 import xyz.jekyllex.models.Session
 import xyz.jekyllex.utils.Constants.HOME_DIR
@@ -51,13 +54,12 @@ class ProcessService : Service() {
     }
 
     private var hasConnections = false
-    private val _sessions = mutableListOf<Session>()
+    lateinit var sessionManager: SessionManager
+    private val _sessions = MutableStateFlow(listOf<Session>())
     private lateinit var notifBuilder: NotificationCompat.Builder
 
-    val sessions
-        get() = _sessions.toList()
     val isRunning
-        get() = _sessions.getOrNull(0)?.isRunning ?: false
+        get() = _sessions.value.firstOrNull()?.isRunning ?: false
 
     inner class LocalBinder : Binder() {
         val service: ProcessService = this@ProcessService
@@ -83,19 +85,82 @@ class ProcessService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        _sessions.getOrElse(0) {
+
+        _sessions.value.getOrElse(0) {
             Session { updateKillActionOnNotif() }.apply {
-                _sessions.add(this)
+                _sessions.value += this
                 setLogTrimming(Settings(this@ProcessService).get(Setting.TRIM_LOGS))
             }
         }
+
+        sessionManager = object : SessionManager {
+            override val sessions
+                get() = _sessions
+            override val isRunning
+                get() = _sessions.value.firstOrNull { it.isActive }?.isRunning ?: false
+            override val activeSession
+                get() = _sessions.value.indexOfFirst { it.isActive }.takeIf { it >= 0 } ?: 0
+            override val logs
+                get() = _sessions.value.firstOrNull { it.isActive }?.logs ?: MutableStateFlow(emptyList())
+
+
+            override fun clearLogs() {
+                _sessions.value.firstOrNull { it.isActive }?.clearLogs()
+            }
+
+            override fun killProcess() {
+                _sessions.value.firstOrNull { it.isActive }?.killProcess()
+            }
+
+            override fun createSession() {
+                val shouldTrim = Settings(this@ProcessService).get<Boolean>(Setting.TRIM_LOGS)
+
+                _sessions.value.apply {
+                    _sessions.update { it + Session() }
+                    forEach { it.setLogTrimming(shouldTrim) }
+                }
+
+                setVisibleSession(_sessions.value.size - 1)
+            }
+
+            override fun setVisibleSession(index: Int) {
+                _sessions.value = _sessions.value.mapIndexed { i, session ->
+                    session.copy(isActive = i == index)
+                }
+            }
+
+            override fun exec(
+                cmd: Array<String>,
+                dir: String,
+                callBack: () -> Unit
+            ) {
+                val command = cmd.let {
+                    if (it[0].contains("/bin")) it
+                    else it.transform(this@ProcessService)
+                }
+
+                _sessions.value.let {
+                    it.firstOrNull { it.isActive } ?: it.first()
+                }.exec(command, dir, buildEnvironment(dir, this@ProcessService), callBack)
+            }
+        }
+
         startForeground(NOTIFICATION_ID, createNotification())
+    }
+
+    fun exec(cmd: Array<String>, dir: String = HOME_DIR, callBack: () -> Unit = {}) {
+        val command = cmd.let {
+            if (it[0].contains("/bin")) it
+            else it.transform(this)
+        }
+
+        _sessions.value.first().exec(command, dir, buildEnvironment(dir, this), callBack)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d(LOG_TAG, "Service destroyed")
-        _sessions.forEach { it.killSelf() }.also { _sessions.clear() }
+        _sessions.value.forEach { it.killSelf() }.also { _sessions.value = listOf() }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -110,33 +175,8 @@ class ProcessService : Service() {
         return START_NOT_STICKY
     }
 
-    fun createSession() {
-        val shouldTrim = Settings(this).get<Boolean>(Setting.TRIM_LOGS)
-
-        _sessions.apply {
-            forEach { it.isActive = false; it.setLogTrimming(shouldTrim) }
-            add(Session(true))
-        }
-    }
-
-    fun exec(
-        cmd: Array<String>,
-        dir: String = HOME_DIR,
-        inActive: Boolean = false,
-        callBack: () -> Unit = {}
-    ) {
-        val command = cmd.let {
-            if (it[0].contains("/bin")) it
-            else it.transform(this)
-        }
-
-        _sessions.let {
-            if (inActive) it.firstOrNull { s -> s.isActive } ?: it.first() else it.first()
-        }.exec(command, dir, buildEnvironment(dir, this), callBack)
-    }
-
     fun killProcess() {
-        _sessions.first().killProcess()
+        _sessions.value.first().killProcess()
     }
 
     private fun createNotification(): Notification {
@@ -182,8 +222,8 @@ class ProcessService : Service() {
             )
         )
 
-        if (_sessions.first().isRunning) {
-            notifBuilder.setContentText("Currently running:\n${_sessions.first().runningCommand}")
+        if (_sessions.value.first().isRunning) {
+            notifBuilder.setContentText("Currently running:\n${_sessions.value.first().runningCommand}")
             notifBuilder.addAction(killProcess)
         } else {
             notifBuilder.setContentText(getText(R.string.notification_text_waiting))
@@ -194,3 +234,21 @@ class ProcessService : Service() {
         notifManager.notify(NOTIFICATION_ID, notifBuilder.build())
     }
 }
+
+interface SessionManager {
+    val isRunning: Boolean
+    val activeSession: Int
+    val logs: StateFlow<List<String>>
+    val sessions: StateFlow<List<Session>>
+
+    fun clearLogs()
+    fun killProcess()
+    fun createSession()
+    fun setVisibleSession(index: Int)
+    fun exec(
+        cmd: Array<String>,
+        dir: String = HOME_DIR,
+        callBack: () -> Unit = {}
+    )
+}
+

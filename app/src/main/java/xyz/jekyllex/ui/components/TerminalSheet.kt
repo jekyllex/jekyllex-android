@@ -24,6 +24,7 @@
 
 package xyz.jekyllex.ui.components
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,12 +35,18 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -64,25 +71,26 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import xyz.jekyllex.models.Session
+import xyz.jekyllex.services.SessionManager
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.toCommand
 
 @Composable
 fun TerminalSheet(
     cwd: String = "",
-    sessions: List<Session>,
     onDismiss: () -> Unit = {},
+    sessionManager: SessionManager,
     isServiceBound: Boolean = false,
-    exec: (Array<String>) -> Unit = {},
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
-    val activeSession = sessions.first { it.isActive }
-    val logs = activeSession.logs.collectAsState().value
     val clipboardManager = LocalClipboardManager.current
     var text by rememberSaveable { mutableStateOf("") }
+    val sessions = sessionManager.sessions.collectAsState().value
+    val logs = sessions[sessionManager.activeSession].logs.collectAsState().value
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    Log.d("TerminalSheet", "logs val: $logs")
 
     LaunchedEffect(logs.size) {
         listState.animateScrollToItem(logs.size)
@@ -90,7 +98,7 @@ fun TerminalSheet(
 
     fun run() {
         if (text.isBlank()) return
-        if (activeSession.isRunning) {
+        if (sessionManager.isRunning) {
             Toast.makeText(
                 context,
                 "A process is already running",
@@ -98,7 +106,7 @@ fun TerminalSheet(
             ).show()
             return
         }
-        exec(text.toCommand())
+        sessionManager.exec(text.toCommand(), cwd)
         text = ""
     }
 
@@ -140,9 +148,41 @@ fun TerminalSheet(
                     }
                 }
                 Button(
-                    onClick = activeSession::clearLogs,
+                    onClick = sessionManager::clearLogs,
                 ) {
                     Text(text = "Clear")
+                }
+            }
+            LazyRow (
+                modifier = Modifier.padding(horizontal = 8.dp).padding(bottom = 8.dp),
+            ) {
+                items(sessions.size) {
+                    TextButton(
+                        onClick = { sessionManager.setVisibleSession(it) },
+                    ) {
+                        Text(
+                            text = sessions[it].runningCommand.split(" ").first()
+                                .ifBlank { if (it == 0) "Default Session" else "Session ${it.hashCode()}" }
+                        )
+                        if (it == sessionManager.activeSession) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear session",
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+                        }
+                    }
+                }
+                item {
+                    IconButton(
+                        onClick = sessionManager::createSession,
+                        modifier = Modifier.size(30.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Create session",
+                        )
+                    }
                 }
             }
             LazyColumn(
@@ -196,7 +236,7 @@ fun TerminalSheet(
                         TextButton(
                             onClick = { run() },
                             contentPadding = PaddingValues(0.dp),
-                            enabled = text.isNotBlank() && !activeSession.isRunning,
+                            enabled = text.isNotBlank() && !sessionManager.isRunning,
                             modifier = Modifier.size(60.dp, 30.dp).padding(start = 8.dp)
                         ) { Text(text = "Run") }
                     }

@@ -30,6 +30,7 @@ import java.io.BufferedReader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xyz.jekyllex.utils.Constants.BIN_DIR
 import xyz.jekyllex.utils.Constants.HOME_DIR
@@ -41,8 +42,8 @@ import java.io.File
 
 private const val LOG_TAG = "Session"
 
-class Session(
-    var isActive: Boolean = true,
+data class Session(
+    var isActive: Boolean = false,
     val notificationCallback: () -> Unit = {}
 ) {
     private var trimLogs = false
@@ -62,11 +63,11 @@ class Session(
         get() = _runningCommand
 
     fun appendLog(log: String) {
-        _logs.value += log
+        _logs.update { it + log }
     }
 
     fun clearLogs() {
-        _logs.value = listOf()
+        _logs.value = emptyList()
     }
 
     fun setLogTrimming(shouldTrim: Boolean) {
