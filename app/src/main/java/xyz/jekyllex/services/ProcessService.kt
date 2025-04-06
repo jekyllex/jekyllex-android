@@ -50,19 +50,14 @@ class ProcessService : Service() {
         private const val ACTION_STOP_SERVICE = "xyz.jekyllex.service_stop"
     }
 
-    private val sessions = Array(1) {
-        Session(
-            notificationCallback = { updateKillActionOnNotif() }
-        )
-    }
+    private var hasConnections = false
+    private val _sessions = mutableListOf<Session>()
     private lateinit var notifBuilder: NotificationCompat.Builder
 
-    private var hasConnections = false
-
+    val sessions
+        get() = _sessions.toList()
     val isRunning
-        get() = sessions[0].isRunning
-    val logs
-        get() = sessions[0].logs
+        get() = _sessions.getOrNull(0)?.isRunning ?: false
 
     inner class LocalBinder : Binder() {
         val service: ProcessService = this@ProcessService
@@ -88,13 +83,19 @@ class ProcessService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        _sessions.getOrElse(0) {
+            Session { updateKillActionOnNotif() }.apply {
+                _sessions.add(this)
+                setLogTrimming(Settings(this@ProcessService).get(Setting.TRIM_LOGS))
+            }
+        }
         startForeground(NOTIFICATION_ID, createNotification())
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        sessions.forEach { it.killSelf() }
         Log.d(LOG_TAG, "Service destroyed")
+        _sessions.forEach { it.killSelf() }.also { _sessions.clear() }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -109,26 +110,33 @@ class ProcessService : Service() {
         return START_NOT_STICKY
     }
 
-    fun appendLog(log: String) {
-        sessions.forEach { it.appendLog(log) }
+    fun createSession() {
+        val shouldTrim = Settings(this).get<Boolean>(Setting.TRIM_LOGS)
+
+        _sessions.apply {
+            forEach { it.isActive = false; it.setLogTrimming(shouldTrim) }
+            add(Session(true))
+        }
     }
 
-    fun clearLogs() {
-        sessions.forEach { it.clearLogs() }
-    }
-
-    fun exec(cmd: Array<String>, dir: String = HOME_DIR, callBack: () -> Unit = {}) {
+    fun exec(
+        cmd: Array<String>,
+        dir: String = HOME_DIR,
+        inActive: Boolean = false,
+        callBack: () -> Unit = {}
+    ) {
         val command = cmd.let {
             if (it[0].contains("/bin")) it
             else it.transform(this)
         }
 
-        sessions[0].setLogTrimming(Settings(this).get(Setting.TRIM_LOGS))
-        sessions[0].exec(command, dir, buildEnvironment(dir, this), callBack)
+        _sessions.let {
+            if (inActive) it.firstOrNull { s -> s.isActive } ?: it.first() else it.first()
+        }.exec(command, dir, buildEnvironment(dir, this), callBack)
     }
 
     fun killProcess() {
-        sessions.forEach { it.killProcess() }
+        _sessions.forEach { it.killProcess() }
     }
 
     private fun createNotification(): Notification {
@@ -174,8 +182,8 @@ class ProcessService : Service() {
             )
         )
 
-        if (sessions[0].isRunning) {
-            notifBuilder.setContentText("Currently running:\n${sessions[0].runningCommand}")
+        if (_sessions.first().isRunning) {
+            notifBuilder.setContentText("Currently running:\n${_sessions.first().runningCommand}")
             notifBuilder.addAction(killProcess)
         } else {
             notifBuilder.setContentText(getText(R.string.notification_text_waiting))

@@ -130,7 +130,7 @@ class HomeActivity : ComponentActivity() {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
             viewModel.isBound = true
             service = (binder as ProcessService.LocalBinder).service
-            viewModel.appendLog = { service.appendLog(it) }
+            viewModel.appendLog = { service.sessions.first().appendLog(it) }
             service.exec(echo("Welcome to JekyllEx!"))
         }
 
@@ -530,14 +530,12 @@ fun HomeScreen(
 
         if (showTerminalSheet) {
             TerminalSheet(
+                sessions = service.sessions,
                 cwd = homeViewModel.cwd.value,
-                isRunning = service.isRunning,
-                clearLogs = { service.clearLogs() },
                 isServiceBound = homeViewModel.isBound,
                 onDismiss = { showTerminalSheet = false },
-                logs = service.logs.collectAsState().value,
                 exec = { command: Array<String> ->
-                    service.exec(command, homeViewModel.cwd.value)
+                    service.exec(command, homeViewModel.cwd.value, true)
                 },
             )
         }

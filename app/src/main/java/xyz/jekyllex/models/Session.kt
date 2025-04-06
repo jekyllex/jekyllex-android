@@ -41,7 +41,10 @@ import java.io.File
 
 private const val LOG_TAG = "Session"
 
-class Session(val notificationCallback: () -> Unit = {}) {
+class Session(
+    var isActive: Boolean = true,
+    val notificationCallback: () -> Unit = {}
+) {
     private var trimLogs = false
     private lateinit var process: Process
     private val processBuilder = ProcessBuilder()

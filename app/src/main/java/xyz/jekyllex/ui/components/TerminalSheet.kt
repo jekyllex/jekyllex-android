@@ -47,6 +47,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,26 +64,25 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import xyz.jekyllex.models.Session
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.toCommand
 
 @Composable
 fun TerminalSheet(
     cwd: String = "",
-    exec: (Array<String>) -> Unit = {},
-    logs: List<String> = listOf(),
-    clearLogs: () -> Unit = {},
+    sessions: List<Session>,
     onDismiss: () -> Unit = {},
     isServiceBound: Boolean = false,
-    isRunning: Boolean = false,
+    exec: (Array<String>) -> Unit = {},
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
+    val activeSession = sessions.first { it.isActive }
+    val logs = activeSession.logs.collectAsState().value
     val clipboardManager = LocalClipboardManager.current
     var text by rememberSaveable { mutableStateOf("") }
-    val state = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(logs.size) {
         listState.animateScrollToItem(logs.size)
@@ -90,7 +90,7 @@ fun TerminalSheet(
 
     fun run() {
         if (text.isBlank()) return
-        if (isRunning) {
+        if (activeSession.isRunning) {
             Toast.makeText(
                 context,
                 "A process is already running",
@@ -112,7 +112,7 @@ fun TerminalSheet(
                 .padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
         ) {
             Row(
-                modifier = Modifier.padding(bottom = 8.dp, start = 8.dp, end = 8.dp)
+                modifier = Modifier.padding(horizontal = 8.dp).padding(bottom = 8.dp)
             ) {
                 Text(
                     text = "Session logs",
@@ -140,7 +140,7 @@ fun TerminalSheet(
                     }
                 }
                 Button(
-                    onClick = clearLogs,
+                    onClick = activeSession::clearLogs,
                 ) {
                     Text(text = "Clear")
                 }
@@ -196,7 +196,7 @@ fun TerminalSheet(
                         TextButton(
                             onClick = { run() },
                             contentPadding = PaddingValues(0.dp),
-                            enabled = text.isNotBlank() && !isRunning,
+                            enabled = text.isNotBlank() && !activeSession.isRunning,
                             modifier = Modifier.size(60.dp, 30.dp).padding(start = 8.dp)
                         ) { Text(text = "Run") }
                     }
