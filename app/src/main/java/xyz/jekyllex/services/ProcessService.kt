@@ -136,7 +136,7 @@ class ProcessService : Service() {
     }
 
     fun killProcess() {
-        _sessions.forEach { it.killProcess() }
+        _sessions.first().killProcess()
     }
 
     private fun createNotification(): Notification {
