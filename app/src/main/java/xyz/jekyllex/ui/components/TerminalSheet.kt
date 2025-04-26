@@ -58,6 +58,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,10 +72,16 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.launch
 import xyz.jekyllex.services.SessionManager
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.toCommand
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun TerminalSheet(
     cwd: String = "",
@@ -83,17 +90,33 @@ fun TerminalSheet(
     isServiceBound: Boolean = false,
 ) {
     val context = LocalContext.current
-    val listState = rememberLazyListState()
+    val logsListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val sessionsListState = rememberLazyListState()
     val clipboardManager = LocalClipboardManager.current
+
     var text by rememberSaveable { mutableStateOf("") }
-    val sessions = sessionManager.sessions.collectAsState().value
-    val logs = sessions[sessionManager.activeSession].logs.collectAsState().value
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    Log.d("TerminalSheet", "logs val: $logs")
+    val sessions = sessionManager.sessions.collectAsState().value
+    val activeSession = sessionManager.activeSession.collectAsState().value
+
+    val logs: List<String> = combine(
+        sessionManager.sessions, sessionManager.activeSession
+    ) { s, activeS -> s[activeS] }.flatMapLatest { it.logs }
+        .collectAsState(initial = emptyList()).value
+
+    val runningCommand: String = combine(
+        sessionManager.sessions, sessionManager.activeSession
+    ) { s, activeS -> s[activeS] }.flatMapLatest { it.runningCommand }
+        .collectAsState(initial = "").value
 
     LaunchedEffect(logs.size) {
-        listState.animateScrollToItem(logs.size)
+        logsListState.animateScrollToItem(logs.size)
+    }
+
+    LaunchedEffect(sessions.size) {
+        sessionsListState.animateScrollToItem(sessions.size)
     }
 
     fun run() {
@@ -154,31 +177,44 @@ fun TerminalSheet(
                 }
             }
             LazyRow (
-                modifier = Modifier.padding(horizontal = 8.dp).padding(bottom = 8.dp),
+                state = sessionsListState,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 8.dp),
             ) {
                 items(sessions.size) {
                     TextButton(
-                        onClick = { sessionManager.setVisibleSession(it) },
+                        onClick = {
+                            sessionManager.setActiveSession(it)
+                            coroutineScope.launch { sessionsListState.animateScrollToItem(it) }
+                        },
                     ) {
                         Text(
-                            text = sessions[it].runningCommand.split(" ").first()
-                                .ifBlank { if (it == 0) "Default Session" else "Session ${it.hashCode()}" }
+                            modifier = Modifier.padding(end = 6.dp),
+                            text = runningCommand.split(" ").first().takeIf { v ->
+                                it == activeSession && v.isNotBlank()
+                            } ?: if (it == 0) "Default Session" else "Session ${it.hashCode()}",
                         )
-                        if (it == sessionManager.activeSession) {
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "Clear session",
-                                modifier = Modifier.padding(start = 4.dp)
-                            )
+                        if (it != 0 && it == activeSession) {
+                            IconButton(
+                                onClick = { sessionManager.deleteSession(it) },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Clear session",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }
                 item {
                     IconButton(
                         onClick = sessionManager::createSession,
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier.size(32.dp).padding(6.dp)
                     ) {
                         Icon(
+                            modifier = Modifier.size(20.dp),
                             imageVector = Icons.Default.Add,
                             contentDescription = "Create session",
                         )
@@ -186,7 +222,7 @@ fun TerminalSheet(
                 }
             }
             LazyColumn(
-                state = listState,
+                state = logsListState,
                 modifier = Modifier.fillMaxWidth().let {
                     if (logs.size > 25) it.weight(1.0f) else it
                 }

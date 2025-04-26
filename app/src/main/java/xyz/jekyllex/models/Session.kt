@@ -30,6 +30,7 @@ import java.io.BufferedReader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xyz.jekyllex.utils.Constants.BIN_DIR
@@ -43,7 +44,6 @@ import java.io.File
 private const val LOG_TAG = "Session"
 
 data class Session(
-    var isActive: Boolean = false,
     val notificationCallback: () -> Unit = {}
 ) {
     private var trimLogs = false
@@ -52,22 +52,24 @@ data class Session(
     private var inputReader: BufferedReader? = null
     private var errorReader: BufferedReader? = null
 
-    private var _runningCommand = ""
     private var _isRunning = mutableStateOf(false)
-    private val _logs = MutableStateFlow(listOf<String>())
-    val logs get() = _logs
+    val isRunning get() = _isRunning.value
 
-    val isRunning
-        get() = _isRunning.value
-    val runningCommand
-        get() = _runningCommand
+    private val _logs = MutableStateFlow(emptyList<String>())
+    val logs get() = _logs.asStateFlow()
+
+    private var _runningCommand = MutableStateFlow("")
+    val runningCommand get() = _runningCommand.asStateFlow()
 
     fun appendLog(log: String) {
-        _logs.update { it + log }
+        _logs.update {
+            val updatedLogs = it + log
+            if (trimLogs) updatedLogs.takeLast(200) else updatedLogs
+        }
     }
 
     fun clearLogs() {
-        _logs.value = emptyList()
+        _logs.update { emptyList() }
     }
 
     fun setLogTrimming(shouldTrim: Boolean) {
@@ -91,7 +93,7 @@ data class Session(
 
         CoroutineScope(Dispatchers.IO).launch {
             _isRunning.value = true
-            _runningCommand = command.joinToString(" ")
+            _runningCommand.update { command.joinToString(" ") }
             notificationCallback()
 
             try {
@@ -149,22 +151,24 @@ data class Session(
     }
 
     private fun processStopped() {
-        _runningCommand = ""
+        _runningCommand.update { "" }
         _isRunning.value = false
-        if (trimLogs) _logs.value = _logs.value.takeLast(200)
         notificationCallback()
     }
 
     fun killProcess() {
         if (!_isRunning.value) return
-        if (::process.isInitialized) process.destroy()
+        if (::process.isInitialized && process.isAlive) process.destroy()
     }
 
     fun killSelf() {
         clearLogs()
         errorReader?.close()
         inputReader?.close()
-        process.destroy()
+        inputReader = null
+        errorReader = null
         _isRunning.value = false
+        _runningCommand.update { "" }
+        if (::process.isInitialized && process.isAlive) process.destroy()
     }
 }

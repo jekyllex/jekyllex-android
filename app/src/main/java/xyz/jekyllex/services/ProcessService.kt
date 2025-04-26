@@ -36,6 +36,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import xyz.jekyllex.R
 import xyz.jekyllex.models.Session
@@ -54,12 +55,14 @@ class ProcessService : Service() {
     }
 
     private var hasConnections = false
-    lateinit var sessionManager: SessionManager
+    private val _activeSession = MutableStateFlow(0)
     private val _sessions = MutableStateFlow(listOf<Session>())
     private lateinit var notifBuilder: NotificationCompat.Builder
 
     val isRunning
         get() = _sessions.value.firstOrNull()?.isRunning ?: false
+
+    lateinit var sessionManager: SessionManager
 
     inner class LocalBinder : Binder() {
         val service: ProcessService = this@ProcessService
@@ -93,23 +96,20 @@ class ProcessService : Service() {
             }
         }
 
-        sessionManager = object : SessionManager {
+        sessionManager = object: SessionManager {
+            override val activeSession: StateFlow<Int>
+                get() = _activeSession.asStateFlow()
             override val sessions
-                get() = _sessions
-            override val isRunning
-                get() = _sessions.value.firstOrNull { it.isActive }?.isRunning ?: false
-            override val activeSession
-                get() = _sessions.value.indexOfFirst { it.isActive }.takeIf { it >= 0 } ?: 0
-            override val logs
-                get() = _sessions.value.firstOrNull { it.isActive }?.logs ?: MutableStateFlow(emptyList())
-
+                get() = _sessions.asStateFlow()
+            override val isRunning: Boolean
+                get() = _sessions.value[_activeSession.value].isRunning
 
             override fun clearLogs() {
-                _sessions.value.firstOrNull { it.isActive }?.clearLogs()
+                _sessions.value[_activeSession.value].clearLogs()
             }
 
             override fun killProcess() {
-                _sessions.value.firstOrNull { it.isActive }?.killProcess()
+                _sessions.value[_activeSession.value].killProcess()
             }
 
             override fun createSession() {
@@ -120,13 +120,19 @@ class ProcessService : Service() {
                     forEach { it.setLogTrimming(shouldTrim) }
                 }
 
-                setVisibleSession(_sessions.value.size - 1)
+                setActiveSession(_sessions.value.size - 1)
             }
 
-            override fun setVisibleSession(index: Int) {
-                _sessions.value = _sessions.value.mapIndexed { i, session ->
-                    session.copy(isActive = i == index)
+            override fun deleteSession(index: Int) {
+                _sessions.value[index].killSelf()
+                _sessions.update { it.filterIndexed { i, _ -> i != index } }
+                if (_activeSession.value >= index) {
+                    _activeSession.update { it - 1 }
                 }
+            }
+
+            override fun setActiveSession(index: Int) {
+                _activeSession.value = index
             }
 
             override fun exec(
@@ -140,7 +146,7 @@ class ProcessService : Service() {
                 }
 
                 _sessions.value.let {
-                    it.firstOrNull { it.isActive } ?: it.first()
+                    it[_activeSession.value]
                 }.exec(command, dir, buildEnvironment(dir, this@ProcessService), callBack)
             }
         }
@@ -223,7 +229,7 @@ class ProcessService : Service() {
         )
 
         if (_sessions.value.first().isRunning) {
-            notifBuilder.setContentText("Currently running:\n${_sessions.value.first().runningCommand}")
+            notifBuilder.setContentText("Currently running:\n${_sessions.value.first().runningCommand.value}")
             notifBuilder.addAction(killProcess)
         } else {
             notifBuilder.setContentText(getText(R.string.notification_text_waiting))
@@ -237,14 +243,14 @@ class ProcessService : Service() {
 
 interface SessionManager {
     val isRunning: Boolean
-    val activeSession: Int
-    val logs: StateFlow<List<String>>
+    val activeSession: StateFlow<Int>
     val sessions: StateFlow<List<Session>>
 
     fun clearLogs()
     fun killProcess()
     fun createSession()
-    fun setVisibleSession(index: Int)
+    fun deleteSession(index: Int)
+    fun setActiveSession(index: Int)
     fun exec(
         cmd: Array<String>,
         dir: String = HOME_DIR,
