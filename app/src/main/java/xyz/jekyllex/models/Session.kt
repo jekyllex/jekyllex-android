@@ -158,17 +158,15 @@ data class Session(
 
     fun killProcess() {
         if (!_isRunning.value) return
-        if (::process.isInitialized && process.isAlive) process.destroy()
+        if (::process.isInitialized) process.destroy()
     }
 
     fun killSelf() {
         clearLogs()
         errorReader?.close()
         inputReader?.close()
-        inputReader = null
-        errorReader = null
         _isRunning.value = false
         _runningCommand.update { "" }
-        if (::process.isInitialized && process.isAlive) process.destroy()
+        if (::process.isInitialized) process.destroy()
     }
 }

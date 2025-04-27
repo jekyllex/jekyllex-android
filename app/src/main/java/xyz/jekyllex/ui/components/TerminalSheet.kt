@@ -24,8 +24,10 @@
 
 package xyz.jekyllex.ui.components
 
-import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -37,6 +39,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -47,12 +50,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -75,7 +80,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import xyz.jekyllex.services.SessionManager
 import xyz.jekyllex.utils.formatDir
@@ -106,17 +111,19 @@ fun TerminalSheet(
     ) { s, activeS -> s[activeS] }.flatMapLatest { it.logs }
         .collectAsState(initial = emptyList()).value
 
-    val runningCommand: String = combine(
-        sessionManager.sessions, sessionManager.activeSession
-    ) { s, activeS -> s[activeS] }.flatMapLatest { it.runningCommand }
-        .collectAsState(initial = "").value
+    val runningCommands: List<String> = sessionManager.sessions
+        .flatMapLatest { s ->
+            val commandFlow = s.map { it.runningCommand }
+            if (commandFlow.isEmpty()) flowOf(emptyList())
+            else combine(commandFlow) { f -> f.map { it.substringBefore(" ") } }
+        }.collectAsState(initial = emptyList()).value
 
     LaunchedEffect(logs.size) {
         logsListState.animateScrollToItem(logs.size)
     }
 
-    LaunchedEffect(sessions.size) {
-        sessionsListState.animateScrollToItem(sessions.size)
+    LaunchedEffect(activeSession) {
+        sessionsListState.animateScrollToItem(activeSession)
     }
 
     fun run() {
@@ -138,13 +145,8 @@ fun TerminalSheet(
         onDismissRequest = onDismiss,
         modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())
     ) {
-        Column(
-            modifier = Modifier.navigationBarsPadding()
-                .padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 8.dp).padding(bottom = 8.dp)
-            ) {
+        Column(Modifier.navigationBarsPadding().padding(bottom = 8.dp)) {
+            Row(Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp)) {
                 Text(
                     text = "Session logs",
                     textAlign = TextAlign.Center,
@@ -178,32 +180,47 @@ fun TerminalSheet(
             }
             LazyRow (
                 state = sessionsListState,
+                modifier = Modifier.padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(sessions.size) {
-                    TextButton(
-                        onClick = {
-                            sessionManager.setActiveSession(it)
-                            coroutineScope.launch { sessionsListState.animateScrollToItem(it) }
-                        },
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(end = 6.dp),
-                            text = runningCommand.split(" ").first().takeIf { v ->
-                                it == activeSession && v.isNotBlank()
-                            } ?: if (it == 0) "Default Session" else "Session ${it.hashCode()}",
-                        )
-                        if (it != 0 && it == activeSession) {
-                            IconButton(
-                                onClick = { sessionManager.deleteSession(it) },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = "Clear session",
-                                    modifier = Modifier.size(20.dp)
+                    CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
+                        TextButton(
+                            modifier = Modifier
+                                .then(
+                                    when (it) {
+                                        0 -> Modifier.padding(start = 16.dp)
+                                        else -> Modifier
+                                    }
                                 )
+                                .then(
+                                    if (it == activeSession) Modifier.border(
+                                        BorderStroke(1.dp, Color.LightGray),
+                                        CircleShape
+                                    ) else Modifier
+                                ),
+                            onClick = {
+                                sessionManager.setActiveSession(it)
+                                coroutineScope.launch { sessionsListState.animateScrollToItem(it) }
+                            },
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(horizontal = 4.dp),
+                                text = runningCommands.getOrNull(it)?.takeIf { v -> v.isNotBlank() }
+                                    ?: if (it == 0) "Default Session" else "Session ${it.hashCode()}",
+                            )
+                            if (it != 0 && it == activeSession) {
+                                IconButton(
+                                    onClick = { sessionManager.deleteSession(it) },
+                                    modifier = Modifier.padding(start = 6.dp).size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = "Clear session",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -211,7 +228,7 @@ fun TerminalSheet(
                 item {
                     IconButton(
                         onClick = sessionManager::createSession,
-                        modifier = Modifier.size(32.dp).padding(6.dp)
+                        modifier = Modifier.padding(start = 6.dp, end = 16.dp).size(28.dp)
                     ) {
                         Icon(
                             modifier = Modifier.size(20.dp),
@@ -223,7 +240,7 @@ fun TerminalSheet(
             }
             LazyColumn(
                 state = logsListState,
-                modifier = Modifier.fillMaxWidth().let {
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).let {
                     if (logs.size > 25) it.weight(1.0f) else it
                 }
             ) {
@@ -240,10 +257,10 @@ fun TerminalSheet(
                     thickness = 0.5.dp,
                     color = Color.LightGray,
                     modifier = Modifier
-                        .padding(horizontal = 8.dp)
                         .padding(top = 8.dp)
+                        .padding(horizontal = 16.dp)
                 )
-                Column(modifier = Modifier.padding(8.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     Text(
                         maxLines = 1,
                         text = cwd.formatDir("/"),

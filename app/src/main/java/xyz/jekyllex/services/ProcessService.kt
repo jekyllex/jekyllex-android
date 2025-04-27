@@ -124,11 +124,9 @@ class ProcessService : Service() {
             }
 
             override fun deleteSession(index: Int) {
+                _activeSession.update { it - 1 }
                 _sessions.value[index].killSelf()
                 _sessions.update { it.filterIndexed { i, _ -> i != index } }
-                if (_activeSession.value >= index) {
-                    _activeSession.update { it - 1 }
-                }
             }
 
             override fun setActiveSession(index: Int) {
