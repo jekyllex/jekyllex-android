@@ -48,9 +48,8 @@ data class Session(
 ) {
     private var trimLogs = false
     private lateinit var process: Process
+    private lateinit var reader: BufferedReader
     private val processBuilder = ProcessBuilder()
-    private var inputReader: BufferedReader? = null
-    private var errorReader: BufferedReader? = null
 
     private var _isRunning = mutableStateOf(false)
     val isRunning get() = _isRunning.value
@@ -113,60 +112,42 @@ data class Session(
                     .redirectErrorStream(true)
                     .start()
 
-                inputReader = process.inputStream.bufferedReader()
-                errorReader = process.errorStream.bufferedReader()
+                reader = process.inputStream.bufferedReader()
 
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        inputReader?.forEachLine {
-                            appendLog(it)
+                        reader.use {
+                            it.forEachLine { line ->
+                                appendLog(line)
+                            }
                         }
                     } catch (e: Exception) {
                         Log.d(LOG_TAG, "Exception while reading output: $e")
                     }
                 }
 
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        errorReader?.forEachLine {
-                            appendLog(it)
-                        }
-                    } catch (e: Exception) {
-                        Log.d(LOG_TAG, "Exception while reading error: $e")
-                    }
-                }
-
                 val exitCode = process.waitFor()
                 if (exitCode != 0) appendLog("Process exited with code $exitCode")
 
-                processStopped()
                 callBack()
             } catch (e: Exception) {
-                processStopped()
                 appendLog("${e.cause}")
                 if (::process.isInitialized) process.destroy()
                 Log.e(LOG_TAG, "Error while starting process: $e")
+            } finally {
+                stop()
             }
         }
     }
 
-    private fun processStopped() {
-        _runningCommand.update { "" }
+    private fun stop() {
         _isRunning.value = false
+        _runningCommand.update { "" }
+        if (::reader.isInitialized) reader.close()
         notificationCallback()
     }
 
-    fun killProcess() {
-        if (!_isRunning.value) return
-        if (::process.isInitialized) process.destroy()
-    }
-
-    fun killSelf() {
-        clearLogs()
-        errorReader?.close()
-        inputReader?.close()
-        _isRunning.value = false
-        _runningCommand.update { "" }
+    fun kill() {
         if (::process.isInitialized) process.destroy()
     }
 }

@@ -89,11 +89,8 @@ class ProcessService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        _sessions.value.getOrElse(0) {
-            Session { updateKillActionOnNotif() }.apply {
-                _sessions.value += this
-                setLogTrimming(Settings(this@ProcessService).get(Setting.TRIM_LOGS))
-            }
+        _sessions.value += Session { updateKillActionOnNotif() }.apply {
+            setLogTrimming(Settings(this@ProcessService).get(Setting.TRIM_LOGS))
         }
 
         sessionManager = object: SessionManager {
@@ -102,14 +99,14 @@ class ProcessService : Service() {
             override val sessions
                 get() = _sessions.asStateFlow()
             override val isRunning: Boolean
-                get() = _sessions.value[_activeSession.value].isRunning
+                get() =  _sessions.value.getOrNull(_activeSession.value)?.isRunning ?: false
 
             override fun clearLogs() {
                 _sessions.value[_activeSession.value].clearLogs()
             }
 
             override fun killProcess() {
-                _sessions.value[_activeSession.value].killProcess()
+                _sessions.value[_activeSession.value].kill()
             }
 
             override fun createSession() {
@@ -125,7 +122,7 @@ class ProcessService : Service() {
 
             override fun deleteSession(index: Int) {
                 _activeSession.update { it - 1 }
-                _sessions.value[index].killSelf()
+                _sessions.value[index].kill()
                 _sessions.update { it.filterIndexed { i, _ -> i != index } }
             }
 
@@ -164,7 +161,7 @@ class ProcessService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(LOG_TAG, "Service destroyed")
-        _sessions.value.forEach { it.killSelf() }.also { _sessions.value = listOf() }
+        _sessions.value.forEach { it.kill() }.also { _sessions.value = emptyList() }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -180,7 +177,7 @@ class ProcessService : Service() {
     }
 
     fun killProcess() {
-        _sessions.value.first().killProcess()
+        _sessions.value.first().kill()
     }
 
     private fun createNotification(): Notification {
@@ -255,4 +252,3 @@ interface SessionManager {
         callBack: () -> Unit = {}
     )
 }
-
