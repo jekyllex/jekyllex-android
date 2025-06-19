@@ -248,7 +248,9 @@ fun TerminalSheet(
                     Text(
                         text = logs[it],
                         style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp).let { modifier ->
+                            if (it == logs.size - 1) modifier.padding(bottom = 8.dp) else modifier
+                        }
                     )
                 }
             }
@@ -256,9 +258,7 @@ fun TerminalSheet(
                 HorizontalDivider(
                     thickness = 0.5.dp,
                     color = Color.LightGray,
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     Text(
