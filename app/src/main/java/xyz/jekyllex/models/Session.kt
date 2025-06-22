@@ -45,6 +45,7 @@ import java.io.File
 private const val LOG_TAG = "Session"
 
 data class Session(
+    val number: Int,
     val buildEnvironment: (cwd: String, context: Context?) -> Array<String>,
     var initialDir: String? = null,
     val notificationCallback: () -> Unit = {}

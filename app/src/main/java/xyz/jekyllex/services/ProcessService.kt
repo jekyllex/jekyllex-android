@@ -54,7 +54,9 @@ class ProcessService : Service() {
         private const val ACTION_STOP_SERVICE = "xyz.jekyllex.service_stop"
     }
 
+    private var sessionCount = 0
     private var hasConnections = false
+    private lateinit var settings: Settings
     private val _activeSession = MutableStateFlow(0)
     private val _sessions = MutableStateFlow(listOf<Session>())
     private lateinit var notifBuilder: NotificationCompat.Builder
@@ -89,9 +91,10 @@ class ProcessService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        _sessions.value += Session(::buildEnvironment, HOME_DIR) { updateKillActionOnNotif() }.apply {
-            setLogTrimming(Settings(this@ProcessService).get(Setting.TRIM_LOGS))
-        }
+        settings = Settings(this)
+        _sessions.value += Session(sessionCount++, ::buildEnvironment, HOME_DIR) {
+            updateKillActionOnNotif()
+        }.apply { setLogTrimming(settings.get(Setting.TRIM_LOGS)) }
 
         sessionManager = object: SessionManager {
             override val activeSession: StateFlow<Int>
@@ -99,7 +102,7 @@ class ProcessService : Service() {
             override val sessions
                 get() = _sessions.asStateFlow()
             override val isRunning: Boolean
-                get() =  _sessions.value.getOrNull(_activeSession.value)?.isRunning ?: false
+                get() = _sessions.value.getOrNull(_activeSession.value)?.isRunning ?: false
 
             override fun clearLogs() {
                 _sessions.value[_activeSession.value].clearLogs()
@@ -110,10 +113,10 @@ class ProcessService : Service() {
             }
 
             override fun createSession() {
-                val shouldTrim = Settings(this@ProcessService).get<Boolean>(Setting.TRIM_LOGS)
+                val shouldTrim = settings.get<Boolean>(Setting.TRIM_LOGS)
 
                 _sessions.value.apply {
-                    _sessions.update { it + Session(::buildEnvironment) }
+                    _sessions.update { it + Session(sessionCount++, ::buildEnvironment) }
                     forEach { it.setLogTrimming(shouldTrim) }
                 }
 

@@ -113,14 +113,10 @@ class EditorActivity : ComponentActivity() {
         }
 
         val file = intent.getStringExtra("file") ?: ""
-        val timeout = Settings(this).get<Float>(Setting.DEBOUNCE_DELAY)
-            .times(1000).toInt()
-
-        val theme = Settings(this).get<Int>(Setting.EDITOR_THEME)
 
         setContent {
             JekyllExTheme {
-                EditorView(file, theme, timeout)
+                EditorView(file)
             }
         }
     }
@@ -132,11 +128,12 @@ class EditorActivity : ComponentActivity() {
 }
 
 @Composable
-fun EditorView(file: String = "", theme: Int, timeout: Int) {
+fun EditorView(file: String = "") {
     val context = LocalContext.current as Activity
     var showTerminalSheet by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf(file.formatDir("/")) }
 
+    val settings = Settings(context)
     val updateDescription: (String?) -> Unit = { url ->
         url?.let { description = it.ifBlank { "/" } } ?: run {
             description = file.formatDir("/")
@@ -234,8 +231,11 @@ fun EditorView(file: String = "", theme: Int, timeout: Int) {
         val viewCache = remember { mutableStateMapOf<Int, WebView>() }
         val isEditorLoading = remember { mutableStateOf(true) }
         val canPreview by remember { derivedStateOf { isBound.value && service.isRunning } }
-        val shouldGuessURLs = Settings(context).get<Boolean>(Setting.GUESS_URLS)
-        val previewPort = Settings(context).get<Int>(Setting.PREVIEW_PORT)
+
+        val theme = settings.get<Int>(Setting.EDITOR_THEME)
+        val previewPort = settings.get<Int>(Setting.PREVIEW_PORT)
+        val shouldGuessURLs = settings.get<Boolean>(Setting.GUESS_URLS)
+        val timeout = settings.get<Float>(Setting.DEBOUNCE_DELAY).times(1000).toInt()
 
         LaunchedEffect(Unit) effect@{
             CoroutineScope(Dispatchers.IO).launch run@{
