@@ -9,32 +9,32 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
+        tools:targetApi="31"
         android:name=".JekyllEx"
         android:allowBackup="true"
+        android:supportsRtl="false"
         android:extractNativeLibs="true"
         android:icon="@drawable/ic_logo"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/ic_logo"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.JekyllEx"
         android:usesCleartextTraffic="true"
-        tools:targetApi="31">
+        android:roundIcon="@drawable/ic_logo"
+        android:theme="@style/Theme.JekyllEx">
 
         <provider
             android:exported="false"
             android:grantUriPermissions="true"
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider">
+            android:authorities="${applicationId}.provider"
+            android:name="androidx.core.content.FileProvider">
             <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
+                android:resource="@xml/provider_paths"
+                android:name="android.support.FILE_PROVIDER_PATHS" />
         </provider>
 
         <service
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="specialUse"
-            android:name=".services.ProcessService" />
+            android:name=".services.ProcessService"
+            android:foregroundServiceType="specialUse" />
 
         <activity
             android:exported="false"

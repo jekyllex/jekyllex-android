@@ -207,7 +207,7 @@ fun TerminalSheet(
                             Text(
                                 modifier = Modifier.padding(horizontal = 4.dp),
                                 text = runningCommands.getOrNull(it)?.takeIf { v -> v.isNotBlank() }
-                                    ?: if (it == 0) "Default Session" else "Session ${sessions[it].number}",
+                                    ?: if (it == 0) "Default session" else "Session ${sessions[it].number}",
                             )
                             if (it != 0 && it == activeSession) {
                                 IconButton(
