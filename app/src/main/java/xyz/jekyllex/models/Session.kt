@@ -133,14 +133,13 @@ data class Session(
 
                 val exitCode = process.waitFor()
                 if (exitCode != 0) appendLog("Process exited with code $exitCode")
-
-                callBack()
             } catch (e: Exception) {
                 appendLog("${e.cause}")
                 if (::process.isInitialized) process.destroy()
                 Log.e(LOG_TAG, "Error while starting process: $e")
             } finally {
                 stop()
+                callBack()
             }
         }
     }
