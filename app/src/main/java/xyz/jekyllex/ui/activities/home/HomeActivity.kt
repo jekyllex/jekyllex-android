@@ -269,6 +269,7 @@ fun HomeScreen(
     val onBackPressed = {
         resetQuery()
         homeViewModel.cd("..")
+        if (homeViewModel.isBound) service.cd("..")
     }
 
     BackHandler(
@@ -332,7 +333,7 @@ fun HomeScreen(
                     ) exec@{ cmd ->
                         if (!homeViewModel.isBound) return@exec
 
-                        service.exec(cmd, homeViewModel.cwd.value)
+                        service.exec(cmd)
                         showTerminalSheet = true
                     }
                 },
@@ -456,6 +457,7 @@ fun HomeScreen(
                                 if (files[it].isDir) {
                                     resetQuery()
                                     homeViewModel.cd(files[it].name)
+                                    if(homeViewModel.isBound) service.cd(files[it].name)
                                 } else files[it].open(context)
                             }
                         )
@@ -530,7 +532,6 @@ fun HomeScreen(
 
         if (showTerminalSheet) {
             TerminalSheet(
-                cwd = homeViewModel.cwd.value,
                 isServiceBound = homeViewModel.isBound,
                 sessionManager = service.sessionManager,
                 onDismiss = { showTerminalSheet = false }

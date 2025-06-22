@@ -47,7 +47,7 @@ object Constants {
     const val EDITOR_PREVIEWS_URL = "https://$GITHUB_DOMAIN/jekyllex/editor#previews"
     const val ISSUES_URL = "https://$GITHUB_DOMAIN/jekyllex/jekyllex-android/issues/new/choose"
 
-    val denyList = arrayOf("ls", "ln", "cd")
+    val denyList = arrayOf("sudo", "ln")
     val requiredBinaries = arrayOf("ruby", "gem", "bundler", "jekyll")
 
     val ignoreGuessesIn = arrayOf(

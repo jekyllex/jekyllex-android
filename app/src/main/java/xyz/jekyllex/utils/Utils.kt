@@ -32,6 +32,7 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import xyz.jekyllex.BuildConfig
+import xyz.jekyllex.models.Session
 import xyz.jekyllex.models.File as FileModel
 import xyz.jekyllex.utils.Commands.git
 import xyz.jekyllex.utils.Commands.bundle
@@ -88,6 +89,25 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
         }
 
         else -> this
+    }
+}
+
+fun Array<String>.override(session: Session): (() -> Unit)? {
+    if (this.isDenied()) {
+        return { session.appendLog("Command not allowed!") }
+    }
+    return when (this.getOrNull(0)) {
+        "cd" -> {
+            if (session.initialDir != null) {
+                { session.appendLog("Command not allowed!") }
+            } else {
+                { session.cd(this.getOrNull(1) ?: "") }
+            }
+        }
+        "clear" -> {
+            { session.clearLogs(); }
+        }
+        else -> null
     }
 }
 

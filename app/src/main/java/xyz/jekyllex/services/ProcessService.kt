@@ -89,7 +89,7 @@ class ProcessService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        _sessions.value += Session { updateKillActionOnNotif() }.apply {
+        _sessions.value += Session(::buildEnvironment, HOME_DIR) { updateKillActionOnNotif() }.apply {
             setLogTrimming(Settings(this@ProcessService).get(Setting.TRIM_LOGS))
         }
 
@@ -113,7 +113,7 @@ class ProcessService : Service() {
                 val shouldTrim = Settings(this@ProcessService).get<Boolean>(Setting.TRIM_LOGS)
 
                 _sessions.value.apply {
-                    _sessions.update { it + Session() }
+                    _sessions.update { it + Session(::buildEnvironment) }
                     forEach { it.setLogTrimming(shouldTrim) }
                 }
 
@@ -130,32 +130,30 @@ class ProcessService : Service() {
                 _activeSession.value = index
             }
 
-            override fun exec(
-                cmd: Array<String>,
-                dir: String,
-                callBack: () -> Unit
-            ) {
+            override fun exec(cmd: Array<String>) {
                 val command = cmd.let {
                     if (it[0].contains("/bin")) it
                     else it.transform(this@ProcessService)
                 }
 
-                _sessions.value.let {
-                    it[_activeSession.value]
-                }.exec(command, dir, buildEnvironment(dir, this@ProcessService), callBack)
+                _sessions.value.let { it[_activeSession.value] }.exec(command)
             }
         }
 
         startForeground(NOTIFICATION_ID, createNotification())
     }
 
-    fun exec(cmd: Array<String>, dir: String = HOME_DIR, callBack: () -> Unit = {}) {
+    fun cd(dir: String) {
+        _sessions.value.first().cd(dir)
+    }
+
+    fun exec(cmd: Array<String>, dir: String? = null, callBack: () -> Unit = {}) {
         val command = cmd.let {
             if (it[0].contains("/bin")) it
             else it.transform(this)
         }
 
-        _sessions.value.first().exec(command, dir, buildEnvironment(dir, this), callBack)
+        _sessions.value.first().exec(command, dir, callBack)
     }
 
     override fun onDestroy() {
@@ -244,11 +242,7 @@ interface SessionManager {
     fun clearLogs()
     fun killProcess()
     fun createSession()
+    fun exec(cmd: Array<String>)
     fun deleteSession(index: Int)
     fun setActiveSession(index: Int)
-    fun exec(
-        cmd: Array<String>,
-        dir: String = HOME_DIR,
-        callBack: () -> Unit = {}
-    )
 }

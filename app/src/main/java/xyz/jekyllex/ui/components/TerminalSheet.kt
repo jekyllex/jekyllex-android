@@ -89,7 +89,6 @@ import xyz.jekyllex.utils.toCommand
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun TerminalSheet(
-    cwd: String = "",
     onDismiss: () -> Unit = {},
     sessionManager: SessionManager,
     isServiceBound: Boolean = false,
@@ -136,7 +135,7 @@ fun TerminalSheet(
             ).show()
             return
         }
-        sessionManager.exec(text.toCommand(), cwd)
+        sessionManager.exec(text.toCommand())
         text = ""
     }
 
@@ -218,7 +217,7 @@ fun TerminalSheet(
                                     Icon(
                                         imageVector = Icons.Default.Clear,
                                         contentDescription = "Clear session",
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(16.dp)
                                     )
                                 }
                             }
@@ -228,7 +227,7 @@ fun TerminalSheet(
                 item {
                     IconButton(
                         onClick = sessionManager::createSession,
-                        modifier = Modifier.padding(start = 6.dp, end = 16.dp).size(28.dp)
+                        modifier = Modifier.padding(start = 4.dp, end = 16.dp).size(28.dp)
                     ) {
                         Icon(
                             modifier = Modifier.size(20.dp),
@@ -263,9 +262,9 @@ fun TerminalSheet(
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     Text(
                         maxLines = 1,
-                        text = cwd.formatDir("/"),
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodySmall,
+                        text = sessions[activeSession].dir.formatDir("/"),
                     )
                     Row(modifier = Modifier.padding(top = 4.dp)) {
                         BasicTextField(

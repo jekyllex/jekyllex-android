@@ -300,7 +300,6 @@ fun EditorView(file: String = "", theme: Int, timeout: Int) {
         if (showTerminalSheet) {
             TerminalSheet(
                 isServiceBound = isBound.value,
-                cwd = file.getProjectDir() ?: "",
                 sessionManager = service.sessionManager,
                 onDismiss = { showTerminalSheet = false },
             )

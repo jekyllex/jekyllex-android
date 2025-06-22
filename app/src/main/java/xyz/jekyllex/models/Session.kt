@@ -24,6 +24,7 @@
 
 package xyz.jekyllex.models
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import java.io.BufferedReader
@@ -38,18 +39,23 @@ import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils.buildEnvironment
 import xyz.jekyllex.utils.drop
 import xyz.jekyllex.utils.formatDir
-import xyz.jekyllex.utils.isDenied
+import xyz.jekyllex.utils.override
 import java.io.File
 
 private const val LOG_TAG = "Session"
 
 data class Session(
+    val buildEnvironment: (cwd: String, context: Context?) -> Array<String>,
+    var initialDir: String? = null,
     val notificationCallback: () -> Unit = {}
 ) {
     private var trimLogs = false
     private lateinit var process: Process
     private lateinit var reader: BufferedReader
     private val processBuilder = ProcessBuilder()
+
+    private var _dir: String = initialDir ?: HOME_DIR
+    val dir get() = _dir
 
     private var _isRunning = mutableStateOf(false)
     val isRunning get() = _isRunning.value
@@ -77,18 +83,16 @@ data class Session(
 
     fun exec(
         command: Array<String>,
-        dir: String = HOME_DIR,
-        env: Array<String> = buildEnvironment(dir),
+        overrideDir: String? = null,
         callBack: () -> Unit = {}
     ) {
         if (_isRunning.value) return
 
-        appendLog("${dir.formatDir("/")} $ ${command.joinToString(" ")}")
+        val execDir = overrideDir ?: _dir
+        appendLog("${execDir.formatDir("/")} $ ${command.joinToString(" ")}")
 
-        if (command.isDenied()) {
-            appendLog("Command not allowed!")
-            return
-        }
+        val overrideFn = command.override(this)
+        if (overrideFn != null) { overrideFn(); callBack(); return }
 
         CoroutineScope(Dispatchers.IO).launch {
             _isRunning.value = true
@@ -97,7 +101,7 @@ data class Session(
 
             try {
                 val environment = processBuilder.environment()
-                env.forEach {
+                buildEnvironment(execDir).forEach {
                     val envVar = it.split("=")
                     if (envVar.size != 2) return@forEach
                     environment[envVar[0]] = envVar[1]
@@ -108,7 +112,7 @@ data class Session(
                         if (command[0].contains("/bin")) command.toMutableList()
                         else mutableListOf("$BIN_DIR/${command.getOrNull(0)}", *command.drop(1))
                     )
-                    .directory(File(dir))
+                    .directory(File(execDir))
                     .redirectErrorStream(true)
                     .start()
 
@@ -140,14 +144,28 @@ data class Session(
         }
     }
 
+    fun cd(loc: String) {
+        val file = loc.replace("~", HOME_DIR)
+        val newDir = when {
+            file == "." -> _dir
+            file.isEmpty() -> HOME_DIR
+            file.getOrNull(0) == '/' -> file
+            file == ".." -> _dir.substringBeforeLast('/')
+            else -> if (dir.last() == '/') "$_dir$file" else "$_dir/$file"
+        }
+        if (File(newDir).exists() && File(newDir).isDirectory) {
+            _dir = File(newDir).canonicalPath
+        } else {
+            appendLog("cd: no such file or directory: $loc")
+        }
+    }
+
+    fun kill() = ::process.isInitialized.let { if(it) process.destroy() }
+
     private fun stop() {
         _isRunning.value = false
         _runningCommand.update { "" }
         if (::reader.isInitialized) reader.close()
         notificationCallback()
-    }
-
-    fun kill() {
-        if (::process.isInitialized) process.destroy()
     }
 }
