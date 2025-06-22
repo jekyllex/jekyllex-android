@@ -32,6 +32,7 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import xyz.jekyllex.BuildConfig
+import xyz.jekyllex.models.Session
 import xyz.jekyllex.models.File as FileModel
 import xyz.jekyllex.utils.Commands.git
 import xyz.jekyllex.utils.Commands.bundle
@@ -39,6 +40,7 @@ import xyz.jekyllex.utils.Commands.jekyll
 import xyz.jekyllex.utils.Constants.editorMimes
 import xyz.jekyllex.utils.Constants.editorExtensions
 import xyz.jekyllex.ui.activities.editor.EditorActivity
+import xyz.jekyllex.utils.Constants.COMMAND_NOT_ALLOWED
 
 fun Array<String>.isDenied(): Boolean = Constants.denyList.any { this.getOrNull(0) == it }
 fun Array<String>.drop(n: Int): Array<String> = this.toList().drop(n).toTypedArray()
@@ -88,6 +90,25 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
         }
 
         else -> this
+    }
+}
+
+fun Array<String>.override(session: Session): (() -> Unit)? {
+    if (this.isDenied()) {
+        return { session.appendLog(COMMAND_NOT_ALLOWED) }
+    }
+    return when (this.getOrNull(0)) {
+        "cd" -> {
+            if (session.initialDir != null) {
+                { session.appendLog(COMMAND_NOT_ALLOWED) }
+            } else {
+                { session.cd(this.getOrNull(1) ?: "") }
+            }
+        }
+        "clear" -> {
+            { session.clearLogs(); }
+        }
+        else -> null
     }
 }
 
