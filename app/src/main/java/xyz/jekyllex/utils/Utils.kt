@@ -40,6 +40,7 @@ import xyz.jekyllex.utils.Commands.jekyll
 import xyz.jekyllex.utils.Constants.editorMimes
 import xyz.jekyllex.utils.Constants.editorExtensions
 import xyz.jekyllex.ui.activities.editor.EditorActivity
+import xyz.jekyllex.utils.Constants.COMMAND_NOT_ALLOWED
 
 fun Array<String>.isDenied(): Boolean = Constants.denyList.any { this.getOrNull(0) == it }
 fun Array<String>.drop(n: Int): Array<String> = this.toList().drop(n).toTypedArray()
@@ -94,12 +95,12 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
 
 fun Array<String>.override(session: Session): (() -> Unit)? {
     if (this.isDenied()) {
-        return { session.appendLog("Command not allowed!") }
+        return { session.appendLog(COMMAND_NOT_ALLOWED) }
     }
     return when (this.getOrNull(0)) {
         "cd" -> {
             if (session.initialDir != null) {
-                { session.appendLog("Command not allowed!") }
+                { session.appendLog(COMMAND_NOT_ALLOWED) }
             } else {
                 { session.cd(this.getOrNull(1) ?: "") }
             }

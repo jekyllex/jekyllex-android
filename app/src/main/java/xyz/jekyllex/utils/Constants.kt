@@ -44,6 +44,7 @@ object Constants {
     const val EDITOR_URL = "https://editor.jekyllex.xyz"
     const val PREVIEW_URL = "http://localhost"
     const val PAT_SETTINGS_URL = "https://$GITHUB_DOMAIN/settings/tokens/new"
+    const val COMMAND_NOT_ALLOWED = "Command not allowed in the default session!"
     const val EDITOR_PREVIEWS_URL = "https://$GITHUB_DOMAIN/jekyllex/editor#previews"
     const val ISSUES_URL = "https://$GITHUB_DOMAIN/jekyllex/jekyllex-android/issues/new/choose"
 
