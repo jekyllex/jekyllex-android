@@ -1,5 +1,9 @@
 # JekyllEx
 
+[![GitHub Downloads for JekyllEx Android app (all assets, all releases)](https://img.shields.io/github/downloads/jekyllex/jekyllex-android/total)][github]
+
+[github]: https://github.com/jekyllex/jekyllex-android/releases/latest
+
 JekyllEx is an Android App that allows you to manage a [Jekyll](https://github.com/jekyll/jekyll?tab=readme-ov-file#jekyll) powered Blog directly from your Android device!
 
 The app has undergone major reworks since [it's inception](https://genicsblog.com/introducing-jekyllex-android-app) as a GitHub API based implementation and is now a standalone app that embeds `git`, `ruby`, `jekyll` and other dependencies natively to provide a seamless experience in a powerful and easy to use interface.
