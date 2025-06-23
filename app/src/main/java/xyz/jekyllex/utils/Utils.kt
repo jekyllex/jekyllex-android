@@ -95,12 +95,12 @@ fun Array<String>.transform(context: Context): Array<String> = this.let {
 
 fun Array<String>.override(session: Session): (() -> Unit)? {
     if (this.isDenied()) {
-        return { session.appendLog(COMMAND_NOT_ALLOWED) }
+        return { session.appendLog("$COMMAND_NOT_ALLOWED!") }
     }
     return when (this.getOrNull(0)) {
         "cd" -> {
             if (session.initialDir != null) {
-                { session.appendLog(COMMAND_NOT_ALLOWED) }
+                { session.appendLog("$COMMAND_NOT_ALLOWED in the default session!") }
             } else {
                 { session.cd(this.getOrNull(1) ?: "") }
             }
