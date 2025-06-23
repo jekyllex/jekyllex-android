@@ -86,6 +86,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
@@ -422,9 +423,7 @@ fun HomeScreen(
                                 value = query,
                                 singleLine = true,
                                 shape = RoundedCornerShape(16.dp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
+                                modifier = Modifier.fillMaxWidth().padding(8.dp),
                                 onValueChange = { query = it; homeViewModel.search(query) },
                                 label = {
                                     Text("Search among ${homeViewModel.filesCount} items")
@@ -447,6 +446,17 @@ fun HomeScreen(
                                 }
                             )
                         }
+
+                    if (files.isEmpty()) {
+                        item {
+                            Text(
+                                text = "No item(s) found!",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier.fillMaxWidth().padding(16.dp)
+                            )
+                        }
+                    }
 
                     items(files.size) {
                         FileButton(
