@@ -292,7 +292,11 @@ fun HomeScreen(
                     DropDownMenu(
                         homeViewModel,
                         pickFileLauncher,
-                        resetQuery = { resetQuery() },
+                        goHome = {
+                            resetQuery()
+                            homeViewModel.cd(HOME_DIR)
+                            if (homeViewModel.isBound) service.cd(HOME_DIR)
+                        },
                         onCreateProjectConfirmation = { input, isDialogOpen ->
                             if (input.isNotBlank()) create(input) {
                                 isDialogOpen.value = false
@@ -467,7 +471,7 @@ fun HomeScreen(
                                 if (files[it].isDir) {
                                     resetQuery()
                                     homeViewModel.cd(files[it].name)
-                                    if(homeViewModel.isBound) service.cd(files[it].name)
+                                    if (homeViewModel.isBound) service.cd(files[it].name)
                                 } else files[it].open(context)
                             }
                         )
