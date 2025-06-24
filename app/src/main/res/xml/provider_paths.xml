@@ -24,5 +24,5 @@
   -->
 
 <paths>
-    <files-path name="internal_files" path="/"/>
+    <files-path name="project_files" path="home/" />
 </paths>
