@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xyz.jekyllex.utils.Constants.BIN_DIR
+import xyz.jekyllex.utils.Constants.COMMAND_NOT_ALLOWED
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils.buildEnvironment
 import xyz.jekyllex.utils.drop
@@ -155,10 +156,13 @@ data class Session(
             file == ".." -> currentDir.substringBeforeLast('/')
             else -> if (currentDir.last() == '/') "$currentDir$file" else "$currentDir/$file"
         }
-        if (File(newDir).exists() && File(newDir).isDirectory) {
-            _dir.value = File(newDir).canonicalPath
-        } else {
+        val jFile = File(newDir)
+        if (!jFile.exists() || !jFile.isDirectory) {
             appendLog("cd: no such file or directory: $loc")
+        } else if (number == 0 && !jFile.canonicalPath.contains(HOME_DIR)) {
+            appendLog(COMMAND_NOT_ALLOWED)
+        } else {
+            _dir.value = jFile.canonicalPath
         }
     }
 
