@@ -45,7 +45,6 @@ import xyz.jekyllex.utils.Commands.shell
 import xyz.jekyllex.utils.Commands.stat
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getFilesInDir
 import xyz.jekyllex.utils.parseOutput
 import xyz.jekyllex.utils.mergeCommands
@@ -89,8 +88,6 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
     val filesCount
         get() = _availableFiles.value.size
 
-    var appendLog: (String) -> Unit = {}
-
     init {
         cd(HOME_DIR)
     }
@@ -118,16 +115,9 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
     }
 
     fun cd(dir: String) {
-        statsJob?.let { it.cancel(); statsJob = null; Log.d(LOG_TAG, "Cancelled stats job") }
-        appendLog("${_cwd.value.formatDir("/")} $ cd ${dir.formatDir("/")}")
-
-        if (dir == "..")
-            _cwd.value = _cwd.value.substringBeforeLast('/')
-        else if (dir[0] == '/')
-            _cwd.value = dir
-        else
-            _cwd.value += "/$dir"
-
+        if (dir == _cwd.value) return
+        statsJob?.let { it.cancel(); statsJob = null }
+        _cwd.value = dir
         refresh()
     }
 

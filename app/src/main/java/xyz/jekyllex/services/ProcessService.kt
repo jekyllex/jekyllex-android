@@ -44,6 +44,7 @@ import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils.buildEnvironment
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.Settings
+import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.transform
 
 class ProcessService : Service() {
@@ -147,7 +148,12 @@ class ProcessService : Service() {
     }
 
     fun cd(dir: String) {
-        _sessions.value.first().cd(dir)
+        val defaultSession = _sessions.value.first()
+        val currentDir = defaultSession.dir.value
+        defaultSession.cd(dir)
+        defaultSession.appendLog(
+            "${currentDir.formatDir("/")} $ cd ${dir.formatDir("/")}"
+        )
     }
 
     fun exec(cmd: Array<String>, dir: String? = null, callBack: () -> Unit = {}) {

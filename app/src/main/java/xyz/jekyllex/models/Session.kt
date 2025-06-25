@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import xyz.jekyllex.utils.Constants.BIN_DIR
+import xyz.jekyllex.utils.Constants.COMMAND_NOT_ALLOWED
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils.buildEnvironment
 import xyz.jekyllex.utils.drop
@@ -55,8 +56,8 @@ data class Session(
     private lateinit var reader: BufferedReader
     private val processBuilder = ProcessBuilder()
 
-    private var _dir: String = initialDir ?: HOME_DIR
-    val dir get() = _dir
+    private var _dir = MutableStateFlow(initialDir ?: HOME_DIR)
+    val dir get() = _dir.asStateFlow()
 
     private var _isRunning = mutableStateOf(false)
     val isRunning get() = _isRunning.value
@@ -89,7 +90,7 @@ data class Session(
     ) {
         if (_isRunning.value) return
 
-        val execDir = overrideDir ?: _dir
+        val execDir = overrideDir ?: _dir.value
         appendLog("${execDir.formatDir("/")} $ ${command.joinToString(" ")}")
 
         val overrideFn = command.override(this)
@@ -145,18 +146,23 @@ data class Session(
     }
 
     fun cd(loc: String) {
+        val currentDir = _dir.value
+        if (loc == currentDir) return
         val file = loc.replace("~", HOME_DIR)
         val newDir = when {
-            file == "." -> _dir
+            file == "." -> currentDir
             file.isEmpty() -> HOME_DIR
             file.getOrNull(0) == '/' -> file
-            file == ".." -> _dir.substringBeforeLast('/')
-            else -> if (dir.last() == '/') "$_dir$file" else "$_dir/$file"
+            file == ".." -> currentDir.substringBeforeLast('/')
+            else -> if (currentDir.last() == '/') "$currentDir$file" else "$currentDir/$file"
         }
-        if (File(newDir).exists() && File(newDir).isDirectory) {
-            _dir = File(newDir).canonicalPath
-        } else {
+        val jFile = File(newDir)
+        if (!jFile.exists() || !jFile.isDirectory) {
             appendLog("cd: no such file or directory: $loc")
+        } else if (number == 0 && !jFile.canonicalPath.startsWith(HOME_DIR)) {
+            appendLog(COMMAND_NOT_ALLOWED)
+        } else {
+            _dir.value = jFile.canonicalPath
         }
     }
 

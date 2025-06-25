@@ -105,6 +105,11 @@ fun TerminalSheet(
     val sessions = sessionManager.sessions.collectAsState().value
     val activeSession = sessionManager.activeSession.collectAsState().value
 
+    val sessionDir = combine(
+        sessionManager.sessions, sessionManager.activeSession
+    ) { s, activeS -> s[activeS] }.flatMapLatest { it.dir }
+        .collectAsState(initial = "").value
+
     val logs: List<String> = combine(
         sessionManager.sessions, sessionManager.activeSession
     ) { s, activeS -> s[activeS] }.flatMapLatest { it.logs }
@@ -263,8 +268,8 @@ fun TerminalSheet(
                     Text(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
+                        text = sessionDir.formatDir("/"),
                         style = MaterialTheme.typography.bodySmall,
-                        text = sessions[activeSession].dir.formatDir("/"),
                     )
                     Row(modifier = Modifier.padding(top = 4.dp)) {
                         BasicTextField(
