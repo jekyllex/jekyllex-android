@@ -145,9 +145,9 @@ data class Session(
     }
 
     fun cd(loc: String) {
-        if (loc == _dir.value) return
-        val file = loc.replace("~", HOME_DIR)
         val currentDir = _dir.value
+        if (loc == currentDir) return
+        val file = loc.replace("~", HOME_DIR)
         val newDir = when {
             file == "." -> currentDir
             file.isEmpty() -> HOME_DIR
