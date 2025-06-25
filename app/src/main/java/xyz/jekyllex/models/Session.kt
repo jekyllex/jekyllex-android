@@ -159,7 +159,7 @@ data class Session(
         val jFile = File(newDir)
         if (!jFile.exists() || !jFile.isDirectory) {
             appendLog("cd: no such file or directory: $loc")
-        } else if (number == 0 && !jFile.canonicalPath.contains(HOME_DIR)) {
+        } else if (number == 0 && !jFile.canonicalPath.startsWith(HOME_DIR)) {
             appendLog(COMMAND_NOT_ALLOWED)
         } else {
             _dir.value = jFile.canonicalPath
