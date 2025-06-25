@@ -55,8 +55,8 @@ data class Session(
     private lateinit var reader: BufferedReader
     private val processBuilder = ProcessBuilder()
 
-    private var _dir: String = initialDir ?: HOME_DIR
-    val dir get() = _dir
+    private var _dir = MutableStateFlow(initialDir ?: HOME_DIR)
+    val dir get() = _dir.asStateFlow()
 
     private var _isRunning = mutableStateOf(false)
     val isRunning get() = _isRunning.value
@@ -89,7 +89,7 @@ data class Session(
     ) {
         if (_isRunning.value) return
 
-        val execDir = overrideDir ?: _dir
+        val execDir = overrideDir ?: _dir.value
         appendLog("${execDir.formatDir("/")} $ ${command.joinToString(" ")}")
 
         val overrideFn = command.override(this)
@@ -145,16 +145,18 @@ data class Session(
     }
 
     fun cd(loc: String) {
+        if (loc == _dir.value) return
         val file = loc.replace("~", HOME_DIR)
+        val currentDir = _dir.value
         val newDir = when {
-            file == "." -> _dir
+            file == "." -> currentDir
             file.isEmpty() -> HOME_DIR
             file.getOrNull(0) == '/' -> file
-            file == ".." -> _dir.substringBeforeLast('/')
-            else -> if (dir.last() == '/') "$_dir$file" else "$_dir/$file"
+            file == ".." -> currentDir.substringBeforeLast('/')
+            else -> if (currentDir.last() == '/') "$currentDir$file" else "$currentDir/$file"
         }
         if (File(newDir).exists() && File(newDir).isDirectory) {
-            _dir = File(newDir).canonicalPath
+            _dir.value = File(newDir).canonicalPath
         } else {
             appendLog("cd: no such file or directory: $loc")
         }

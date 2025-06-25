@@ -90,6 +90,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -131,8 +134,15 @@ class HomeActivity : ComponentActivity() {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
             viewModel.isBound = true
             service = (binder as ProcessService.LocalBinder).service
-            viewModel.appendLog = { service.sessionManager.sessions.value.first().appendLog(it) }
             service.exec(echo("Welcome to JekyllEx!"))
+
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    service.sessionManager.sessions.value.first().dir.collect { dir ->
+                        viewModel.cd(dir)
+                    }
+                }
+            }
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -269,7 +279,6 @@ fun HomeScreen(
 
     val onBackPressed = {
         resetQuery()
-        homeViewModel.cd("..")
         if (homeViewModel.isBound) service.cd("..")
     }
 
@@ -294,7 +303,6 @@ fun HomeScreen(
                         pickFileLauncher,
                         goHome = {
                             resetQuery()
-                            homeViewModel.cd(HOME_DIR)
                             if (homeViewModel.isBound) service.cd(HOME_DIR)
                         },
                         onCreateProjectConfirmation = { input, isDialogOpen ->
@@ -470,7 +478,6 @@ fun HomeScreen(
                             onClick = {
                                 if (files[it].isDir) {
                                     resetQuery()
-                                    homeViewModel.cd(files[it].name)
                                     if (homeViewModel.isBound) service.cd(files[it].name)
                                 } else files[it].open(context)
                             }
