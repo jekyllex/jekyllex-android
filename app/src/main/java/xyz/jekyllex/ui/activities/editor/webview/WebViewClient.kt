@@ -25,6 +25,7 @@
 package xyz.jekyllex.ui.activities.editor.webview
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -56,10 +57,13 @@ class WebViewClient(
         return true
     }
 
+    override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+        super.onPageStarted(view, url, favicon)
+        if (url.contains(PREVIEW_URL)) previewLoadCallback(url)
+    }
+
     override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
-
-        if (url.contains(PREVIEW_URL)) previewLoadCallback(url)
         if (!url.contains(EDITOR_URL)) return
 
         NativeUtils.exec(cat(file), CoroutineScope(Dispatchers.IO)) { content ->
