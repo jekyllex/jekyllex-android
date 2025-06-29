@@ -1,0 +1,19 @@
+JekyllEx is a powerful IDE designed specifically for Jekyll projects.
+
+Build, edit, preview, and publish your Jekyll based websites right from your device.
+
+<ul>
+    <li>Complete GitHub Pages environment with Ruby and default gems embedded natively.</li>
+    <li>Built-in Git for version control. Easily connect to your GitHub account.</li>
+    <li>Powerful terminal UI with multiple sessions support. Desktop level experience.</li>
+    <li>Create new sites locally / import existing ones from a remote source.</li>
+    <li>Easy file and folder management. Create, download from url or load from storage.</li>
+    <li>Built-in code editor with syntax highlighting. Custom themes available.</li>
+    <li>Live previews for running jekyll server with automatic reloading.</li>
+    <li>Preview the site offline in any browser right on device before publishing.</li>
+    <li>Secure by default. No third party backend. Everything stays offline.</li>
+</ul>
+
+Whether you're a developer on the go or want to make quick edits to your Jekyll site, JekyllEx provides all the tools you need in a mobile-friendly interface.
+
+Visit the <a href="https://jekyllex.xyz">project website</a> for more information and documentation.
