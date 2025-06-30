@@ -1,0 +1,8 @@
+Lots of new features and improvements:
+
+- Added the ability to download files from URLs directly into project folders.
+- Introduced Terminal sessions to run multiple commands simultaneously.
+- Synced the file explorer with the default session for easier navigation.
+- Added new theme settings to customize the code editor's appearance.
+- Adopted a FLOSS model — completely free, open source, and privacy-friendly.
+- Made numerous UI improvements and bug fixes.
