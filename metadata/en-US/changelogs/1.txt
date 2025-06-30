@@ -1,0 +1,7 @@
+v0.1.0: rework of the app from the ground up!
+
+JekyllEx is now truly a mobile IDE for jekyll based sites.
+
+It bundles `ruby`, `git`, and all tools necessary to replicate the environment to manage your jekyll site from an Android device.
+
+Read more on the <a href="https://docs.jekyllex.xyz">updated documentation</a>.
