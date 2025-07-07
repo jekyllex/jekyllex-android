@@ -151,6 +151,7 @@ class ProcessService : Service() {
         val defaultSession = _sessions.value.first()
         val currentDir = defaultSession.dir.value
         defaultSession.cd(dir)
+        if (isRunning) return
         defaultSession.appendLog(
             "${currentDir.formatDir("/")} $ cd ${dir.formatDir("/")}"
         )
