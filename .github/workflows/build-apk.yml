@@ -50,7 +50,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
           if [ "$BUILD_TYPE" = "release" ]; then
-            ./gradlew assembleRelease
+            ./gradlew assembleGithubRelease
             mv app/build/outputs/apk/release/*.apk .
           elif [ "$BUILD_TYPE" = "staging" ]; then
             ./gradlew assembleStaging

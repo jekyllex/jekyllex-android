@@ -68,6 +68,10 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
 
+        create("githubRelease") {
+          initWith(getByName("release"))
+        }
+
         create("staging") {
             initWith(getByName("debug"))
 
@@ -270,6 +274,10 @@ fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
 
 tasks {
     val setupBootstraps by registering {
+        onlyIf {
+            !gradle.startParameter.taskNames.any { it.contains("assembleRelease") }
+        }
+
         doFirst {
             val map = mapOf(
                 "aarch64" to "266b081bb64e33541808e2f627e4667ed8f8ef10a0edbfe736c3338c97930e9b",
