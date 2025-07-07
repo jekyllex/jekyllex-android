@@ -3,12 +3,9 @@ set -e
 
 # Setup environment
 mkdir tmp
-cp -r bootstrap termux-packages tmp/
+cp -r bootstrap/* termux-packages tmp/
 cd tmp
-mv bootstrap/* .
-rm termux-packages/scripts/properties.sh termux-packages/scripts/build-bootstraps.sh
 mv termux-packages/* .
-rm -rf termux-packages
 mv properties.sh run-docker.sh build-bootstraps.sh scripts/
 for package in patches/*; do cp -r "$package" packages; done
 find packages/git -type f -name "*subpackage*" -exec rm {} +

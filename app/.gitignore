@@ -1,3 +1,4 @@
+tmp
+*.jks
 /build
 src/main/jniLibs
-*.jks
