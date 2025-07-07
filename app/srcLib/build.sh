@@ -2,8 +2,10 @@
 set -e
 
 # Setup environment
-mv termux-packages bootstrap
-cd bootstrap
+mkdir tmp
+cp -r bootstrap termux-packages tmp/
+cd tmp
+mv bootstrap/* .
 rm termux-packages/scripts/properties.sh termux-packages/scripts/build-bootstraps.sh
 mv termux-packages/* .
 rm -rf termux-packages
