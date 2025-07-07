@@ -64,7 +64,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
 
+        create("githubRelease") {
+            initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("release")
         }
 
@@ -153,8 +156,7 @@ fun getGitHash(): String {
     return "\"" + stdout.toString().trim() + "\""
 }
 
-// Adapted from https://github.com/termux/termux-app/blob/android-10/app/build.gradle#L84
-fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
+fun downloadBootstrap(arch: String, expectedChecksum: String, version: String): File? {
     val digest = MessageDigest.getInstance("SHA-256")
     val zipDownloadFile = File(project.rootDir, "bootstraps/ruby-${arch}.zip")
 
@@ -172,10 +174,9 @@ fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
         if (checksum != expectedChecksum) {
             logger.quiet("Deleting old local file with wrong hash: ${zipDownloadFile.absolutePath}")
             zipDownloadFile.delete()
+            return null
         }
-    }
-
-    if (!zipDownloadFile.exists()) {
+    } else {
         val remoteUrl = "https://dl.jekyllex.xyz/ruby/$version/$arch.zip"
         logger.quiet("Downloading $remoteUrl ...")
 
@@ -203,6 +204,14 @@ fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
             throw GradleException("Wrong checksum for $remoteUrl: expected: $expectedChecksum, actual: $checksum")
         }
     }
+
+    return zipDownloadFile
+}
+
+// Adapted from https://github.com/termux/termux-app/blob/android-10/app/build.gradle#L84
+fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
+    val zipDownloadFile = downloadBootstrap(arch, expectedChecksum, version)
+        ?: throw GradleException("Failed to download bootstrap for $arch")
 
     val doneMarkerFile = File("${zipDownloadFile.absolutePath}.$expectedChecksum.done")
     if (doneMarkerFile.exists()) return
@@ -269,7 +278,17 @@ fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
 }
 
 tasks {
+    val buildBootstraps by register("buildBootstraps", Exec::class) {
+        workingDir = file("${project.projectDir}/srcLib")
+        commandLine("bash", "build.sh")
+        doLast { delete("srcLib/tmp") }
+    }
+
     val setupBootstraps by registering {
+        if (gradle.startParameter.taskNames.any { it.contains("assembleRelease") }) {
+            dependsOn("buildBootstraps")
+        }
+
         doFirst {
             val map = mapOf(
                 "aarch64" to "266b081bb64e33541808e2f627e4667ed8f8ef10a0edbfe736c3338c97930e9b",

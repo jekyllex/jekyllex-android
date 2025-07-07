@@ -10,8 +10,9 @@ on:
         description: "Build Type"
         options:
         - "debug"
-        - "release"
         - "staging"
+        - "release"
+        - "ghRelease"
       release:
         type: boolean
         description: "Release built APKs"
@@ -52,6 +53,9 @@ jobs:
           if [ "$BUILD_TYPE" = "release" ]; then
             ./gradlew assembleRelease
             mv app/build/outputs/apk/release/*.apk .
+          elif [ "$BUILD_TYPE" = "ghRelease" ]; then
+            ./gradlew assembleGithubRelease
+            mv app/build/outputs/apk/githubRelease/*.apk .
           elif [ "$BUILD_TYPE" = "staging" ]; then
             ./gradlew assembleStaging
             mv app/build/outputs/apk/staging/*.apk .
@@ -69,7 +73,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event.inputs.buildType == 'release' && github.event.inputs.release == 'true' && startsWith(github.event.inputs.tag, 'v')
+    if: github.event.inputs.buildType == 'ghRelease' && github.event.inputs.release == 'true' && startsWith(github.event.inputs.tag, 'v')
 
     steps:
       - name: Clone repository
