@@ -53,10 +53,6 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
           if [ "$BUILD_TYPE" = "release" ]; then
-            sudo apt-get update
-            sudo apt-get install -y docker.io
-            sudo systemctl enable docker
-            sudo systemctl start docker
             ./gradlew assembleRelease
             mv app/build/outputs/apk/release/*.apk .
           elif [ "$BUILD_TYPE" = "ghRelease" ]; then
