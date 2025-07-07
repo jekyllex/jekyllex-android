@@ -156,7 +156,7 @@ fun getGitHash(): String {
     return "\"" + stdout.toString().trim() + "\""
 }
 
-fun downloadBootstrap(arch: String, expectedChecksum: String, version: String): File? {
+fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
     val digest = MessageDigest.getInstance("SHA-256")
     val zipDownloadFile = File(project.rootDir, "bootstraps/ruby-${arch}.zip")
 
@@ -174,9 +174,10 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String): 
         if (checksum != expectedChecksum) {
             logger.quiet("Deleting old local file with wrong hash: ${zipDownloadFile.absolutePath}")
             zipDownloadFile.delete()
-            return null
         }
-    } else {
+    }
+
+    if (!zipDownloadFile.exists()) {
         val remoteUrl = "https://dl.jekyllex.xyz/ruby/$version/$arch.zip"
         logger.quiet("Downloading $remoteUrl ...")
 
@@ -204,16 +205,13 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String): 
             throw GradleException("Wrong checksum for $remoteUrl: expected: $expectedChecksum, actual: $checksum")
         }
     }
-
-    return zipDownloadFile
 }
 
 // Adapted from https://github.com/termux/termux-app/blob/android-10/app/build.gradle#L84
-fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
-    val zipDownloadFile = downloadBootstrap(arch, expectedChecksum, version)
-        ?: throw GradleException("Failed to download bootstrap for $arch")
+fun setupBootstrap(arch: String) {
+    val zipDownloadFile = File(project.rootDir, "bootstraps/ruby-${arch}.zip")
 
-    val doneMarkerFile = File("${zipDownloadFile.absolutePath}.$expectedChecksum.done")
+    val doneMarkerFile = File("${zipDownloadFile.absolutePath}.done")
     if (doneMarkerFile.exists()) return
 
     val archMap = mapOf(
@@ -278,6 +276,19 @@ fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
 }
 
 tasks {
+    val setupBootstraps by registering {
+        if (gradle.startParameter.taskNames.any { it.contains("assembleRelease") }) {
+            dependsOn("buildBootstraps")
+        } else {
+            dependsOn("downloadBootstraps")
+        }
+
+        doFirst {
+            val map = listOf("aarch64", "i686", "arm", "x86_64")
+            map.forEach { arch -> setupBootstrap(arch) }
+        }
+    }
+
     val buildBootstraps by register("buildBootstraps", Exec::class) {
         workingDir = file("${project.projectDir}/srcLib")
         standardOutput = System.out
@@ -287,11 +298,7 @@ tasks {
         commandLine("bash", "build.sh")
     }
 
-    val setupBootstraps by registering {
-        if (gradle.startParameter.taskNames.any { it.contains("assembleRelease") }) {
-            dependsOn("buildBootstraps")
-        }
-
+    val downloadBootstraps by registering {
         doFirst {
             val map = mapOf(
                 "aarch64" to "266b081bb64e33541808e2f627e4667ed8f8ef10a0edbfe736c3338c97930e9b",
@@ -300,7 +307,7 @@ tasks {
                 "x86_64" to "46556fa1b3b690d0c105f7c110f2dd5d57d9a3ab0c29eab2fa3a963d2db41aea"
             )
 
-            map.forEach { (arch, checksum) -> setupBootstrap(arch, checksum, bootstrapVersion) }
+            map.forEach { (arch, checksum) -> downloadBootstrap(arch, checksum, bootstrapVersion) }
         }
     }
 }
