@@ -23,4 +23,5 @@ done
 wait
 
 # Store bootstrap
+mkdir -p ../../../bootstraps
 mv *.zip ../../../bootstraps
