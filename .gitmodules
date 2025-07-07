@@ -1,3 +1,6 @@
 [submodule "app/srcLib/bootstrap"]
 	path = app/srcLib/bootstrap
 	url = https://github.com/jekyllex/ruby-android.git
+[submodule "app/srcLib/termux-packages"]
+	path = app/srcLib/termux-packages
+	url = https://github.com/termux/termux-packages.git
