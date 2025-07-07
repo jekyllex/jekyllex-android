@@ -2,7 +2,6 @@
 set -e
 
 # Setup environment
-rm -rf tmp
 mkdir tmp
 cp -r bootstrap/* termux-packages tmp/
 cd tmp
