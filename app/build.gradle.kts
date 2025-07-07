@@ -280,6 +280,11 @@ fun setupBootstrap(arch: String, expectedChecksum: String, version: String) {
 tasks {
     val buildBootstraps by register("buildBootstraps", Exec::class) {
         workingDir = file("${project.projectDir}/srcLib")
+        isIgnoreExitValue = false
+
+        standardOutput = System.out
+        errorOutput = System.err
+
         commandLine("bash", "build.sh")
         doLast { delete("srcLib/tmp") }
     }
