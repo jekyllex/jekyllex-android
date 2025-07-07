@@ -12,15 +12,25 @@ find packages/git -type f -name "*subpackage*" -exec rm {} +
 find packages/libxml2 -type f -name "*python*" -exec rm {} +
 
 # Build bootstraps for each architecture in parallel
+pids=()
 for target_arch in aarch64 arm i686 x86_64; do
   (
     ./scripts/run-docker.sh ./clean.sh
     ./scripts/run-docker.sh ./scripts/build-bootstraps.sh --android10 --architectures "$target_arch"
   ) &
+  pids+=($!)
 done
 
-# Wait for all background builds to finish
-wait
+# Wait and stop on first failure
+for pid in "${pids[@]}"; do
+  if ! wait "$pid"; then
+    echo "Build failed for PID $pid - stopping remaining builds"
+    for remaining_pid in "${pids[@]}"; do
+      kill "$remaining_pid" 2>/dev/null || true
+    done
+    exit 1
+  fi
+done
 
 # Store bootstrap
 mkdir -p ../../../bootstraps
