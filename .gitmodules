@@ -1,0 +1,3 @@
+[submodule "app/srcLib/bootstrap"]
+	path = app/srcLib/bootstrap
+	url = https://github.com/jekyllex/ruby-android.git
