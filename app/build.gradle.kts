@@ -64,12 +64,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-
-            signingConfig = signingConfigs.getByName("release")
         }
 
         create("githubRelease") {
-          initWith(getByName("release"))
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("release")
         }
 
         create("staging") {
