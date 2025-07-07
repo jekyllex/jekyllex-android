@@ -51,7 +51,7 @@ jobs:
         run: |
           if [ "$BUILD_TYPE" = "release" ]; then
             ./gradlew assembleGithubRelease
-            mv app/build/outputs/apk/release/*.apk .
+            mv app/build/outputs/apk/githubRelease/*.apk .
           elif [ "$BUILD_TYPE" = "staging" ]; then
             ./gradlew assembleStaging
             mv app/build/outputs/apk/staging/*.apk .
