@@ -124,7 +124,7 @@ fun File.removeSymlinks() {
 }
 
 fun FileModel.open(context: Context) {
-    if (this.name.startsWith('.')) return
+    if (this.name.contains(".gitconfig")) return
     val defaultAction = {
         context.startActivity(
             Intent(context, EditorActivity::class.java)

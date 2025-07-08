@@ -59,6 +59,7 @@ object Constants {
     val defaultExtensions = mapOf(
         "Gemfile" to "rb",
         "Rakefile" to "rb",
+        "Appraisals" to "rb",
     )
 
     val extensionAliases = mapOf(
@@ -66,6 +67,7 @@ object Constants {
         "html" to "md",
         "lock" to "rb",
         "yaml" to "yml",
+        "gemspec" to "rb",
     )
 
     val themeMap = mapOf(
