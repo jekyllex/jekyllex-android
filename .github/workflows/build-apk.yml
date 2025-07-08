@@ -23,16 +23,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
 
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          swap-size-mb: 512
-          remove-dotnet: 'true'
-          remove-codeql: 'true'
-          remove-haskell: 'true'
-          root-reserve-mb: 60000
+          swap-size-mb: 100
+          root-reserve-mb: 512
+          remove-docker-images: true
 
       - uses: actions/checkout@v4
         with:

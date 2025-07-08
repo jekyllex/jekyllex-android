@@ -1,6 +1,28 @@
 #!/usr/bin/env bash
 set -e
 
+# Setup docker
+DOCKER_VERSION=27.0.1
+curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz -o docker.tgz
+tar xzvf docker.tgz
+sudo mv docker/* /usr/local/bin/
+
+export DOCKER_DIR=$GITHUB_WORKSPACE/.docker
+export DOCKER_SOCKET=$GITHUB_WORKSPACE/docker.sock
+mkdir -p $DOCKER_DIR
+
+sudo nohup dockerd \
+  --data-root=$DOCKER_DIR \
+  --host=unix://$DOCKER_SOCKET \
+  --pidfile=$GITHUB_WORKSPACE/dockerd.pid > $GITHUB_WORKSPACE/dockerd.log 2>&1 &
+
+export DOCKER_HOST=unix://$DOCKER_SOCKET
+echo "DOCKER_HOST=unix://$DOCKER_SOCKET" >> $GITHUB_ENV
+timeout 20s bash -c "until docker info; do sleep 1; done"
+
+sudo chown -R runner:runner $DOCKER_DIR || true
+sudo chown runner:runner $DOCKER_SOCKET || true
+
 # Setup environment
 mkdir tmp
 cp -r bootstrap/* termux-packages tmp/
