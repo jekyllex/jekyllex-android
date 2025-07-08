@@ -1,35 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-if [ "$GITHUB_ACTIONS" = "true" ]; then
-  # Setup docker
-  DOCKER_VERSION=27.0.1
-  curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz -o docker.tgz
-  tar xzvf docker.tgz
-  sudo mv docker/* /usr/local/bin/
-
-  export DOCKER_DIR=$GITHUB_WORKSPACE/.docker
-  export DOCKER_SOCKET=$GITHUB_WORKSPACE/docker.sock
-  mkdir -p $DOCKER_DIR
-
-  sudo nohup dockerd \
-    --data-root=$DOCKER_DIR \
-    --host=unix://$DOCKER_SOCKET \
-    --pidfile=$GITHUB_WORKSPACE/dockerd.pid > $GITHUB_WORKSPACE/dockerd.log 2>&1 &
-
-  export DOCKER_HOST=unix://$DOCKER_SOCKET
-  echo "DOCKER_HOST=unix://$DOCKER_SOCKET" >> $GITHUB_ENV
-
-  if ! timeout 20s bash -c "until docker info; do sleep 1; done"; then
-    echo "Docker daemon failed to start!"
-    cat "$GITHUB_WORKSPACE/dockerd.log"
-    exit 1
-  fi
-
-  sudo chown -R runner:runner $DOCKER_DIR
-  sudo chown runner:runner $DOCKER_SOCKET
-fi
-
 # Setup environment
 mkdir tmp
 cp -r bootstrap/* termux-packages tmp/
@@ -40,12 +11,14 @@ for package in patches/*; do cp -r "$package" packages; done
 find packages/git -type f -name "*subpackage*" -exec rm {} +
 find packages/libxml2 -type f -name "*python*" -exec rm {} +
 
+./scripts/setup-ubuntu.sh
+
 # Build bootstraps for each architecture in parallel
 pids=()
 for target_arch in aarch64 arm i686 x86_64; do
   (
-    ./scripts/run-docker.sh ./clean.sh
-    ./scripts/run-docker.sh ./scripts/build-bootstraps.sh --android10 --architectures "$target_arch"
+    ./clean.sh
+    ./scripts/build-bootstraps.sh --android10 --architectures "$target_arch"
   ) &
   pids+=($!)
 done
