@@ -32,7 +32,6 @@ jobs:
         with:
           swap-size-mb: 100
           root-reserve-mb: 512
-          remove-docker-images: true
 
       - uses: actions/checkout@v4
         with:
