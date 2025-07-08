@@ -18,4 +18,5 @@ for target_arch in aarch64 arm i686 x86_64; do
 done
 
 # Store bootstrap
+mkdir -p ../../../bootstraps
 mv *.zip ../../../bootstraps
