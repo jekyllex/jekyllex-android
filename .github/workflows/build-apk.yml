@@ -23,17 +23,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
 
     steps:
-      - name: Maximize build space
-        if: github.event.inputs.buildType == 'release'
-        uses: easimon/maximize-build-space@master
-        with:
-          swap-size-mb: 100
-          root-reserve-mb: 512
-
       - uses: actions/checkout@v4
         with:
           submodules: true
