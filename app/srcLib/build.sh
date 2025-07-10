@@ -18,7 +18,7 @@ if [[ -z "$ANDROID_HOME" || -z "$NDK" ]]; then
 fi
 
 # Build bootstraps for each architecture
-./scripts/build-bootstraps.sh --android10 --architectures aarch64
+./scripts/build-bootstraps.sh --android10
 
 # Store bootstraps
 cd "$dir"
