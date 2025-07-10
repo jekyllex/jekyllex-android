@@ -36,6 +36,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y autopoint
+          sudo mkdir -p /data /home/builder
+          sudo chown $USER:$USER /data /home/builder
           echo $ENCODED_STRING | base64 --decode > keystore.jks
 
       - name: Set up JDK
