@@ -34,6 +34,8 @@ jobs:
         env:
           ENCODED_STRING: ${{ secrets.KEYSTORE }}
         run: |
+          sudo apt-get update
+          sudo apt-get install -y autopoint
           echo $ENCODED_STRING | base64 --decode > keystore.jks
 
       - name: Set up JDK
