@@ -114,7 +114,7 @@ android {
         outputs.configureEach {
             (this as ApkVariantOutputImpl).outputFileName =
                 "${rootProject.name.lowercase()}${
-                    if (buildType.name == "release") "-"
+                    if (buildType.name.lowercase().contains("release")) "-"
                     else "-${buildType.name}-"
                 }${defaultConfig.versionName}.apk"
         }
