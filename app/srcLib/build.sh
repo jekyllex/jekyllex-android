@@ -16,6 +16,13 @@ if [[ -z "$ANDROID_HOME" || -z "$NDK" ]]; then
   ./scripts/setup-android-sdk.sh
 fi
 
+# debug
+echo "Current directory: $(pwd)"
+echo "Contents of current directory:"
+ls -la
+echo "Contents of /home/builder:"
+ls -la /home/builder
+
 # Build bootstraps for each architecture
 ./scripts/build-bootstraps.sh --android10 --architectures aarch64
 
