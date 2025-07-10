@@ -3,8 +3,6 @@ set -e
 
 # Setup environment
 dir=$(pwd)
-echo "Current directory: $dir"
-exit 1
 sudo mkdir -p /data /home/builder
 sudo chown $USER:$USER /data /home/builder
 cp -r bootstrap/* termux-packages /home/builder/
@@ -22,7 +20,7 @@ fi
 # Build bootstraps for each architecture
 ./scripts/build-bootstraps.sh --android10 --architectures aarch64
 
-# Store bootstrap
+# Store bootstraps
 cd "$dir"
-mkdir -p ../../../bootstraps
-mv /home/builder/*.zip ../../../bootstraps
+mkdir -p ../../bootstraps
+mv /home/builder/*.zip ../../bootstraps
