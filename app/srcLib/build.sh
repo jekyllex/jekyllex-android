@@ -3,6 +3,8 @@ set -e
 
 # Setup environment
 dir=$(pwd)
+echo "Current directory: $dir"
+exit 1
 sudo mkdir -p /data /home/builder
 sudo chown $USER:$USER /data /home/builder
 cp -r bootstrap/* termux-packages /home/builder/
