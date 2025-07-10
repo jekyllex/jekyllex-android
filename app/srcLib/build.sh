@@ -2,6 +2,7 @@
 set -e
 
 # Setup environment
+dir=$(pwd)
 sudo mkdir -p /data /home/builder
 sudo chown $USER:$USER /data /home/builder
 cp -r bootstrap/* termux-packages /home/builder/
@@ -17,8 +18,9 @@ if [[ -z "$ANDROID_HOME" || -z "$NDK" ]]; then
 fi
 
 # Build bootstraps for each architecture
-./scripts/build-bootstraps.sh --android10
+./scripts/build-bootstraps.sh --android10 --architectures aarch64
 
 # Store bootstrap
+cd "$dir"
 mkdir -p ../../../bootstraps
 mv /home/builder/*.zip ../../../bootstraps
