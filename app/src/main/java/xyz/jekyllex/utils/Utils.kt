@@ -124,13 +124,30 @@ fun File.removeSymlinks() {
 }
 
 fun FileModel.open(context: Context) {
-    if (this.name.contains(".gitconfig")) return
+    if (name.contains(".gitconfig")) return
     val defaultAction = {
         context.startActivity(
             Intent(context, EditorActivity::class.java)
-                .putExtra("file", this.path)
+                .putExtra("file", path)
         )
     }
+
+    val ext = path.getExtension()
+    val mime = ext.mimeType()
+
+    if (
+        name.startsWith(".") ||
+        editorExtensions.contains(ext) ||
+        editorMimes.any { mime.contains(it) }
+    ) defaultAction()
+    else openInExternalApp(context, false, mime)
+}
+
+fun FileModel.openInExternalApp(
+    context: Context,
+    allowWrite: Boolean,
+    mime: String = path.getExtension().mimeType(),
+) {
     val file = File(this.path)
     val uri = FileProvider.getUriForFile(
         context,
@@ -138,26 +155,21 @@ fun FileModel.open(context: Context) {
         file
     )
 
-    val ext = this.path.getExtension()
-    val mime = ext.mimeType()
-
-    if (
-        this.name.startsWith(".") ||
-        editorExtensions.contains(ext) ||
-        editorMimes.any { mime.contains(it) }
-    ) defaultAction()
-    else {
-        try {
-            context.startActivity(
-                Intent(Intent.ACTION_VIEW)
-                    .setDataAndType(uri, mime)
-                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            )
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(context, "No app found to open this file!", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Toast.makeText(context, "Can't open file!", Toast.LENGTH_SHORT).show()
-        }
+    try {
+        context.startActivity(
+            Intent(Intent.ACTION_VIEW)
+                .setDataAndType(uri, mime)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .apply {
+                    if (allowWrite) {
+                        addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    }
+                }
+        )
+    } catch (e: ActivityNotFoundException) {
+        Toast.makeText(context, "No app found to open this file!", Toast.LENGTH_SHORT).show()
+    } catch (e: Exception) {
+        Toast.makeText(context, "Can't open file!", Toast.LENGTH_SHORT).show()
     }
 }
 
