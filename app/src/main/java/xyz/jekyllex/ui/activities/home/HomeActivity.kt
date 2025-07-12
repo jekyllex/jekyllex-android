@@ -120,6 +120,7 @@ import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.ui.components.GenericDialog
+import xyz.jekyllex.utils.openInExternalApp
 import java.io.File as JFile
 
 private lateinit var service: ProcessService
@@ -470,7 +471,7 @@ fun HomeScreen(
                         }
                     }
 
-                    items(files.size) {
+                    items(files.size, key = { homeViewModel.cwd.value + files[it].path }) {
                         FileButton(
                             file = files[it],
                             modifier = Modifier.padding(8.dp),
@@ -480,6 +481,9 @@ fun HomeScreen(
                                     resetQuery()
                                     if (homeViewModel.isBound) service.cd(files[it].name)
                                 } else files[it].open(context)
+                            },
+                            onLongClick = {
+                                if (!files[it].isDir) files[it].openInExternalApp(context, true)
                             }
                         )
                     }
