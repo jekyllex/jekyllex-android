@@ -223,19 +223,22 @@ fun setupBootstrap(arch: String) {
 
     val archDirName = archMap[arch]
 
-    val outputPath = "${project.rootDir.absolutePath}/app/src/main/jniLibs/$archDirName/"
+    val outputPath = "${project.rootDir.absolutePath}/app/src/main/jniLibs/$archDirName"
     val outputDir = File(outputPath).absoluteFile
     if (!outputDir.exists()) outputDir.mkdirs()
+
+    println("Setting up bootstrap for $arch at $outputPath")
 
     val symlinksFile = File(outputDir, "libsymlinks.so").absoluteFile
     if (symlinksFile.exists()) symlinksFile.delete()
 
     val mappingsFile = File(outputDir, "libfiles.so").absoluteFile
     if (mappingsFile.exists()) mappingsFile.delete()
+
+    var counter = 100
     mappingsFile.createNewFile()
     val mappingsFileWriter = BufferedWriter(FileWriter(mappingsFile))
 
-    var counter = 100
     FileInputStream(zipDownloadFile).use { fileInput ->
         ZipInputStream(fileInput).use { zipInput ->
             var zipEntry: ZipEntry? = zipInput.nextEntry
@@ -249,8 +252,6 @@ fun setupBootstrap(arch: String) {
                 } else if (!zipEntry.isDirectory) {
                     val soName = "lib$counter.so"
                     val targetFile = File(outputDir, soName).absoluteFile
-
-                    println("target file path is $targetFile")
 
                     try {
                         FileOutputStream(targetFile).use {
