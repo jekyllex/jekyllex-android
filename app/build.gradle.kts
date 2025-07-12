@@ -5,8 +5,10 @@ import java.io.FileOutputStream
 import java.io.BufferedOutputStream
 import java.io.ByteArrayOutputStream
 
-import java.net.URL
-import java.net.HttpURLConnection
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
@@ -157,20 +159,19 @@ fun getGitHash(): String {
 }
 
 fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
+    val buffer = ByteArray(8192)
     val digest = MessageDigest.getInstance("SHA-256")
     val zipDownloadFile = File(project.rootDir, "bootstraps/ruby-${arch}.zip")
 
     if (zipDownloadFile.exists()) {
-        val buffer = ByteArray(8192)
-        val input = FileInputStream(zipDownloadFile)
-
-        do {
-            val bytesRead = input.read(buffer)
-            if (bytesRead > 0) digest.update(buffer, 0, bytesRead)
-        } while (bytesRead > 0)
+        FileInputStream(zipDownloadFile).use { input ->
+            var bytesRead: Int
+            while (input.read(buffer).also { bytesRead = it } != -1) {
+                digest.update(buffer, 0, bytesRead)
+            }
+        }
 
         val checksum = BigInteger(1, digest.digest()).toString(16)
-
         if (checksum != expectedChecksum) {
             logger.quiet("Deleting old local file with wrong hash: ${zipDownloadFile.absolutePath}")
             zipDownloadFile.delete()
@@ -182,24 +183,30 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
         logger.quiet("Downloading $remoteUrl ...")
 
         zipDownloadFile.parentFile.mkdirs()
-        val out = BufferedOutputStream(FileOutputStream(zipDownloadFile))
+        val client = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build()
 
-        val connection = (URL(remoteUrl).openConnection() as HttpURLConnection).apply {
-            instanceFollowRedirects = true
+        val request = HttpRequest.newBuilder()
+            .uri(URI.create(remoteUrl))
+            .GET()
+            .build()
+
+        val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
+        if (response.statusCode() != 200) {
+            throw GradleException("Failed to download $remoteUrl: HTTP ${response.statusCode()}")
         }
 
-        val digestStream = DigestInputStream(connection.inputStream, digest)
-        val buffer = ByteArray(8192)
-
-        do {
-            val bytesRead = digestStream.read(buffer)
-            if (bytesRead > 0) out.write(buffer, 0, bytesRead)
-        } while (bytesRead > 0)
-
-        out.close()
+        DigestInputStream(response.body(), digest).use { input ->
+            BufferedOutputStream(FileOutputStream(zipDownloadFile)).use { out ->
+                var bytesRead: Int
+                while (input.read(buffer).also { bytesRead = it } != -1) {
+                    out.write(buffer, 0, bytesRead)
+                }
+            }
+        }
 
         val checksum = BigInteger(1, digest.digest()).toString(16)
-
         if (checksum != expectedChecksum) {
             zipDownloadFile.delete()
             throw GradleException("Wrong checksum for $remoteUrl: expected: $expectedChecksum, actual: $checksum")
