@@ -26,7 +26,6 @@ package xyz.jekyllex.ui.components
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.webkit.URLUtil
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
@@ -80,8 +79,8 @@ fun FileButton(
 ) {
     val context = LocalContext.current
     val viewConfiguration = LocalViewConfiguration.current
-    val interactionSource = remember { MutableInteractionSource() }
     val openDeleteDialog = remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
 
     LaunchedEffect (interactionSource) {
         var isLongClick = false

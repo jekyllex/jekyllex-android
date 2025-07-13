@@ -93,12 +93,14 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import java.io.File as JFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.activities.home.components.DropDownMenu
+import xyz.jekyllex.ui.components.GenericDialog
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.FileButton
 import xyz.jekyllex.ui.components.TerminalSheet
@@ -119,9 +121,7 @@ import xyz.jekyllex.utils.toCommand
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.removeSymlinks
-import xyz.jekyllex.ui.components.GenericDialog
 import xyz.jekyllex.utils.openInExternalApp
-import java.io.File as JFile
 
 private lateinit var service: ProcessService
 
@@ -480,7 +480,9 @@ fun HomeScreen(
                                 if (files[it].isDir) {
                                     resetQuery()
                                     if (homeViewModel.isBound) service.cd(files[it].name)
-                                } else files[it].open(context)
+                                } else if (!files[it].name.contains(".gitconfig")) {
+                                    files[it].open(context)
+                                }
                             },
                             onLongClick = {
                                 if (!files[it].isDir) files[it].openInExternalApp(context, true)
