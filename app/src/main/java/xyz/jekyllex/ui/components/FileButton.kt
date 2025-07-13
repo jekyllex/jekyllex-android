@@ -33,6 +33,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -49,15 +51,19 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import java.io.File as JFile
 import xyz.jekyllex.R
 import xyz.jekyllex.models.File
@@ -67,11 +73,34 @@ import xyz.jekyllex.utils.buildStatsString
 fun FileButton(
     file: File,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {},
     refresh: () -> Unit = {},
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val viewConfiguration = LocalViewConfiguration.current
     val openDeleteDialog = remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+
+    LaunchedEffect (interactionSource) {
+        var isLongClick = false
+
+        interactionSource.interactions.collectLatest { interaction ->
+            when (interaction) {
+                is PressInteraction.Press -> {
+                    isLongClick = false
+                    delay(viewConfiguration.longPressTimeoutMillis)
+                    isLongClick = true
+                    onLongClick()
+                }
+
+                is PressInteraction.Release -> {
+                    if (!isLongClick) onClick()
+                    isLongClick = false
+                }
+            }
+        }
+    }
 
     if (openDeleteDialog.value) {
         val jFile = JFile(file.path)
@@ -91,10 +120,11 @@ fun FileButton(
     }
 
     OutlinedButton(
-        onClick = onClick,
+        onClick = {},
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
+        interactionSource = interactionSource,
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
     ) {
         Surface {
             Column {

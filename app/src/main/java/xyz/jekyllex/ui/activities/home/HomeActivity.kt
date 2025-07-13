@@ -93,12 +93,14 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import java.io.File as JFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.activities.home.components.DropDownMenu
+import xyz.jekyllex.ui.components.GenericDialog
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.FileButton
 import xyz.jekyllex.ui.components.TerminalSheet
@@ -119,8 +121,7 @@ import xyz.jekyllex.utils.toCommand
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.removeSymlinks
-import xyz.jekyllex.ui.components.GenericDialog
-import java.io.File as JFile
+import xyz.jekyllex.utils.openInExternalApp
 
 private lateinit var service: ProcessService
 
@@ -470,7 +471,7 @@ fun HomeScreen(
                         }
                     }
 
-                    items(files.size) {
+                    items(files.size, key = { homeViewModel.cwd.value + files[it].path }) {
                         FileButton(
                             file = files[it],
                             modifier = Modifier.padding(8.dp),
@@ -479,7 +480,12 @@ fun HomeScreen(
                                 if (files[it].isDir) {
                                     resetQuery()
                                     if (homeViewModel.isBound) service.cd(files[it].name)
-                                } else files[it].open(context)
+                                } else if (!files[it].name.contains(".gitconfig")) {
+                                    files[it].open(context)
+                                }
+                            },
+                            onLongClick = {
+                                if (!files[it].isDir) files[it].openInExternalApp(context, true)
                             }
                         )
                     }
