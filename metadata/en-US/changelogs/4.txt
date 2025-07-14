@@ -1,0 +1,5 @@
+What's New?
+
+- Long press a file to open and edit it in an external app.
+- Set default TMPDIR environment variable when running commands.
+- Various bug fixes and improvements across the app and build system.
