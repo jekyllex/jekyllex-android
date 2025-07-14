@@ -241,27 +241,25 @@ fun EditorView(file: String = "") {
             CoroutineScope(Dispatchers.IO).launch run@{
                 if (!shouldGuessURLs || ignoreGuessesIn.any { file.contains(it) }) return@run
 
-                file.getProjectDir()?.let {
-                    val path = file.pathInProject()
-                    val url = NativeUtils.exec(
-                        guessDestinationUrl(path), it
-                    )
+                val dir = file.getProjectDir() ?: return@run
+                val path = file.pathInProject()
 
-                    if (url.isEmpty()) return@run
-                    val stripExt = path.split('.')
-                        .dropLast(1).joinToString()
+                val url = NativeUtils.exec(guessDestinationUrl(path), dir)
 
-                    if (
-                        !url.contains("404") &&
-                        (url == "/${stripExt}" || url == "/$path")
-                    ) return@run
+                if (url.isEmpty()) return@run
+                val stripExt = path.split('.')
+                    .dropLast(1).joinToString()
 
-                    guessedUrl = url
-                    if (tabIndex == 1) updateDescription(url)
+                if (
+                    !url.contains("404") &&
+                    (url == "/${stripExt}" || url == "/$path")
+                ) return@run
 
-                    withContext(Dispatchers.Main) {
-                        viewCache[1]?.loadUrl(url.buildPreviewURL())
-                    }
+                guessedUrl = url
+                if (tabIndex == 1) updateDescription(url)
+
+                withContext(Dispatchers.Main) {
+                    viewCache[1]?.loadUrl(url.buildPreviewURL())
                 }
             }
         }
