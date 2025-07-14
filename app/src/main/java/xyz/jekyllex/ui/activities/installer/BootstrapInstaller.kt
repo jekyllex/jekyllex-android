@@ -49,8 +49,9 @@ import xyz.jekyllex.R
 import xyz.jekyllex.ui.activities.home.HomeActivity
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.Constants.HOME_DIR
+import xyz.jekyllex.utils.Constants.TMP_DIR
 import xyz.jekyllex.utils.Constants.USR_DIR
-import xyz.jekyllex.utils.Constants.FILES_DIR
 import xyz.jekyllex.utils.Constants.requiredBinaries
 import java.io.BufferedReader
 import java.io.File
@@ -137,8 +138,8 @@ class BootstrapInstaller : ComponentActivity() {
                 Os.symlink(oldPath, newPath)
             }
 
-            NativeUtils.ensureDirectoryExists(File(USR_DIR, "tmp"))
-            NativeUtils.ensureDirectoryExists(File(FILES_DIR, "home"))
+            NativeUtils.ensureDirectoryExists(File(TMP_DIR))
+            NativeUtils.ensureDirectoryExists(File(HOME_DIR))
 
             Log.d(LOG_TAG, "Bootstrap installation complete!")
             withContext(Dispatchers.Main) {

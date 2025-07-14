@@ -32,6 +32,7 @@ object Constants {
     const val USR_DIR = "$FILES_DIR/usr"
     const val BIN_DIR = "$USR_DIR/bin"
     const val LIB_DIR = "$USR_DIR/lib"
+    const val TMP_DIR = "$USR_DIR/tmp"
     const val GEM_DIR = "$LIB_DIR/ruby/gems/3.3.0"
     const val WEBVIEW_CACHE = "$PREFIX/app_webview"
     const val DOMAIN = "jekyllex.xyz"
