@@ -330,11 +330,13 @@ fun HomeScreen(
                         serverIcon = {
                             IconButton(onClick = {
                                 if (!homeViewModel.isBound) return@IconButton
-                                if (!service.isRunning)
+                                if (!service.isRunning) {
                                     service.exec(
                                         jekyll("serve"),
                                         homeViewModel.cwd.value.let { it.getProjectDir() ?: it }
                                     )
+                                    showTerminalSheet = true
+                                }
                                 else
                                     service.killProcess()
                             }) {
