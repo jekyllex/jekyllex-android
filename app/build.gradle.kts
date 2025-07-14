@@ -66,17 +66,38 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            splits {
+                abi {
+                    isEnable = true
+                    isUniversalApk = false
+                }
+            }
         }
 
         create("githubRelease") {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("release")
+
+            splits {
+                abi {
+                    isEnable = true
+                    reset()
+                    include("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+                    isUniversalApk = true
+                }
+            }
         }
 
         create("staging") {
             initWith(getByName("debug"))
 
             ndk {
+                splits {
+                    abi {
+                        isEnable = false
+                    }
+                }
                 abiFilters.add("arm64-v8a")
             }
         }
@@ -114,11 +135,16 @@ android {
     applicationVariants.configureEach {
         // rename the output APK file
         outputs.configureEach {
+            val isRelease = buildType.name.lowercase().contains("release")
+            val abiName = "-" + if (filters.any { it.filterType == "ABI" }) {
+                filters.find { it.filterType == "ABI" }?.identifier ?: "universal"
+            } else "universal"
+            val abiSuffix = if (isRelease) abiName else ""
             (this as ApkVariantOutputImpl).outputFileName =
                 "${rootProject.name.lowercase()}${
-                    if (buildType.name.lowercase().contains("release")) "-"
+                    if (isRelease) "-"
                     else "-${buildType.name}-"
-                }${defaultConfig.versionName}.apk"
+                }${defaultConfig.versionName}$abiSuffix.apk"
         }
     }
 }
