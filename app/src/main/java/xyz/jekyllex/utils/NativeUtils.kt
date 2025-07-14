@@ -36,6 +36,7 @@ import xyz.jekyllex.utils.Constants.BIN_DIR
 import xyz.jekyllex.utils.Constants.GEM_DIR
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.Constants.PREFIX
+import xyz.jekyllex.utils.Constants.TMP_DIR
 
 object NativeUtils {
     const val LOG_TAG = "NativeUtils"
@@ -122,6 +123,7 @@ object NativeUtils {
             add("PWD=$cwd")
             add("HOME=$HOME_DIR")
             add("PREFIX=$PREFIX")
+            add("TMPDIR=$TMP_DIR")
             add("GEM_HOME=$GEM_DIR")
             add("GEM_PATH=$GEM_DIR")
             add("PATH=$BIN_DIR:${System.getenv("PATH")}")
