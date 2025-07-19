@@ -30,7 +30,7 @@ val bootstrapVersion = "v0.1.3"
 android {
     namespace = "xyz.jekyllex"
     compileSdk = 34
-    ndkVersion = "24.0.8215888"
+    ndkVersion = "27.2.12479018"
 
     defaultConfig {
         applicationId = "xyz.jekyllex"
@@ -80,7 +80,7 @@ android {
 
         create("githubRelease") {
             initWith(getByName("release"))
-//            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -113,18 +113,20 @@ android {
 
     project.tasks.preBuild.dependsOn("setupBootstraps")
 
+    val abiCodes = mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86" to 3, "x86_64" to 4)
+
     applicationVariants.configureEach {
-        // rename the output APK file
         outputs.configureEach {
+            this as ApkVariantOutputImpl
+            val abiFilter = filters.find { it.filterType == "ABI" }
+            val abiCode = abiFilter?.let { abiCodes[it.identifier] }
+            val abiName = abiFilter?.let { "-" + abiFilter.identifier } ?: ""
             val isRelease = buildType.name.lowercase().contains("release")
-            val abiName = if (filters.any { it.filterType == "ABI" }) {
-                "-" + filters.find { it.filterType == "ABI" }?.identifier
-            } else ""
-            (this as ApkVariantOutputImpl).outputFileName =
-                "${rootProject.name.lowercase()}${
-                    if (isRelease) "-"
-                    else "-${buildType.name}-"
-                }${defaultConfig.versionName}$abiName.apk"
+            versionCodeOverride = abiCode?.let { it * 1000 + versionCode } ?: versionCode
+            outputFileName = "${rootProject.name.lowercase()}${
+                if (isRelease) "-" 
+                else "-${buildType.name}-"
+            }${defaultConfig.versionName}$abiName.apk"
         }
     }
 }
