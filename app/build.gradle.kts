@@ -118,13 +118,13 @@ android {
     applicationVariants.configureEach {
         outputs.configureEach {
             this as ApkVariantOutputImpl
-            val abiFilter = filters.find { it.filterType == "ABI" }
-            val abiCode = abiFilter?.let { abiCodes[it.identifier] }
-            val abiName = abiFilter?.let { "-" + abiFilter.identifier } ?: ""
+            val abi = filters.find { it.filterType == "ABI" }
+            val abiCode = abi?.let { abiCodes[it.identifier] }
+            val abiName = abi?.let { "-" + abi.identifier } ?: ""
             val isRelease = buildType.name.lowercase().contains("release")
             versionCodeOverride = abiCode?.let { it * 1000 + versionCode } ?: versionCode
             outputFileName = "${rootProject.name.lowercase()}${
-                if (isRelease) "-" 
+                if (isRelease) "-"
                 else "-${buildType.name}-"
             }${defaultConfig.versionName}$abiName.apk"
         }
