@@ -30,7 +30,7 @@ val bootstrapVersion = "v0.1.3"
 android {
     namespace = "xyz.jekyllex"
     compileSdk = 34
-    ndkVersion = "24.0.8215888"
+    ndkVersion = "27.2.12479018"
 
     defaultConfig {
         applicationId = "xyz.jekyllex"
@@ -57,6 +57,16 @@ android {
         }
     }
 
+    splits {
+        abi {
+            isEnable = true
+            isUniversalApk = true
+
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -71,14 +81,6 @@ android {
         create("githubRelease") {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("release")
-        }
-
-        create("staging") {
-            initWith(getByName("debug"))
-
-            ndk {
-                abiFilters.add("arm64-v8a")
-            }
         }
     }
 
@@ -111,14 +113,20 @@ android {
 
     project.tasks.preBuild.dependsOn("setupBootstraps")
 
+    val abiCodes = mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86" to 3, "x86_64" to 4)
+
     applicationVariants.configureEach {
-        // rename the output APK file
         outputs.configureEach {
-            (this as ApkVariantOutputImpl).outputFileName =
-                "${rootProject.name.lowercase()}${
-                    if (buildType.name.lowercase().contains("release")) "-"
-                    else "-${buildType.name}-"
-                }${defaultConfig.versionName}.apk"
+            this as ApkVariantOutputImpl
+            val abi = filters.find { it.filterType == "ABI" }
+            val abiCode = abi?.let { abiCodes[it.identifier] }
+            val abiName = abi?.let { "-" + abi.identifier } ?: ""
+            val isRelease = buildType.name.lowercase().contains("release")
+            versionCodeOverride = abiCode?.let { it * 1000 + versionCode } ?: versionCode
+            outputFileName = "${rootProject.name.lowercase()}${
+                if (isRelease) "-"
+                else "-${buildType.name}-"
+            }${defaultConfig.versionName}$abiName.apk"
         }
     }
 }

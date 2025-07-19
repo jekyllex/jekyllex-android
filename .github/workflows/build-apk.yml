@@ -63,8 +63,8 @@ jobs:
             ./gradlew assembleGithubRelease
             mv app/build/outputs/apk/githubRelease/*.apk .
           elif [ "$BUILD_TYPE" = "staging" ]; then
-            ./gradlew assembleStaging
-            mv app/build/outputs/apk/staging/*.apk .
+            ./gradlew assembleDebug
+            mv app/build/outputs/apk/debug/*-arm64*.apk .
           elif [ "$BUILD_TYPE" = "debug" ]; then
             ./gradlew assembleDebug
             mv app/build/outputs/apk/debug/*.apk .
