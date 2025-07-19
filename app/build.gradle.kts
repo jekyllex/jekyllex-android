@@ -57,6 +57,16 @@ android {
         }
     }
 
+    splits {
+        abi {
+            isEnable = true
+            isUniversalApk = true
+
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -66,38 +76,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-
-            splits {
-                abi {
-                    isEnable = true
-                    reset()
-                    include("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
-                }
-            }
         }
 
         create("githubRelease") {
             initWith(getByName("release"))
-            signingConfig = signingConfigs.getByName("release")
-
-            splits {
-                abi {
-                    isUniversalApk = true
-                }
-            }
-        }
-
-        create("staging") {
-            initWith(getByName("debug"))
-
-            ndk {
-                splits {
-                    abi {
-                        isEnable = false
-                    }
-                }
-                abiFilters.add("arm64-v8a")
-            }
+//            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -134,15 +117,14 @@ android {
         // rename the output APK file
         outputs.configureEach {
             val isRelease = buildType.name.lowercase().contains("release")
-            val abiName = "-" + if (filters.any { it.filterType == "ABI" }) {
-                filters.find { it.filterType == "ABI" }?.identifier ?: "universal"
-            } else "universal"
-            val abiSuffix = if (isRelease) abiName else ""
+            val abiName = if (filters.any { it.filterType == "ABI" }) {
+                "-" + filters.find { it.filterType == "ABI" }?.identifier
+            } else ""
             (this as ApkVariantOutputImpl).outputFileName =
                 "${rootProject.name.lowercase()}${
                     if (isRelease) "-"
                     else "-${buildType.name}-"
-                }${defaultConfig.versionName}$abiSuffix.apk"
+                }${defaultConfig.versionName}$abiName.apk"
         }
     }
 }
