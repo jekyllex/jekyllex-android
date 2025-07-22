@@ -18,7 +18,7 @@ The app has undergone major reworks since [it's inception](https://genicsblog.co
 
 <img alt = "JekyllEx App Logo" src="https://raw.githubusercontent.com/jekyllex/jekyllex-android/main/.github/media/logo.png" height="100" width="100" align="right" style="margin:10px"/>
 
-- Install the [latest release](https://github.com/jekyllex/jekyllex-android/releases/latest).
+- Install the [latest release](https://github.com/jekyllex/jekyllex-android/releases/latest) from Github or download the app from [F-Droid](https://f-droid.org/packages/xyz.jekyllex/).
 - Read more about the app on its [documentation](https://docs.jekyllex.xyz).
 - Report bugs or feature requests on the [issue tracker](https://github.com/jekyllex/jekyllex-android/issues/new/choose).
 
