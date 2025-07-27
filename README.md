@@ -8,15 +8,13 @@ JekyllEx is an Android App that allows you to manage a [Jekyll](https://github.c
 
 The app has undergone major reworks since [it's inception](https://genicsblog.com/introducing-jekyllex-android-app) as a GitHub API based implementation and is now a standalone app that embeds `git`, `ruby`, `jekyll` and other dependencies natively to provide a seamless experience in a powerful and easy to use interface.
 
-> [!IMPORTANT]
-> The [old implementation](https://github.com/jekyllex/jekyllex-android/tree/api-impl) has been archived and the releases have been deprecated!
+<a href="https://f-droid.org/packages/xyz.jekyllex/" target="_blank"><img width="200" alt="Download JekyllEx from F-Droid" src="https://jekyllex.xyz/assets/f-droid.png" /></a><a href="https://github.com/jekyllex/jekyllex-android/releases/latest" target="_blank"><img width="200" alt="Download JekyllEx from GitHub" src="https://jekyllex.xyz/assets/github.png" /></a>
 
-<img alt = "JekyllEx Introduction Image" src="https://raw.githubusercontent.com/jekyllex/jekyllex-android/main/.github/media/cover-image.png"/>
-
+<img alt="JekyllEx Introduction Image" src="https://raw.githubusercontent.com/jekyllex/jekyllex-android/main/.github/media/cover-image.png" />
 
 ## Getting started
 
-<img alt = "JekyllEx App Logo" src="https://raw.githubusercontent.com/jekyllex/jekyllex-android/main/.github/media/logo.png" height="100" width="100" align="right" style="margin:10px"/>
+<img alt="JekyllEx App Logo" src="https://raw.githubusercontent.com/jekyllex/jekyllex-android/main/.github/media/logo.png" height="100" width="100" align="right" style="margin:10px" />
 
 - Install the latest release from [Github](https://github.com/jekyllex/jekyllex-android/releases/latest) or [F-Droid](https://f-droid.org/packages/xyz.jekyllex/).
 - Read more about the app on its [documentation](https://docs.jekyllex.xyz).
