@@ -117,7 +117,11 @@ class ProcessService : Service() {
                 val shouldTrim = settings.get<Boolean>(Setting.TRIM_LOGS)
 
                 _sessions.value.apply {
-                    _sessions.update { it + Session(sessionCount++, ::buildEnvironment) }
+                    _sessions.update {
+                        it + Session(sessionCount++, ::buildEnvironment).apply {
+                            cd(_sessions.value[_activeSession.value].dir.value)
+                        }
+                    }
                     forEach { it.setLogTrimming(shouldTrim) }
                 }
 

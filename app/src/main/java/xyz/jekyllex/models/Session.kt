@@ -156,13 +156,13 @@ data class Session(
             file == ".." -> currentDir.substringBeforeLast('/')
             else -> if (currentDir.last() == '/') "$currentDir$file" else "$currentDir/$file"
         }
-        val jFile = File(newDir)
+        val jFile = File(newDir).canonicalFile
         if (!jFile.exists() || !jFile.isDirectory) {
             appendLog("cd: no such file or directory: $loc")
-        } else if (number == 0 && !jFile.canonicalPath.startsWith(HOME_DIR)) {
+        } else if (number == 0 && (!jFile.path.startsWith(HOME_DIR) || jFile.name.startsWith("."))) {
             appendLog(COMMAND_NOT_ALLOWED)
         } else {
-            _dir.value = jFile.canonicalPath
+            _dir.value = jFile.path
         }
     }
 
