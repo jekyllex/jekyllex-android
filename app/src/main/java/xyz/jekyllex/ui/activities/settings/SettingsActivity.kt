@@ -385,6 +385,23 @@ fun SettingsView() {
                 )
 
                 preferenceCategory(
+                    key = "advanced",
+                    title = { Text("Advanced") },
+                )
+
+                preference(
+                    key = "backup",
+                    title = { Text(context.getString(R.string.backup_setting_title)) },
+                    summary = { Text(context.getString(R.string.backup_setting_summary)) },
+                )
+
+                preference(
+                    key = "restore",
+                    title = { Text(context.getString(R.string.restore_setting_title)) },
+                    summary = { Text(context.getString(R.string.restore_setting_summary)) },
+                )
+
+                preferenceCategory(
                     key = "other",
                     title = { Text("Other") }
                 )

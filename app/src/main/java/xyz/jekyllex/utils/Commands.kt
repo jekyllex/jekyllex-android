@@ -27,6 +27,7 @@ package xyz.jekyllex.utils
 object Commands {
     fun cat(vararg file: String): Array<String> = arrayOf("cat", *file)
     fun rm(vararg files: String): Array<String> = arrayOf("rm", *files)
+    fun zip(vararg command: String): Array<String> = arrayOf("zip", *command)
     fun rmDir(vararg dirs: String): Array<String> = arrayOf("rm", "-rf", *dirs)
     fun mv(src: String, dest: String): Array<String> = arrayOf("mv", src, dest)
     fun stat(vararg command: String): Array<String> = arrayOf("stat", *command)
@@ -34,6 +35,7 @@ object Commands {
     fun touch(vararg command: String): Array<String> = arrayOf("touch", *command)
     fun mkDir(vararg command: String): Array<String> = arrayOf("mkdir", *command)
     fun diskUsage(vararg command: String): Array<String> = arrayOf("du", *command)
+    fun unzip(vararg command: String): Array<String> = arrayOf("unzip", *command)
     fun shell(vararg command: String): Array<String> = arrayOf("/bin/sh", "-c", *command)
 
     fun git(vararg command: String): Array<String> = arrayOf("git", *command)
