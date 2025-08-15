@@ -42,8 +42,8 @@ import xyz.jekyllex.utils.Constants.editorExtensions
 import xyz.jekyllex.ui.activities.editor.EditorActivity
 import xyz.jekyllex.utils.Constants.COMMAND_NOT_ALLOWED
 
-fun Array<String>.isDenied(): Boolean = Constants.denyList.any { this.getOrNull(0) == it }
 fun Array<String>.drop(n: Int): Array<String> = this.toList().drop(n).toTypedArray()
+fun Array<String>.isDenied(): Boolean = Constants.denyList.any { this.getOrNull(0) == it }
 
 fun Array<String>.transform(context: Context): Array<String> = this.let {
     val settings = Settings(context)

@@ -130,6 +130,15 @@
 
     <string name="theme_setting_title">Color theme</string>
 
+    <string name="backup_setting_title">Backup</string>
+    <string name="backup_setting_summary">
+        Backup all projects to a zip file and store it at an external location.
+    </string>
+    <string name="restore_setting_title">Restore</string>
+    <string name="restore_setting_summary">
+        Choose a zip file to restore projects from. Wipes all existing data.
+    </string>
+
     <string name="docs">Docs</string>
     <string name="report">Report</string>
     <string name="licenses">Licenses</string>

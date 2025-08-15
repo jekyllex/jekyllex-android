@@ -25,7 +25,7 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
 }
 
-val bootstrapVersion = "v0.1.3"
+val bootstrapVersion = "v0.1.4"
 
 android {
     namespace = "xyz.jekyllex"
@@ -166,7 +166,7 @@ fun getGitHash(): String {
     return "\"" + stdout.toString().trim() + "\""
 }
 
-fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
+fun downloadBootstrap(arch: String, expectedChecksum: String) {
     val buffer = ByteArray(8192)
     val digest = MessageDigest.getInstance("SHA-256")
     val zipDownloadFile = File(project.rootDir, "bootstraps/ruby-${arch}.zip")
@@ -182,12 +182,13 @@ fun downloadBootstrap(arch: String, expectedChecksum: String, version: String) {
         val checksum = BigInteger(1, digest.digest()).toString(16)
         if (checksum != expectedChecksum) {
             logger.quiet("Deleting old local file with wrong hash: ${zipDownloadFile.absolutePath}")
+            File("${zipDownloadFile.absolutePath}.done").delete()
             zipDownloadFile.delete()
         }
     }
 
     if (!zipDownloadFile.exists()) {
-        val remoteUrl = "https://dl.jekyllex.xyz/ruby/$version/$arch.zip"
+        val remoteUrl = "https://dl.jekyllex.xyz/ruby/$bootstrapVersion/$arch.zip"
         logger.quiet("Downloading $remoteUrl ...")
 
         zipDownloadFile.parentFile.mkdirs()
@@ -317,13 +318,13 @@ tasks {
     val downloadBootstraps by registering {
         doFirst {
             val map = mapOf(
-                "aarch64" to "266b081bb64e33541808e2f627e4667ed8f8ef10a0edbfe736c3338c97930e9b",
-                "arm" to "57f7c270d6203323af3d30f626b1c41a1d59d0e6a6cb0b57a5e908c7a6349c35",
-                "i686" to "8353c79ca752d754f00da4cd33b6245c253d79a852c8066a1e0809684d178539",
-                "x86_64" to "46556fa1b3b690d0c105f7c110f2dd5d57d9a3ab0c29eab2fa3a963d2db41aea"
+                "aarch64" to "6dfa705dcff38f0ade4f5ac202c49a14b863d25fbf994f71ef21a9ad7eb2a9ce",
+                "arm" to "8874edb85cb3a9d7ee49c6670fa10e30340eddb02a551769c78349697d4cc962",
+                "i686" to "c4531c473b084ccef0f367cb19dd633636aacf55043f5031d6b0e3c0814dbcfe",
+                "x86_64" to "d1f28ff6a08c128974a6d777af06c4603a07c129d877d608072c4596bef6cee8"
             )
 
-            map.forEach { (arch, checksum) -> downloadBootstrap(arch, checksum, bootstrapVersion) }
+            map.forEach { (arch, checksum) -> downloadBootstrap(arch, checksum) }
         }
     }
 }

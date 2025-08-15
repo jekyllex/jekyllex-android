@@ -30,7 +30,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -45,6 +47,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -54,6 +59,10 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import me.zhanghai.compose.preference.footerPreference
 import me.zhanghai.compose.preference.listPreference
@@ -72,6 +81,13 @@ import xyz.jekyllex.utils.Setting.*
 import xyz.jekyllex.utils.trimQuotes
 import xyz.jekyllex.BuildConfig
 import xyz.jekyllex.ui.activities.viewer.WebPageViewer
+import xyz.jekyllex.ui.components.GenericDialog
+import xyz.jekyllex.ui.components.ProgressDialog
+import xyz.jekyllex.utils.Commands.rm
+import xyz.jekyllex.utils.Commands.rmDir
+import xyz.jekyllex.utils.Commands.shell
+import xyz.jekyllex.utils.Commands.unzip
+import xyz.jekyllex.utils.Commands.zip
 import xyz.jekyllex.utils.Constants.DOCS
 import xyz.jekyllex.utils.Constants.TERMS
 import xyz.jekyllex.utils.Constants.PRIVACY
@@ -80,8 +96,15 @@ import xyz.jekyllex.utils.Constants.themeMap
 import xyz.jekyllex.utils.Constants.ISSUES_URL
 import xyz.jekyllex.utils.Constants.PAT_SETTINGS_URL
 import xyz.jekyllex.utils.Constants.EDITOR_PREVIEWS_URL
+import xyz.jekyllex.utils.Constants.HOME_DIR
+import xyz.jekyllex.utils.Constants.TMP_DIR
+import xyz.jekyllex.utils.mergeCommands
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 
 class SettingsActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -95,8 +118,107 @@ class SettingsActivity : ComponentActivity() {
 
 @Composable
 fun SettingsView() {
+    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current as Activity
     val clipboardManager = LocalClipboardManager.current
+    val processing = remember { mutableStateOf(false) }
+    val restoreConfirmation = remember { mutableStateOf<Uri?>(null) }
+
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            restoreConfirmation.value = uri
+        } ?: run {
+            Toast.makeText(context, "No file selected!", Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+    val saver = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val uri = result.data?.data
+        val file = File(HOME_DIR, "backup.zip")
+        uri?.let {
+            coroutineScope.launch(Dispatchers.IO) {
+                try {
+                    context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        FileInputStream(file).use { inputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Backup saved!", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Failed to save backup file!", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }
+                file.delete()
+            }
+        } ?: run {
+            file.delete()
+            Toast.makeText(context, "No location selected!", Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+    if (processing.value) {
+        ProgressDialog(dialogTitle = "Processing...")
+    }
+
+    if (restoreConfirmation.value != null) {
+        GenericDialog(
+            isCancellable = false,
+            dialogTitle = "Restore data",
+            dialogText = "Are you sure you want to restore data from the selected file?\n\n" +
+                    "This will overwrite all existing data.",
+            onDismissRequest = {
+                restoreConfirmation.value = null
+            },
+            onConfirmation = confirmation@{
+                val uri = restoreConfirmation.value ?: return@confirmation
+                val file = File(TMP_DIR, "backup-${System.currentTimeMillis()}.zip")
+                restoreConfirmation.value = null
+                coroutineScope.launch(Dispatchers.IO) {
+                    processing.value = true
+                    try {
+                        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                            FileOutputStream(file).use { outputStream ->
+                                inputStream.copyTo(outputStream)
+                            }
+                        }
+                        NativeUtils.exec(
+                            shell(
+                                mergeCommands(
+                                    rmDir("*", ".*"),
+                                    unzip(file.absolutePath, "-d", "$HOME_DIR/")
+                                )
+                            )
+                        )
+                        processing.value = false
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                context,
+                                "Backup restored successfully!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        withContext(Dispatchers.Main) {
+                            processing.value = false
+                            Toast.makeText(context, "Failed to fetch backup file!", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+                    file.delete()
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -382,6 +504,47 @@ fun SettingsView() {
                         Text(context.getString(R.string.jekyll_flags_summary))
                         it.takeIf { it.isNotBlank() }?.let { flag -> Text(flag) }
                     },
+                )
+
+                preferenceCategory(
+                    key = "advanced",
+                    title = { Text("Advanced") },
+                )
+
+                preference(
+                    key = "backup",
+                    onClick = {
+                        processing.value = true
+                        NativeUtils.exec(
+                            shell(
+                                mergeCommands(
+                                    rm("backup.zip"),
+                                    zip("-r", "backup.zip", ".", "-x", "'.bundle/*'")
+                                ),
+                            ),
+                            CoroutineScope(Dispatchers.IO)
+                        ) {
+                            processing.value = false
+                            withContext(Dispatchers.Main) {
+                                saver.launch(
+                                    Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                                        type = "application/zip"
+                                        addCategory(Intent.CATEGORY_OPENABLE)
+                                        putExtra(Intent.EXTRA_TITLE, "backup.zip")
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    title = { Text(context.getString(R.string.backup_setting_title)) },
+                    summary = { Text(context.getString(R.string.backup_setting_summary)) },
+                )
+
+                preference(
+                    key = "restore",
+                    onClick = { picker.launch("application/zip") },
+                    title = { Text(context.getString(R.string.restore_setting_title)) },
+                    summary = { Text(context.getString(R.string.restore_setting_summary)) },
                 )
 
                 preferenceCategory(

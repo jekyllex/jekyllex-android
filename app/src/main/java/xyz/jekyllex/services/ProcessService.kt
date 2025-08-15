@@ -154,11 +154,10 @@ class ProcessService : Service() {
     fun cd(dir: String) {
         val defaultSession = _sessions.value.first()
         val currentDir = defaultSession.dir.value
-        defaultSession.cd(dir)
-        if (isRunning) return
-        defaultSession.appendLog(
+        if (!isRunning) defaultSession.appendLog(
             "${currentDir.formatDir("/")} $ cd ${dir.formatDir("/")}"
         )
+        defaultSession.cd(dir)
     }
 
     fun exec(cmd: Array<String>, dir: String? = null, callBack: () -> Unit = {}) {
