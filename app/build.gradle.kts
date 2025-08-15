@@ -116,6 +116,11 @@ android {
         }
     }
 
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     project.tasks.preBuild.dependsOn("setupBootstraps")
 
     applicationVariants.configureEach {
