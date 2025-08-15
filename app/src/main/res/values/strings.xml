@@ -136,7 +136,7 @@
     </string>
     <string name="restore_setting_title">Restore</string>
     <string name="restore_setting_summary">
-        Choose a zip file to restore data from. Wipes all existing projects.
+        Choose a zip file to restore projects from. Wipes all existing data.
     </string>
 
     <string name="docs">Docs</string>
