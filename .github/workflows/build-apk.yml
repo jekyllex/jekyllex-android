@@ -63,8 +63,8 @@ jobs:
             ./gradlew assembleGithubRelease
             mv app/build/outputs/apk/githubRelease/*.apk .
           elif [ "$BUILD_TYPE" = "staging" ]; then
-            ./gradlew assembleDebug
-            mv app/build/outputs/apk/debug/*-arm64*.apk .
+            ./gradlew assembleDebug -PtargetABI=arm64-v8a
+            mv app/build/outputs/apk/debug/*.apk .
           elif [ "$BUILD_TYPE" = "debug" ]; then
             ./gradlew assembleDebug
             mv app/build/outputs/apk/debug/*.apk .

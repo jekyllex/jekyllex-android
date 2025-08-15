@@ -26,6 +26,8 @@ plugins {
 }
 
 val bootstrapVersion = "v0.1.4"
+val targetABI = properties["targetABI"] as? String
+val abiCodes = mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86" to 3, "x86_64" to 4)
 
 android {
     namespace = "xyz.jekyllex"
@@ -60,10 +62,13 @@ android {
     splits {
         abi {
             isEnable = true
-            isUniversalApk = true
-
             reset()
-            include("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+            if (!targetABI.isNullOrEmpty()) {
+                include(targetABI)
+            } else {
+                isUniversalApk = true
+                include("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+            }
         }
     }
 
@@ -111,21 +116,23 @@ android {
         }
     }
 
-    project.tasks.preBuild.dependsOn("setupBootstraps")
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
 
-    val abiCodes = mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86" to 3, "x86_64" to 4)
+    project.tasks.preBuild.dependsOn("setupBootstraps")
 
     applicationVariants.configureEach {
         outputs.configureEach {
             this as ApkVariantOutputImpl
             val abi = filters.find { it.filterType == "ABI" }
             val abiCode = abi?.let { abiCodes[it.identifier] }
-            val abiName = abi?.let { "-" + abi.identifier } ?: ""
+            val abiName =  "-" + (abi?.let { abi.identifier } ?: "universal")
             val isRelease = buildType.name.lowercase().contains("release")
-            versionCodeOverride = abiCode?.let { it * 1000 + versionCode } ?: versionCode
+            versionCodeOverride = versionCode * 10 + (abiCode ?: 0)
             outputFileName = "${rootProject.name.lowercase()}${
-                if (isRelease) "-"
-                else "-${buildType.name}-"
+                if (isRelease) "-" else "-${buildType.name}-"
             }${defaultConfig.versionName}$abiName.apk"
         }
     }
