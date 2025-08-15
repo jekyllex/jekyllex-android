@@ -1,0 +1,4 @@
+- Publish split APKs.
+- Backup & Restore features in Settings.
+- Improve navigation in terminal sessions.
+- A few other bug fixes & improvements.

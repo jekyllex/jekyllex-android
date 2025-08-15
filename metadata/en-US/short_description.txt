@@ -1,1 +1,1 @@
-The mobile IDE for Jekyll to build, edit, preview, and publish Jekyll sites.
+The mobile IDE to create, build, edit, preview, and publish Jekyll sites.

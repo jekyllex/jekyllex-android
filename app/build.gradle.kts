@@ -36,8 +36,8 @@ android {
         applicationId = "xyz.jekyllex"
         minSdk = 24
         targetSdk = 34
-        versionCode = 4
-        versionName = "v0.2.2"
+        versionCode = 5
+        versionName = "v0.2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
