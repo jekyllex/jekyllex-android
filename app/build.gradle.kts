@@ -300,6 +300,13 @@ fun setupBootstrap(arch: String) {
 }
 
 tasks {
+    val archMap = mapOf(
+        "x86" to "i686",
+        "x86_64" to "x86_64",
+        "armeabi-v7a" to "arm",
+        "arm64-v8a" to "aarch64"
+    )
+
     val setupBootstraps by registering {
         if (gradle.startParameter.taskNames.any { it.contains("assembleRelease") }) {
             dependsOn("buildBootstraps")
@@ -308,8 +315,11 @@ tasks {
         }
 
         doFirst {
-            val map = listOf("aarch64", "i686", "arm", "x86_64")
-            map.forEach { arch -> setupBootstrap(arch) }
+            if (targetABI.isNullOrEmpty()) {
+                archMap.values.forEach { arch -> setupBootstrap(arch) }
+            } else {
+                setupBootstrap(archMap[targetABI]!!)
+            }
         }
     }
 
@@ -319,7 +329,8 @@ tasks {
         errorOutput = System.err
 
         doFirst { delete("srcLib/tmp") }
-        commandLine("bash", "build.sh")
+        if (targetABI.isNullOrEmpty()) commandLine("bash", "build.sh")
+        else commandLine("bash", "build.sh", "-a", archMap[targetABI])
     }
 
     val downloadBootstraps by registering {
@@ -331,7 +342,12 @@ tasks {
                 "x86_64" to "d1f28ff6a08c128974a6d777af06c4603a07c129d877d608072c4596bef6cee8"
             )
 
-            map.forEach { (arch, checksum) -> downloadBootstrap(arch, checksum) }
+            if (targetABI.isNullOrEmpty()) {
+                map.forEach { (arch, checksum) -> downloadBootstrap(arch, checksum) }
+            } else {
+                val arch = archMap[targetABI]
+                downloadBootstrap(arch!!, map[arch]!!)
+            }
         }
     }
 }

@@ -15,10 +15,33 @@ if [[ -z "$ANDROID_HOME" || -z "$NDK" ]]; then
   ./scripts/setup-android-sdk.sh
 fi
 
-# Build bootstraps for each architecture
-./scripts/build-bootstraps.sh --android10 &> $HOME/tmp/build.log
+# Evaluate arguments
+TARGET=""
 
-# Store bootstraps
+while getopts ":a:" opt; do
+  case $opt in
+    a)
+      TARGET="$OPTARG"
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+# Build bootstrap(s)
+if [ -n "$TARGET" ]; then
+  ./scripts/build-bootstraps.sh --android10 --architectures "$TARGET" &> $HOME/tmp/build.log
+else
+  ./scripts/build-bootstraps.sh --android10 &> $HOME/tmp/build.log
+fi
+
+# Store bootstrap(s)
 cd "$dir"
 mkdir -p ../../bootstraps
 mv /home/builder/*.zip ../../bootstraps
