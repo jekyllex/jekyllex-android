@@ -81,8 +81,8 @@ import xyz.jekyllex.utils.Setting.*
 import xyz.jekyllex.utils.trimQuotes
 import xyz.jekyllex.BuildConfig
 import xyz.jekyllex.ui.activities.viewer.WebPageViewer
+import xyz.jekyllex.ui.components.GenericDialog
 import xyz.jekyllex.ui.components.ProgressDialog
-import xyz.jekyllex.utils.Commands.mkDir
 import xyz.jekyllex.utils.Commands.rm
 import xyz.jekyllex.utils.Commands.rmDir
 import xyz.jekyllex.utils.Commands.shell
@@ -122,45 +122,11 @@ fun SettingsView() {
     val context = LocalContext.current as Activity
     val clipboardManager = LocalClipboardManager.current
     val processing = remember { mutableStateOf(false) }
+    val restoreConfirmation = remember { mutableStateOf<Uri?>(null) }
+
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        val file = File(TMP_DIR, "backup-${System.currentTimeMillis()}.zip")
-        if (file.exists()) file.delete()
         uri?.let {
-            processing.value = true
-            coroutineScope.launch(Dispatchers.IO) {
-                try {
-                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                        FileOutputStream(file).use { outputStream ->
-                            inputStream.copyTo(outputStream)
-                        }
-                    }
-                    NativeUtils.exec(
-                        shell(
-                            mergeCommands(
-                                rmDir(HOME_DIR),
-                                unzip(file.absolutePath, "-d", "$HOME_DIR/")
-                            )
-                        ),
-                    )
-                    file.delete()
-                    processing.value = false
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            context,
-                            "Backup restored successfully!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                } catch (e: Exception) {
-                    file.delete()
-                    e.printStackTrace()
-                    withContext(Dispatchers.Main) {
-                        processing.value = false
-                        Toast.makeText(context, "Failed to fetch backup file!", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                }
-            }
+            restoreConfirmation.value = uri
         } ?: run {
             Toast.makeText(context, "No file selected!", Toast.LENGTH_SHORT)
                 .show()
@@ -201,6 +167,57 @@ fun SettingsView() {
 
     if (processing.value) {
         ProgressDialog(dialogTitle = "Processing...")
+    }
+
+    if (restoreConfirmation.value != null) {
+        GenericDialog(
+            isCancellable = false,
+            dialogTitle = "Restore data",
+            dialogText = "Are you sure you want to restore data from the selected file?\n\n" +
+                    "This will overwrite all existing data.",
+            onDismissRequest = {
+                restoreConfirmation.value = null
+            },
+            onConfirmation = confirmation@{
+                val uri = restoreConfirmation.value ?: return@confirmation
+                val file = File(TMP_DIR, "backup-${System.currentTimeMillis()}.zip")
+                restoreConfirmation.value = null
+                coroutineScope.launch(Dispatchers.IO) {
+                    processing.value = true
+                    try {
+                        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                            FileOutputStream(file).use { outputStream ->
+                                inputStream.copyTo(outputStream)
+                            }
+                        }
+                        NativeUtils.exec(
+                            shell(
+                                mergeCommands(
+                                    rmDir("*", ".*"),
+                                    unzip(file.absolutePath, "-d", "$HOME_DIR/")
+                                )
+                            )
+                        )
+                        processing.value = false
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                context,
+                                "Backup restored successfully!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        withContext(Dispatchers.Main) {
+                            processing.value = false
+                            Toast.makeText(context, "Failed to fetch backup file!", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+                    file.delete()
+                }
+            }
+        )
     }
 
     Scaffold(
