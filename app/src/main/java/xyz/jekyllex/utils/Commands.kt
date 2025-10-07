@@ -46,7 +46,7 @@ object Commands {
     fun jekyll(vararg command: String): Array<String> = arrayOf("jekyll", *command)
 
     fun getFromYAML(file: String, vararg properties: String): Array<String> = ruby(
-        "-e", "require 'safe_yaml';_=SafeYAML.load_file('${file}');p ${
+        "-e", "require 'safe_yaml';_=SafeYAML.load_file('${file}');puts ${
             properties.joinToString(", ") { "_['${it}']" }
         };"
     )

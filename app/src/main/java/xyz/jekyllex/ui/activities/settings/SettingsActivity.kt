@@ -78,7 +78,6 @@ import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.Commands.git
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting.*
-import xyz.jekyllex.utils.trimQuotes
 import xyz.jekyllex.BuildConfig
 import xyz.jekyllex.ui.activities.viewer.WebPageViewer
 import xyz.jekyllex.ui.components.GenericDialog
@@ -371,7 +370,7 @@ fun SettingsView() {
                     valueToText = {
                         NativeUtils.exec(
                             git("config", "--global", "user.name")
-                        ).trimQuotes()
+                        )
                     },
                 )
 
@@ -392,7 +391,7 @@ fun SettingsView() {
                     valueToText = {
                         NativeUtils.exec(
                             git("config", "--global", "user.email")
-                        ).trimQuotes()
+                        )
                     },
                 )
 

@@ -47,11 +47,6 @@ fun String.getExtension(): String = this
     }
     .let { extensionAliases[it] ?: it }
 
-fun String.trimQuotes(): String =
-    if (this.length < 2) this
-    else if (this[0] == '"' && this[this.length - 1] == '"') this.drop(1).dropLast(1)
-    else this
-
 fun String.toBase64(): String = Base64.encodeToString(
     this.toByteArray(charset("UTF-8")),
     Base64.NO_WRAP
@@ -78,7 +73,7 @@ fun String.getFilesInDir(dir: String): List<String> = this.split("\n").map {
     }.filter { it.isNotBlank() }
 
 fun String.parseOutput() = this.split("\n").map { prop ->
-    prop.trimQuotes().replace("nil", "").ifBlank { null }
+    prop.replace("nil", "").ifBlank { null }
 }
 
 fun String.toDate(): String {
