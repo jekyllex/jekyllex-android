@@ -25,6 +25,12 @@
 package xyz.jekyllex.ui.components
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -33,9 +39,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -53,6 +61,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -200,7 +209,7 @@ fun TerminalSheet(
                     Text(text = "Clear")
                 }
             }
-            LazyRow (
+            LazyRow(
                 state = sessionsListState,
                 modifier = Modifier.padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -283,17 +292,52 @@ fun TerminalSheet(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    AnimatedContent(
+                        label = "Description animation",
+                        targetState = projectCommands,
+                        transitionSpec = {
+                            fadeIn() + slideInVertically(animationSpec = tween(400)) togetherWith
+                                    fadeOut(animationSpec = tween(200))
+                        }
+                    ) { commands ->
+                        if (commands.isEmpty()) return@AnimatedContent
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+                        ) {
+                            items(commands.size) { i ->
+                                OutlinedButton(
+                                    onClick = { text = commands[i].command },
+                                    border = BorderStroke(1.dp, Color.LightGray),
+                                    contentPadding = PaddingValues(horizontal = 6.dp),
+                                    modifier = Modifier.height(24.dp).widthIn(max = 150.dp),
+                                ) {
+                                    Text(
+                                        color = Color.DarkGray,
+                                        overflow = TextOverflow.Ellipsis,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        text = commands[i].name.ifBlank { commands[i].command },
+                                        modifier = Modifier.padding(
+                                            horizontal = 4.dp,
+                                            vertical = 2.dp
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                    }
                     Text(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         text = sessionDir.formatDir("/"),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                     )
-                    Row(modifier = Modifier.padding(top = 4.dp)) {
+                    Row {
                         BasicTextField(
                             value = text,
                             singleLine = true,
                             onValueChange = { text = it },
+                            textStyle = MaterialTheme.typography.bodySmall,
                             keyboardActions = KeyboardActions(onDone = { run() }),
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             modifier = Modifier.weight(1.0f).align(Alignment.CenterVertically),
