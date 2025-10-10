@@ -77,13 +77,19 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import xyz.jekyllex.models.Command
 import xyz.jekyllex.services.SessionManager
+import xyz.jekyllex.utils.Commands.getProjectCommands
+import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.formatDir
+import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.toCommand
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -101,6 +107,7 @@ fun TerminalSheet(
 
     var text by rememberSaveable { mutableStateOf("") }
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var projectCommands by rememberSaveable { mutableStateOf<List<Command>>(emptyList()) }
 
     val sessions = sessionManager.sessions.collectAsState().value
     val activeSession = sessionManager.activeSession.collectAsState().value
@@ -128,6 +135,17 @@ fun TerminalSheet(
 
     LaunchedEffect(activeSession) {
         sessionsListState.animateScrollToItem(activeSession)
+    }
+
+    LaunchedEffect(activeSession, sessions.size, state.isVisible) {
+        projectCommands = emptyList()
+        sessionDir.getProjectDir()?.let { dir ->
+            NativeUtils.exec(getProjectCommands(), CoroutineScope(Dispatchers.IO), dir) { out ->
+                out.split("\u001F").takeIf { it.size > 1 && it.size % 2 == 0 }
+                    ?.let { it.chunked(2).map { (name, cmd) -> Command(name, cmd) } }
+                    ?.let { projectCommands = it }
+            }
+        }
     }
 
     fun run() {
