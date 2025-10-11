@@ -146,13 +146,14 @@ fun TerminalSheet(
         sessionsListState.animateScrollToItem(activeSession)
     }
 
-    LaunchedEffect(activeSession, sessionDir, state.isVisible) {
+    LaunchedEffect(sessionDir, state.isVisible) {
         sessionDir.getProjectDir()?.let { dir ->
             if (template?.project == dir) return@LaunchedEffect
             NativeUtils.exec(getProjectCommands(), CoroutineScope(Dispatchers.IO), dir) { out ->
                 out.split("\u001F").takeIf { it.size > 1 && it.size % 2 == 0 }
                     ?.let { it.chunked(2).map { (name, cmd) -> Template.Command(name, cmd) } }
                     ?.let { template = Template(dir, it) }
+                    ?: run { template = null }
             }
         } ?: run { template = null }
     }
