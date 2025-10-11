@@ -75,6 +75,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -85,7 +86,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -123,7 +127,7 @@ fun TerminalSheet(
     val enableTemplates = settings.get<Boolean>(Setting.COMMAND_TEMPLATES)
     val disableAnimations = settings.get<Boolean>(Setting.REDUCE_ANIMATIONS)
 
-    var text by rememberSaveable { mutableStateOf("") }
+    var input by remember { mutableStateOf(TextFieldValue("")) }
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var template by rememberSaveable { mutableStateOf<Template?>(null) }
 
@@ -169,7 +173,7 @@ fun TerminalSheet(
     }
 
     fun run() {
-        if (text.isBlank()) return
+        if (input.text.isBlank()) return
         if (sessionManager.isRunning) {
             Toast.makeText(
                 context,
@@ -178,9 +182,9 @@ fun TerminalSheet(
             ).show()
             return
         }
-        text.split("\n")
+        input.text.split("\n")
             .map { it.toCommand() }.filter { it.isNotEmpty() }
-            .toTypedArray().let { sessionManager.exec(it); text = "" }
+            .toTypedArray().let { sessionManager.exec(it); input = TextFieldValue("") }
     }
 
     ModalBottomSheet(
@@ -284,7 +288,7 @@ fun TerminalSheet(
             LazyColumn(
                 state = logsListState,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).let {
-                    if (logs.size > 25) it.weight(1.0f) else it
+                    if (logs.size > 20) it.weight(1.0f) else it
                 }
             ) {
                 items(logs.size) {
@@ -329,9 +333,15 @@ fun TerminalSheet(
                             items(template.commands.size) { i ->
                                 OutlinedButton(
                                     border = BorderStroke(1.dp, Color.LightGray),
-                                    onClick = { text = template.commands[i].command },
                                     contentPadding = PaddingValues(horizontal = 6.dp),
                                     modifier = Modifier.height(24.dp).widthIn(max = 150.dp),
+                                    onClick = {
+                                        val text = template.commands[i].command
+                                        input = TextFieldValue(
+                                            text = text,
+                                            selection = TextRange(text.length - 1)
+                                        )
+                                    },
                                 ) {
                                     Text(
                                         color = Color.DarkGray,
@@ -355,16 +365,19 @@ fun TerminalSheet(
                     )
                     Row {
                         BasicTextField(
-                            value = text,
                             maxLines = 6,
-                            onValueChange = { text = it },
+                            value = input,
+                            onValueChange = { input = it },
                             textStyle = MaterialTheme.typography.bodySmall,
                             keyboardActions = KeyboardActions(onDone = { run() }),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             modifier = Modifier.weight(1.0f).align(Alignment.CenterVertically),
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Done,
+                                keyboardType = KeyboardType.Password
+                            ),
                             decorationBox = { innerTextField ->
                                 innerTextField()
-                                if (text.isEmpty()) {
+                                if (input.text.isEmpty()) {
                                     Text(
                                         color = Color.Gray,
                                         text = "Enter a command",
@@ -376,8 +389,8 @@ fun TerminalSheet(
                         TextButton(
                             onClick = { run() },
                             contentPadding = PaddingValues(0.dp),
-                            enabled = text.isNotBlank() && !sessionManager.isRunning,
-                            modifier = Modifier.size(60.dp, 30.dp).padding(start = 8.dp)
+                            modifier = Modifier.size(60.dp, 30.dp).padding(start = 8.dp),
+                            enabled = input.text.isNotBlank() && !sessionManager.isRunning
                         ) { Text(text = "Run") }
                     }
                 }
