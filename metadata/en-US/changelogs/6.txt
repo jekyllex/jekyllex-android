@@ -1,0 +1,4 @@
+- Add a setting to enable command templates for projects.
+- Save frequently used commands in _config.yml files.
+- Saved commands appear in the terminal for easy access.
+- Bug fixes & improvements.
