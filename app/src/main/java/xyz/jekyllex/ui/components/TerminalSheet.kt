@@ -167,8 +167,9 @@ fun TerminalSheet(
             ).show()
             return
         }
-        sessionManager.exec(text.toCommand())
-        text = ""
+        text.split("\n")
+            .map { it.toCommand() }.filter { it.isNotEmpty() }
+            .toTypedArray().let { sessionManager.exec(it); text = "" }
     }
 
     ModalBottomSheet(
@@ -335,7 +336,7 @@ fun TerminalSheet(
                     Row {
                         BasicTextField(
                             value = text,
-                            singleLine = true,
+                            maxLines = 6,
                             onValueChange = { text = it },
                             textStyle = MaterialTheme.typography.bodySmall,
                             keyboardActions = KeyboardActions(onDone = { run() }),

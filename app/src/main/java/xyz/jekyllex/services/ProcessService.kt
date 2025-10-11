@@ -138,11 +138,11 @@ class ProcessService : Service() {
                 _activeSession.value = index
             }
 
-            override fun exec(cmd: Array<String>) {
-                val command = cmd.let {
+            override fun exec(cmd: Array<Array<String>>) {
+                val command = cmd.map {
                     if (it[0].contains("/bin")) it
                     else it.transform(this@ProcessService)
-                }
+                }.toTypedArray()
 
                 _sessions.value.let { it[_activeSession.value] }.exec(command)
             }
@@ -255,7 +255,7 @@ interface SessionManager {
     fun clearLogs()
     fun killProcess()
     fun createSession()
-    fun exec(cmd: Array<String>)
     fun deleteSession(index: Int)
     fun setActiveSession(index: Int)
+    fun exec(cmd: Array<Array<String>>)
 }
