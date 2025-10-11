@@ -26,6 +26,9 @@ package xyz.jekyllex.ui.components
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -97,6 +100,8 @@ import xyz.jekyllex.models.Template
 import xyz.jekyllex.services.SessionManager
 import xyz.jekyllex.utils.Commands.getProjectCommands
 import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.Setting
+import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.toCommand
@@ -113,6 +118,10 @@ fun TerminalSheet(
     val coroutineScope = rememberCoroutineScope()
     val sessionsListState = rememberLazyListState()
     val clipboardManager = LocalClipboardManager.current
+
+    val settings = Settings(context)
+    val enableTemplates = settings.get<Boolean>(Setting.COMMAND_TEMPLATES)
+    val disableAnimations = settings.get<Boolean>(Setting.REDUCE_ANIMATIONS)
 
     var text by rememberSaveable { mutableStateOf("") }
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -147,6 +156,7 @@ fun TerminalSheet(
     }
 
     LaunchedEffect(sessionDir, state.isVisible) {
+        if (!enableTemplates) return@LaunchedEffect
         sessionDir.getProjectDir()?.let { dir ->
             if (template?.project == dir) return@LaunchedEffect
             NativeUtils.exec(getProjectCommands(), CoroutineScope(Dispatchers.IO), dir) { out ->
@@ -295,11 +305,20 @@ fun TerminalSheet(
                 )
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     AnimatedContent(
-                        label = "Description animation",
+                        label = "Command templates",
                         targetState = template,
                         transitionSpec = {
-                            fadeIn() + slideInVertically(animationSpec = tween(400)) togetherWith
-                                    fadeOut(animationSpec = tween(200))
+                            if (disableAnimations) {
+                                ContentTransform(
+                                    sizeTransform = null,
+                                    initialContentExit = ExitTransition.None,
+                                    targetContentEnter = EnterTransition.None
+                                )
+                            }
+                            else {
+                                fadeIn() + slideInVertically(animationSpec = tween(400)) togetherWith
+                                        fadeOut(animationSpec = tween(200))
+                            }
                         }
                     ) { template ->
                         if (template == null) return@AnimatedContent

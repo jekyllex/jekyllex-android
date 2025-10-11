@@ -57,6 +57,11 @@
         Try to trim command outputs to avoid excessive log sizes in the running session.
     </string>
 
+    <string name="command_templates_title">Command templates</string>
+    <string name="command_templates_summary">
+        Parse command templates from the _config.yml file.
+    </string>
+
     <string name="reduce_animations_title">Reduce animations</string>
     <string name="reduce_animations_summary">
         Skip rendering the file/folder details on the home page.
