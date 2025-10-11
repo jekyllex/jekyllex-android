@@ -270,6 +270,11 @@ fun SettingsView() {
                     summary = { Text(context.getString(R.string.reduce_animations_summary)) },
                 )
 
+                preferenceCategory(
+                    key = "terminal_settings",
+                    title = { Text("Terminal") }
+                )
+
                 switchPreference(
                     key = TRIM_LOGS.key,
                     defaultValue = TRIM_LOGS.defaultValue.get(),
@@ -278,10 +283,10 @@ fun SettingsView() {
                 )
 
                 switchPreference(
-                    key = GUESS_URLS.key,
-                    defaultValue = GUESS_URLS.defaultValue.get(),
-                    title = { Text(context.getString(R.string.guess_urls_title)) },
-                    summary = { Text(context.getString(R.string.guess_urls_summary)) },
+                    key = COMMAND_TEMPLATES.key,
+                    defaultValue = COMMAND_TEMPLATES.defaultValue.get(),
+                    title = { Text(context.getString(R.string.command_templates_title)) },
+                    summary = { Text(context.getString(R.string.command_templates_summary)) },
                 )
 
                 preferenceCategory(
@@ -314,6 +319,28 @@ fun SettingsView() {
                     },
                 )
 
+                sliderPreference(
+                    valueSteps = 10,
+                    defaultValue = DEBOUNCE_DELAY.defaultValue.get(),
+                    valueRange = .25f..3f,
+                    key = DEBOUNCE_DELAY.key,
+                    valueText = { Text(text = "%.2fs".format(it)) },
+                    title = { Text(context.getString(R.string.debounce_setting_title)) },
+                    summary = { Text(context.getString(R.string.debounce_setting_summary)) },
+                )
+
+                preferenceCategory(
+                    key = "preview_settings",
+                    title = { Text("Preview") }
+                )
+
+                switchPreference(
+                    key = GUESS_URLS.key,
+                    defaultValue = GUESS_URLS.defaultValue.get(),
+                    title = { Text(context.getString(R.string.guess_urls_title)) },
+                    summary = { Text(context.getString(R.string.guess_urls_summary)) },
+                )
+
                 textFieldPreference(
                     key = PREVIEW_PORT.key,
                     textToValue = {
@@ -336,16 +363,6 @@ fun SettingsView() {
                         Text(context.getString(R.string.preview_port_summary))
                         Text(it.toString())
                     },
-                )
-
-                sliderPreference(
-                    valueSteps = 10,
-                    defaultValue = DEBOUNCE_DELAY.defaultValue.get(),
-                    valueRange = .25f..3f,
-                    key = DEBOUNCE_DELAY.key,
-                    valueText = { Text(text = "%.2fs".format(it)) },
-                    title = { Text(context.getString(R.string.debounce_setting_title)) },
-                    summary = { Text(context.getString(R.string.debounce_setting_summary)) },
                 )
 
                 preferenceCategory(

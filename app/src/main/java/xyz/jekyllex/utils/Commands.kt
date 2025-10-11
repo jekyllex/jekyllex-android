@@ -51,6 +51,13 @@ object Commands {
         };"
     )
 
+    fun getProjectCommands(): Array<String> = ruby(
+        "-e", "require 'safe_yaml';print SafeYAML.load_file('_config.yml')" +
+                "['jekyllex']['commands'].flat_map { |c| " +
+                    "[c['name'], c['command']]" +
+                "}.join('\u001F');"
+    )
+
     fun guessDestinationUrl(file: String) = ruby(
         "-e", "require 'jekyll';" +
                 "Jekyll.logger.log_level=:error;" +

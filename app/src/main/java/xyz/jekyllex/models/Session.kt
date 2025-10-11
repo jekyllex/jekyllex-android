@@ -55,12 +55,13 @@ data class Session(
     private lateinit var process: Process
     private lateinit var reader: BufferedReader
     private val processBuilder = ProcessBuilder()
+    private val queue: MutableList<Array<String>> = mutableListOf()
 
     private var _dir = MutableStateFlow(initialDir ?: HOME_DIR)
     val dir get() = _dir.asStateFlow()
 
     private var _isRunning = mutableStateOf(false)
-    val isRunning get() = _isRunning.value
+    val isRunning get() = _isRunning.value || queue.isNotEmpty()
 
     private val _logs = MutableStateFlow(emptyList<String>())
     val logs get() = _logs.asStateFlow()
@@ -81,6 +82,22 @@ data class Session(
 
     fun setLogTrimming(shouldTrim: Boolean) {
         trimLogs = shouldTrim
+    }
+
+    fun exec(
+        command: Array<Array<String>>,
+        overrideDir: String? = null,
+        callBack: () -> Unit = {}
+    ) {
+        if (isRunning) return
+
+        queue.addAll(command)
+        processQueue(overrideDir, callBack)
+    }
+
+    private fun processQueue(dir: String? = null, callBack: () -> Unit) {
+        if (queue.isEmpty()) { callBack(); return }
+        exec(queue.removeAt(0), dir) { processQueue(dir, callBack) }
     }
 
     fun exec(

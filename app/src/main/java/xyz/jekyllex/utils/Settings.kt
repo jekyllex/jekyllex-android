@@ -71,14 +71,19 @@ sealed class SettingType {
 
 enum class Setting(val key: String, val defaultValue: SettingType) {
     // General
-    TRIM_LOGS("trim_logs", SettingType.BooleanValue(true)),
-    GUESS_URLS("guess_urls", SettingType.BooleanValue(true)),
     REDUCE_ANIMATIONS("reduce_animations", SettingType.BooleanValue(false)),
+
+    // Terminal
+    TRIM_LOGS("trim_logs", SettingType.BooleanValue(true)),
+    COMMAND_TEMPLATES("command_templates", SettingType.BooleanValue(false)),
 
     // Editor
     EDITOR_THEME("editor_theme", SettingType.IntValue(0)),
-    PREVIEW_PORT("default_port", SettingType.IntValue(4000)),
     DEBOUNCE_DELAY("debounce_delay", SettingType.FloatValue(1f)),
+
+    // Preview
+    GUESS_URLS("guess_urls", SettingType.BooleanValue(true)),
+    PREVIEW_PORT("default_port", SettingType.IntValue(4000)),
 
     // Git
     GIT_NAME("git_name", SettingType.StringValue("")),
