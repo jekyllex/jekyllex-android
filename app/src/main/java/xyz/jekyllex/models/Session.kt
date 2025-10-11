@@ -97,8 +97,7 @@ data class Session(
 
     private fun processQueue(dir: String? = null, callBack: () -> Unit) {
         if (queue.isEmpty()) { callBack(); return }
-        val cmd = queue.removeAt(0)
-        exec(cmd, dir) { processQueue(dir, callBack) }
+        exec(queue.removeAt(0), dir) { processQueue(dir, callBack) }
     }
 
     fun exec(
