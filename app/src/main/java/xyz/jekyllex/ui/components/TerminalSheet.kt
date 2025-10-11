@@ -93,7 +93,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import xyz.jekyllex.models.Command
+import xyz.jekyllex.models.Template
 import xyz.jekyllex.services.SessionManager
 import xyz.jekyllex.utils.Commands.getProjectCommands
 import xyz.jekyllex.utils.NativeUtils
@@ -116,7 +116,7 @@ fun TerminalSheet(
 
     var text by rememberSaveable { mutableStateOf("") }
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var projectCommands by rememberSaveable { mutableStateOf<List<Command>>(emptyList()) }
+    var template by rememberSaveable { mutableStateOf<Template?>(null) }
 
     val sessions = sessionManager.sessions.collectAsState().value
     val activeSession = sessionManager.activeSession.collectAsState().value
@@ -146,15 +146,15 @@ fun TerminalSheet(
         sessionsListState.animateScrollToItem(activeSession)
     }
 
-    LaunchedEffect(activeSession, sessions.size, state.isVisible) {
-        projectCommands = emptyList()
+    LaunchedEffect(activeSession, sessionDir, state.isVisible) {
         sessionDir.getProjectDir()?.let { dir ->
+            if (template?.project == dir) return@LaunchedEffect
             NativeUtils.exec(getProjectCommands(), CoroutineScope(Dispatchers.IO), dir) { out ->
                 out.split("\u001F").takeIf { it.size > 1 && it.size % 2 == 0 }
-                    ?.let { it.chunked(2).map { (name, cmd) -> Command(name, cmd) } }
-                    ?.let { projectCommands = it }
+                    ?.let { it.chunked(2).map { (name, cmd) -> Template.Command(name, cmd) } }
+                    ?.let { template = Template(dir, it) }
             }
-        }
+        } ?: run { template = null }
     }
 
     fun run() {
@@ -295,21 +295,21 @@ fun TerminalSheet(
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     AnimatedContent(
                         label = "Description animation",
-                        targetState = projectCommands,
+                        targetState = template,
                         transitionSpec = {
                             fadeIn() + slideInVertically(animationSpec = tween(400)) togetherWith
                                     fadeOut(animationSpec = tween(200))
                         }
-                    ) { commands ->
-                        if (commands.isEmpty()) return@AnimatedContent
+                    ) { template ->
+                        if (template == null) return@AnimatedContent
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
                         ) {
-                            items(commands.size) { i ->
+                            items(template.commands.size) { i ->
                                 OutlinedButton(
-                                    onClick = { text = commands[i].command },
                                     border = BorderStroke(1.dp, Color.LightGray),
+                                    onClick = { text = template.commands[i].command },
                                     contentPadding = PaddingValues(horizontal = 6.dp),
                                     modifier = Modifier.height(24.dp).widthIn(max = 150.dp),
                                 ) {
@@ -317,7 +317,7 @@ fun TerminalSheet(
                                         color = Color.DarkGray,
                                         overflow = TextOverflow.Ellipsis,
                                         style = MaterialTheme.typography.labelSmall,
-                                        text = commands[i].name.ifBlank { commands[i].command },
+                                        text = template.commands[i].name.ifBlank { template.commands[i].command },
                                         modifier = Modifier.padding(
                                             horizontal = 4.dp,
                                             vertical = 2.dp

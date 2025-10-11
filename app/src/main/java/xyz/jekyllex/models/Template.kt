@@ -24,7 +24,12 @@
 
 package xyz.jekyllex.models
 
-data class Command(
-    val name: String,
-    val command: String
-)
+data class Template(
+    val project: String,
+    val commands: List<Command>
+) {
+    data class Command(
+        val name: String,
+        val command: String
+    )
+}
