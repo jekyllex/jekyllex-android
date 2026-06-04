@@ -24,12 +24,14 @@
 
 package xyz.jekyllex.ui.activities.editor.webview
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -50,9 +52,17 @@ class WebViewClient(
         val url = request.url.toString()
         if (url.contains(EDITOR_URL) || url.contains(PREVIEW_URL)) return false
 
-        view.context.startActivity(
-            Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        )
+        try {
+            view.context.startActivity(
+                Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            )
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(
+                view.context,
+                "No app found to open this link",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
 
         return true
     }
