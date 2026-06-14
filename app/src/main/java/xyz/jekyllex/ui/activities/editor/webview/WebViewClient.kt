@@ -68,7 +68,7 @@ class WebViewClient(
 
         NativeUtils.exec(cat(file), CoroutineScope(Dispatchers.IO)) { content ->
             withContext(Dispatchers.Main) {
-                view.loadUrl("javascript:setText('${content.toBase64()}')")
+                view.evaluateJavascript("setText('${content.toBase64()}')", null)
             }
         }
     }
