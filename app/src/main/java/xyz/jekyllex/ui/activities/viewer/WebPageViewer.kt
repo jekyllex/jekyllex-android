@@ -24,6 +24,7 @@
 
 package xyz.jekyllex.ui.activities.viewer
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -31,6 +32,7 @@ import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -93,7 +95,15 @@ class WebPageViewer : ComponentActivity() {
                                     return false
                                 }
 
-                                startActivity(Intent(Intent.ACTION_VIEW, request.url))
+                                try {
+                                    startActivity(Intent(Intent.ACTION_VIEW, request.url))
+                                } catch (e: ActivityNotFoundException) {
+                                    Toast.makeText(
+                                        this@WebPageViewer,
+                                        "No app found to open this link",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                                 return true
                             }
 
@@ -155,9 +165,17 @@ class WebPageViewer : ComponentActivity() {
                             },
                             actions = {
                                 IconButton(onClick = {
-                                    startActivity(
-                                        Intent(Intent.ACTION_VIEW, Uri.parse(webView.url))
-                                    )
+                                    try {
+                                        startActivity(
+                                            Intent(Intent.ACTION_VIEW, Uri.parse(webView.url))
+                                        )
+                                    } catch (e: ActivityNotFoundException) {
+                                        Toast.makeText(
+                                            this@WebPageViewer,
+                                            "No app found to open this link",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 }) {
                                     Icon(
                                         modifier = Modifier.size(20.dp),
