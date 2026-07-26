@@ -3,7 +3,7 @@ import java.io.BufferedWriter
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.BufferedOutputStream
-import java.io.ByteArrayOutputStream
+import java.math.BigInteger
 
 import java.net.URI
 import java.net.http.HttpClient
@@ -17,7 +17,7 @@ import java.security.MessageDigest
 import java.security.DigestInputStream
 
 import com.android.build.gradle.internal.api.ApkVariantOutputImpl
-import com.android.build.gradle.internal.tasks.factory.dependsOn
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.composeCompiler)
@@ -26,18 +26,18 @@ plugins {
 }
 
 val bootstrapVersion = "v0.1.4"
-val targetABI = properties["targetABI"] as? String
+val targetABI = findProperty("targetABI") as? String
 val abiCodes = mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86" to 3, "x86_64" to 4)
 
 android {
     namespace = "xyz.jekyllex"
-    compileSdk = 34
+    compileSdk = 35
     ndkVersion = "27.2.12479018"
 
     defaultConfig {
         applicationId = "xyz.jekyllex"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 6
         versionName = "v0.2.4"
 
@@ -46,7 +46,7 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "GIT_HASH", getGitHash())
+        buildConfigField("String", "GIT_HASH", project.gitHash())
         buildConfigField("String", "BOOTSTRAP", "\"$bootstrapVersion\"")
     }
 
@@ -94,12 +94,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = "1.8"
-        allWarningsAsErrors = false
-        freeCompilerArgs += listOf("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
-    }
-
     buildFeatures {
         compose = true
         buildConfig = true
@@ -121,8 +115,6 @@ android {
         includeInBundle = false
     }
 
-    project.tasks.preBuild.dependsOn("setupBootstraps")
-
     applicationVariants.configureEach {
         outputs.configureEach {
             this as ApkVariantOutputImpl
@@ -138,8 +130,21 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
+        allWarningsAsErrors.set(false)
+        freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+    }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("setupBootstraps")
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.documentfile)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
@@ -148,6 +153,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
@@ -162,15 +169,11 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
-fun getGitHash(): String {
-    val stdout = ByteArrayOutputStream()
-
-    exec {
+fun Project.gitHash(): String {
+    val hash = providers.exec {
         commandLine("git", "rev-parse", "--short", "HEAD")
-        standardOutput = stdout
-    }
-
-    return "\"" + stdout.toString().trim() + "\""
+    }.standardOutput.asText.get().trim()
+    return "\"$hash\""
 }
 
 fun downloadBootstrap(arch: String, expectedChecksum: String) {
@@ -299,55 +302,53 @@ fun setupBootstrap(arch: String) {
     doneMarkerFile.createNewFile()
 }
 
-tasks {
-    val archMap = mapOf(
-        "x86" to "i686",
-        "x86_64" to "x86_64",
-        "armeabi-v7a" to "arm",
-        "arm64-v8a" to "aarch64"
-    )
+val archMap = mapOf(
+    "x86" to "i686",
+    "x86_64" to "x86_64",
+    "armeabi-v7a" to "arm",
+    "arm64-v8a" to "aarch64"
+)
 
-    val setupBootstraps by registering {
-        if (gradle.startParameter.taskNames.any { it.contains("assembleRelease") }) {
-            dependsOn("buildBootstraps")
+tasks.register("setupBootstraps") {
+    if (gradle.startParameter.taskNames.any { it.contains("assembleRelease") }) {
+        dependsOn("buildBootstraps")
+    } else {
+        dependsOn("downloadBootstraps")
+    }
+
+    doFirst {
+        if (targetABI.isNullOrEmpty()) {
+            archMap.values.forEach { arch -> setupBootstrap(arch) }
         } else {
-            dependsOn("downloadBootstraps")
-        }
-
-        doFirst {
-            if (targetABI.isNullOrEmpty()) {
-                archMap.values.forEach { arch -> setupBootstrap(arch) }
-            } else {
-                setupBootstrap(archMap[targetABI]!!)
-            }
+            setupBootstrap(archMap.getValue(targetABI))
         }
     }
+}
 
-    val buildBootstraps by register("buildBootstraps", Exec::class) {
-        workingDir = file("${project.projectDir}/srcLib")
-        standardOutput = System.out
-        errorOutput = System.err
+tasks.register<Exec>("buildBootstraps") {
+    workingDir = file("${project.projectDir}/srcLib")
+    standardOutput = System.out
+    errorOutput = System.err
 
-        doFirst { delete("srcLib/tmp") }
-        if (targetABI.isNullOrEmpty()) commandLine("bash", "build.sh")
-        else commandLine("bash", "build.sh", "-a", archMap[targetABI])
-    }
+    doFirst { delete("srcLib/tmp") }
+    if (targetABI.isNullOrEmpty()) commandLine("bash", "build.sh")
+    else commandLine("bash", "build.sh", "-a", archMap.getValue(targetABI))
+}
 
-    val downloadBootstraps by registering {
-        doFirst {
-            val map = mapOf(
-                "aarch64" to "6dfa705dcff38f0ade4f5ac202c49a14b863d25fbf994f71ef21a9ad7eb2a9ce",
-                "arm" to "8874edb85cb3a9d7ee49c6670fa10e30340eddb02a551769c78349697d4cc962",
-                "i686" to "c4531c473b084ccef0f367cb19dd633636aacf55043f5031d6b0e3c0814dbcfe",
-                "x86_64" to "d1f28ff6a08c128974a6d777af06c4603a07c129d877d608072c4596bef6cee8"
-            )
+tasks.register("downloadBootstraps") {
+    doFirst {
+        val map = mapOf(
+            "aarch64" to "6dfa705dcff38f0ade4f5ac202c49a14b863d25fbf994f71ef21a9ad7eb2a9ce",
+            "arm" to "8874edb85cb3a9d7ee49c6670fa10e30340eddb02a551769c78349697d4cc962",
+            "i686" to "c4531c473b084ccef0f367cb19dd633636aacf55043f5031d6b0e3c0814dbcfe",
+            "x86_64" to "d1f28ff6a08c128974a6d777af06c4603a07c129d877d608072c4596bef6cee8"
+        )
 
-            if (targetABI.isNullOrEmpty()) {
-                map.forEach { (arch, checksum) -> downloadBootstrap(arch, checksum) }
-            } else {
-                val arch = archMap[targetABI]
-                downloadBootstrap(arch!!, map[arch]!!)
-            }
+        if (targetABI.isNullOrEmpty()) {
+            map.forEach { (arch, checksum) -> downloadBootstrap(arch, checksum) }
+        } else {
+            val arch = archMap.getValue(targetABI)
+            downloadBootstrap(arch, map.getValue(arch))
         }
     }
 }

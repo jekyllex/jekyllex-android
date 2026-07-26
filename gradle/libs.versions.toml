@@ -1,21 +1,27 @@
 [versions]
-agp = "8.5.2"
-kotlin = "2.0.0"
-coreKtx = "1.13.1"
+# Cap AGP at Studio 2024.2 max (8.7.3). Higher AGP needs newer Android Studio.
+agp = "8.7.3"
+kotlin = "2.1.21"
+# AndroidX pinned to minCompileSdk <= 35 (AGP 8.7 max API).
+coreKtx = "1.16.0"
 junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
-lifecycleRuntimeKtx = "2.8.4"
-activityCompose = "1.9.1"
-composeBom = "2024.08.00"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+lifecycleRuntimeKtx = "2.10.0"
+activityCompose = "1.10.1"
+composeBom = "2025.06.01"
 leakcanary = "2.14"
-appcompat = "1.7.0"
-material = "1.12.0"
-activity = "1.9.1"
-composePreference = "1.0.0"
+appcompat = "1.7.1"
+material = "1.14.0"
+activity = "1.10.1"
+composePreference = "1.1.1"
+documentfile = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
+androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
+androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
