@@ -31,13 +31,17 @@ val abiCodes = mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86" to 3, "x86_64" 
 
 android {
     namespace = "xyz.jekyllex"
-    compileSdk = 35
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 1
+        }
+    }
     ndkVersion = "27.2.12479018"
 
     defaultConfig {
         applicationId = "xyz.jekyllex"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 6
         versionName = "v0.2.4"
 
