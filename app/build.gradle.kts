@@ -36,7 +36,6 @@ android {
             minorApiLevel = 1
         }
     }
-    ndkVersion = "27.2.12479018"
 
     defaultConfig {
         applicationId = "xyz.jekyllex"
