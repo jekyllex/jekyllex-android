@@ -43,8 +43,8 @@ import xyz.jekyllex.utils.toBase64
 
 class WebViewClient(
     private val file: String,
+    private val bridge: IOBridge? = null,
     private val previewLoadCallback: (url: String) -> Unit = {},
-    private val bridge: IOBridge? = null
 ): WebViewClient() {
     override fun shouldOverrideUrlLoading(
         view: WebView,
