@@ -44,6 +44,7 @@ class Settings(context: Context) {
     fun <T> set(setting: Setting, value: T) {
         with(sharedPreferences.edit()) {
             when (value) {
+                is Int -> putInt(setting.key, value)
                 is Float -> putFloat(setting.key, value)
                 is String -> putString(setting.key, value)
                 is Boolean -> putBoolean(setting.key, value)
