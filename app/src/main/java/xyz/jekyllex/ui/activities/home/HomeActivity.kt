@@ -71,7 +71,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -393,7 +393,7 @@ fun HomeScreen(
             }
         }
     ) { padding ->
-        val files = homeViewModel.availableFiles.collectAsState().value
+        val files = homeViewModel.availableFiles.collectAsStateWithLifecycle().value
 
         Column(
             modifier = Modifier
