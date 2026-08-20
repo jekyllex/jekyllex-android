@@ -83,10 +83,10 @@ import xyz.jekyllex.ui.activities.viewer.WebPageViewer
 import xyz.jekyllex.ui.components.GenericDialog
 import xyz.jekyllex.ui.components.ProgressDialog
 import xyz.jekyllex.utils.Commands.rm
-import xyz.jekyllex.utils.Commands.rmDir
 import xyz.jekyllex.utils.Commands.shell
-import xyz.jekyllex.utils.Commands.unzip
 import xyz.jekyllex.utils.Commands.zip
+import xyz.jekyllex.utils.clearContents
+import xyz.jekyllex.utils.unzipTo
 import xyz.jekyllex.utils.Constants.DOCS
 import xyz.jekyllex.utils.Constants.TERMS
 import xyz.jekyllex.utils.Constants.PRIVACY
@@ -189,16 +189,11 @@ fun SettingsView() {
                                 inputStream.copyTo(outputStream)
                             }
                         }
-                        NativeUtils.exec(
-                            shell(
-                                mergeCommands(
-                                    rmDir("*", ".*"),
-                                    unzip(file.absolutePath, "-d", "$HOME_DIR/")
-                                )
-                            )
-                        )
-                        processing.value = false
+                        val home = File(HOME_DIR)
+                        home.clearContents()
+                        file.unzipTo(home)
                         withContext(Dispatchers.Main) {
+                            processing.value = false
                             Toast.makeText(
                                 context,
                                 "Backup restored successfully!",
@@ -209,7 +204,7 @@ fun SettingsView() {
                         e.printStackTrace()
                         withContext(Dispatchers.Main) {
                             processing.value = false
-                            Toast.makeText(context, "Failed to fetch backup file!", Toast.LENGTH_SHORT)
+                            Toast.makeText(context, "Failed to restore backup file!", Toast.LENGTH_SHORT)
                                 .show()
                         }
                     }
