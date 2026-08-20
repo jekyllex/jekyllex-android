@@ -29,6 +29,7 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
@@ -58,6 +59,7 @@ class ProcessService : Service() {
     private var sessionCount = 0
     private var hasConnections = false
     private lateinit var settings: Settings
+    private lateinit var envBuilder: (String, Context?) -> Array<String>
     private val _activeSession = MutableStateFlow(0)
     private val _sessions = MutableStateFlow(listOf<Session>())
     private lateinit var notifBuilder: NotificationCompat.Builder
@@ -93,7 +95,8 @@ class ProcessService : Service() {
         super.onCreate()
 
         settings = Settings(this)
-        _sessions.value += Session(sessionCount++, ::buildEnvironment, HOME_DIR) {
+        envBuilder = { cwd, _ -> buildEnvironment(cwd, this) }
+        _sessions.value += Session(sessionCount++, envBuilder, HOME_DIR) {
             updateKillActionOnNotif()
         }.apply { setLogTrimming(settings.get(Setting.TRIM_LOGS)) }
 
@@ -118,7 +121,7 @@ class ProcessService : Service() {
 
                 _sessions.value.apply {
                     _sessions.update {
-                        it + Session(sessionCount++, ::buildEnvironment).apply {
+                        it + Session(sessionCount++, envBuilder).apply {
                             cd(_sessions.value[_activeSession.value].dir.value)
                         }
                     }
