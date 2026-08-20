@@ -5,11 +5,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import xyz.jekyllex.data.FilesRepository
 import java.io.File
+import kotlin.io.path.createTempDirectory
 
 class FilesRepositoryTest {
     @Test
     fun listSkipsGitAndSortsByName() {
-        val dir = createTempDir()
+        val dir = createTempDirectory().toFile()
+        dir.deleteOnExit()
         File(dir, "b.txt").writeText("x")
         File(dir, "a.txt").writeText("x")
         File(dir, ".git").mkdir()
