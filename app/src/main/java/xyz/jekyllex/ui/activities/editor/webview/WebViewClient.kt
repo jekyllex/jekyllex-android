@@ -43,7 +43,8 @@ import xyz.jekyllex.utils.toBase64
 
 class WebViewClient(
     private val file: String,
-    private val previewLoadCallback: (url: String) -> Unit = {}
+    private val bridge: IOBridge? = null,
+    private val previewLoadCallback: (url: String) -> Unit = {},
 ): WebViewClient() {
     override fun shouldOverrideUrlLoading(
         view: WebView,
@@ -69,6 +70,7 @@ class WebViewClient(
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
+        bridge?.setTrusted(url.contains(EDITOR_URL))
         if (url.contains(PREVIEW_URL)) previewLoadCallback(url)
     }
 

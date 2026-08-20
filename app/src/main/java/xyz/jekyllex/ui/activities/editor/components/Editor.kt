@@ -73,10 +73,9 @@ fun Editor(
                                 ViewGroup.LayoutParams.MATCH_PARENT
                             )
 
-                            webViewClient = WebViewClient(file)
-                            settings.javaScriptEnabled = true
-
                             val bridge = IOBridge(file, isLoading)
+                            webViewClient = WebViewClient(file, bridge = bridge)
+                            settings.javaScriptEnabled = true
                             addJavascriptInterface(bridge, "IOBridge")
 
                             loadUrl(file.buildEditorURL(theme, timeout))
