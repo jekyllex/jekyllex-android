@@ -129,9 +129,16 @@ class ProcessService : Service() {
             }
 
             override fun deleteSession(index: Int) {
-                _activeSession.update { it - 1 }
-                _sessions.value[index].kill()
+                if (index <= 0 || index >= _sessions.value.size) return
+                val current = _activeSession.value
+                _sessions.value[index].close()
                 _sessions.update { it.filterIndexed { i, _ -> i != index } }
+                val newActive = when {
+                    index < current -> current - 1
+                    index == current -> (current - 1).coerceAtLeast(0)
+                    else -> current
+                }
+                _activeSession.value = newActive.coerceAtMost(_sessions.value.lastIndex)
             }
 
             override fun setActiveSession(index: Int) {
@@ -172,7 +179,7 @@ class ProcessService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(LOG_TAG, "Service destroyed")
-        _sessions.value.forEach { it.kill() }.also { _sessions.value = emptyList() }
+        _sessions.value.forEach { it.close() }.also { _sessions.value = emptyList() }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
