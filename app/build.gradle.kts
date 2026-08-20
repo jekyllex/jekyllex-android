@@ -3,8 +3,6 @@ import java.io.BufferedWriter
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.BufferedOutputStream
-import java.math.BigInteger
-
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -15,6 +13,7 @@ import java.util.zip.ZipInputStream
 
 import java.security.MessageDigest
 import java.security.DigestInputStream
+import java.time.Duration
 
 import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -141,8 +140,16 @@ kotlin {
     }
 }
 
-tasks.named("preBuild").configure {
-    dependsOn("setupBootstraps")
+val skipBootstrap = gradle.startParameter.taskNames.isNotEmpty() &&
+    gradle.startParameter.taskNames.all { name ->
+        val task = name.substringAfterLast(":")
+        task.startsWith("test") && !task.contains("AndroidTest", ignoreCase = true)
+    }
+
+if (!skipBootstrap) {
+    tasks.named("preBuild").configure {
+        dependsOn("setupBootstraps")
+    }
 }
 
 dependencies {
@@ -173,6 +180,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
+fun ByteArray.toHex(): String = joinToString("") { "%02x".format(it) }
+
 fun Project.gitHash(): String {
     val hash = providers.exec {
         commandLine("git", "rev-parse", "--short", "HEAD")
@@ -193,7 +202,7 @@ fun downloadBootstrap(arch: String, expectedChecksum: String) {
             }
         }
 
-        val checksum = BigInteger(1, digest.digest()).toString(16)
+        val checksum = digest.digest().toHex()
         if (checksum != expectedChecksum) {
             logger.quiet("Deleting old local file with wrong hash: ${zipDownloadFile.absolutePath}")
             File("${zipDownloadFile.absolutePath}.done").delete()
@@ -208,10 +217,12 @@ fun downloadBootstrap(arch: String, expectedChecksum: String) {
         zipDownloadFile.parentFile.mkdirs()
         val client = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.NORMAL)
+            .connectTimeout(Duration.ofSeconds(30))
             .build()
 
         val request = HttpRequest.newBuilder()
             .uri(URI.create(remoteUrl))
+            .timeout(Duration.ofMinutes(5))
             .GET()
             .build()
 
@@ -229,7 +240,7 @@ fun downloadBootstrap(arch: String, expectedChecksum: String) {
             }
         }
 
-        val checksum = BigInteger(1, digest.digest()).toString(16)
+        val checksum = digest.digest().toHex()
         if (checksum != expectedChecksum) {
             zipDownloadFile.delete()
             throw GradleException("Wrong checksum for $remoteUrl: expected: $expectedChecksum, actual: $checksum")
@@ -283,13 +294,8 @@ fun setupBootstrap(arch: String) {
                     val soName = "lib$counter.so"
                     val targetFile = File(outputDir, soName).absoluteFile
 
-                    try {
-                        FileOutputStream(targetFile).use {
-                            zipInput.copyTo(it)
-                            it.close()
-                        }
-                    } catch (e: Exception ) {
-                        println("Error $e")
+                    FileOutputStream(targetFile).use {
+                        zipInput.copyTo(it)
                     }
 
                     mappingsFileWriter.write("$soName←${zipEntry.name}\n")
