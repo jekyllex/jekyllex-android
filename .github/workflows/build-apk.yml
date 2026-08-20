@@ -79,6 +79,8 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     if: github.event.inputs.buildType == 'ghRelease' && github.event.inputs.release == 'true' && startsWith(github.event.inputs.tag, 'v')
 
     steps:
