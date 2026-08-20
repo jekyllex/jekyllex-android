@@ -71,7 +71,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -131,25 +131,25 @@ fun TerminalSheet(
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var template by rememberSaveable { mutableStateOf<Template?>(null) }
 
-    val sessions = sessionManager.sessions.collectAsState().value
-    val activeSession = sessionManager.activeSession.collectAsState().value
+    val sessions = sessionManager.sessions.collectAsStateWithLifecycle().value
+    val activeSession = sessionManager.activeSession.collectAsStateWithLifecycle().value
 
     val sessionDir = combine(
         sessionManager.sessions, sessionManager.activeSession
     ) { s, activeS -> s[activeS] }.flatMapLatest { it.dir }
-        .collectAsState(initial = "").value
+        .collectAsStateWithLifecycle(initialValue = "").value
 
     val logs: List<String> = combine(
         sessionManager.sessions, sessionManager.activeSession
     ) { s, activeS -> s[activeS] }.flatMapLatest { it.logs }
-        .collectAsState(initial = emptyList()).value
+        .collectAsStateWithLifecycle(initialValue = emptyList()).value
 
     val runningCommands: List<String> = sessionManager.sessions
         .flatMapLatest { s ->
             val commandFlow = s.map { it.runningCommand }
             if (commandFlow.isEmpty()) flowOf(emptyList())
             else combine(commandFlow) { f -> f.map { it.substringBefore(" ") } }
-        }.collectAsState(initial = emptyList()).value
+        }.collectAsStateWithLifecycle(initialValue = emptyList()).value
 
     LaunchedEffect(logs.size) {
         logsListState.animateScrollToItem(logs.size)
