@@ -34,7 +34,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.webkit.URLUtil
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -90,14 +89,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import java.io.File as JFile
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.activities.home.components.DropDownMenu
@@ -107,21 +98,13 @@ import xyz.jekyllex.ui.components.FileButton
 import xyz.jekyllex.ui.components.TerminalSheet
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.Commands.echo
-import xyz.jekyllex.utils.Commands.git
-import xyz.jekyllex.utils.Commands.jekyll
-import xyz.jekyllex.utils.Commands.curl
-import xyz.jekyllex.utils.Commands.mkDir
-import xyz.jekyllex.utils.Commands.touch
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.Constants.requiredBinaries
 import xyz.jekyllex.appContainer
 import xyz.jekyllex.utils.open
 import xyz.jekyllex.utils.Setting
 import xyz.jekyllex.utils.formatDir
-import xyz.jekyllex.utils.toCommand
 import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.getProjectDir
-import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.utils.openInExternalApp
 
 class HomeActivity : ComponentActivity() {
@@ -129,25 +112,15 @@ class HomeActivity : ComponentActivity() {
     private lateinit var viewModel: HomeViewModel
     private lateinit var pickFileLauncher: ActivityResultLauncher<String>
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
-    private val boundService = mutableStateOf<ProcessService?>(null)
-
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
             val processService = (binder as ProcessService.LocalBinder).service
-            boundService.value = processService
+            appContainer.process.attach(processService)
             processService.exec(echo("Welcome to JekyllEx!"))
-
-            lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    processService.sessionManager.sessions.value.first().dir.collect { dir ->
-                        viewModel.cd(dir)
-                    }
-                }
-            }
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            boundService.value = null
+            appContainer.process.detach()
         }
     }
 
@@ -170,6 +143,8 @@ class HomeActivity : ComponentActivity() {
             factoryProducer = {
                 HomeViewModel.Factory(
                     container.files,
+                    container.process,
+                    contentResolver,
                     container.settings.get(Setting.REDUCE_ANIMATIONS)
                 )
             }
@@ -179,8 +154,7 @@ class HomeActivity : ComponentActivity() {
             ActivityResultContracts.GetContent()
         ) { uri: Uri? ->
             uri?.let {
-                viewModel.fileUri = uri
-                viewModel.copyFileConfirmation = true
+                viewModel.onFilePicked(uri)
             } ?: run {
                 Toast.makeText(this, "No file selected!", Toast.LENGTH_SHORT)
                     .show()
@@ -207,7 +181,7 @@ class HomeActivity : ComponentActivity() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && settings.get(Setting.ASK_NOTIF_PERM)) {
             if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-                viewModel.notificationRationale = true
+                viewModel.setNotifRationale(true)
                 settings.set(Setting.ASK_NOTIF_PERM, false)
             } else if (
                 ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
@@ -221,7 +195,6 @@ class HomeActivity : ComponentActivity() {
             JekyllExTheme {
                 HomeScreen(
                     viewModel,
-                    boundService.value,
                     pickFileLauncher,
                     requestPermissionLauncher
                 )
@@ -242,63 +215,36 @@ class HomeActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (serviceBound) unbindService(connection)
+        if (serviceBound) {
+            appContainer.process.detach()
+            unbindService(connection)
+        }
     }
 }
 
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel,
-    processService: ProcessService?,
     pickFileLauncher: ActivityResultLauncher<String>,
     requestPermissionLauncher: ActivityResultLauncher<String>
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
-    var query by remember { mutableStateOf("") }
+    val state by homeViewModel.uiState.collectAsStateWithLifecycle()
     var showTerminalSheet by remember { mutableStateOf(false) }
 
-    val create: (input: String, callback: () -> Unit) -> Unit = create@{ input, callback ->
-        val service = processService ?: return@create
-        if (homeViewModel.isCreating) return@create
-        homeViewModel.isCreating = true
-
-        val command: Array<String> =
-            if (input.startsWith("git clone ")) input.toCommand()
-            else {
-                val url = input.let {
-                    if (it.contains("github.com") && !it.contains("://")) "https://$it"
-                    else it
-                }
-                when (URLUtil.isValidUrl(url)) {
-                    true -> git("clone", url)
-                    false -> jekyll("new", input)
-                }
-            }
-
-        service.exec(command) {
-            if (command.contentEquals(jekyll("new", input))) {
-                JFile(HOME_DIR, input).removeSymlinks()
-            }
-
-            homeViewModel.isCreating = false
-            callback()
-        }
-    }
-
     val resetQuery = {
-        query = ""
         focusManager.clearFocus()
-        homeViewModel.search(query)
+        homeViewModel.search("")
     }
 
     val onBackPressed = {
         resetQuery()
-        processService?.cd("..")
+        homeViewModel.goUp()
     }
 
     BackHandler(
-        enabled = homeViewModel.cwd.value.contains("$HOME_DIR/")
+        enabled = state.cwd.contains("$HOME_DIR/")
     ) { onBackPressed() }
 
     Scaffold(
@@ -309,66 +255,48 @@ fun HomeScreen(
                     Text(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        text = homeViewModel.cwd.value.substringAfterLast("/"),
+                        text = state.cwd.substringAfterLast("/"),
                     )
                 },
                 actions = {
                     DropDownMenu(
-                        homeViewModel,
-                        pickFileLauncher,
+                        cwd = state.cwd,
+                        isCreating = state.isCreating,
+                        picker = pickFileLauncher,
+                        onRefresh = homeViewModel::refresh,
                         goHome = {
                             resetQuery()
-                            processService?.cd(HOME_DIR)
+                            homeViewModel.goHome()
                         },
                         onCreateProjectConfirmation = { input, isDialogOpen ->
-                            if (input.isNotBlank()) create(input) {
+                            if (input.isNotBlank()) homeViewModel.create(input) {
                                 isDialogOpen.value = false
-                                homeViewModel.refresh()
                             }
                         },
-                        onCreateFileConfirmation = onCreateFileConfirmation@{ input, isFolder, isDialogOpen ->
-                            val service = processService ?: return@onCreateFileConfirmation
-                            if (homeViewModel.isCreating) return@onCreateFileConfirmation
-                            homeViewModel.isCreating = true
-                            val cwd = homeViewModel.cwd.value
-                            val isValidURL = URLUtil.isValidUrl(input)
-                            val command =
-                                if (isFolder) mkDir(input)
-                                else if (isValidURL) curl("-s", "-O", input)
-                                else touch(input)
-                            service.exec(command, cwd) {
-                                homeViewModel.refresh()
-                                homeViewModel.isCreating = false
+                        onCreateFileConfirmation = { input, isFolder, isDialogOpen ->
+                            homeViewModel.createFile(input, isFolder) {
                                 isDialogOpen.value = false
                             }
                         },
                         serverIcon = {
                             IconButton(onClick = {
-                                val service = processService ?: return@IconButton
-                                if (!service.isRunning) {
-                                    service.exec(
-                                        jekyll("serve"),
-                                        homeViewModel.cwd.value.let { it.getProjectDir() ?: it }
-                                    )
-                                    showTerminalSheet = true
-                                }
-                                else
-                                    service.killProcess()
+                                val running = homeViewModel.isServerRunning
+                                homeViewModel.toggleServer()
+                                if (!running) showTerminalSheet = true
                             }) {
-                                if (processService?.isRunning != true)
+                                if (!homeViewModel.isServerRunning)
                                     Icon(Icons.Default.PlayArrow, "Start server")
                                 else
                                     Icon(painterResource(R.drawable.stop), "Stop server")
                             }
                         }
-                    ) exec@{ cmd ->
-                        val service = processService ?: return@exec
-                        service.exec(cmd)
+                    ) { cmd ->
+                        homeViewModel.exec(cmd)
                         showTerminalSheet = true
                     }
                 },
                 navigationIcon = {
-                    if (homeViewModel.cwd.value.contains("$HOME_DIR/"))
+                    if (state.cwd.contains("$HOME_DIR/"))
                         IconButton(onClick = { onBackPressed() }) {
                             Icon(
                                 contentDescription = "Go back",
@@ -384,7 +312,7 @@ fun HomeScreen(
         floatingActionButton = {
             FloatingActionButton(
                 shape = CircleShape,
-                onClick = { if (processService != null) showTerminalSheet = true },
+                onClick = { showTerminalSheet = true },
                 containerColor = MaterialTheme.colorScheme.primary,
                 elevation = FloatingActionButtonDefaults.elevation(
                     defaultElevation = 4.dp
@@ -394,7 +322,7 @@ fun HomeScreen(
             }
         }
     ) { padding ->
-        val files = homeViewModel.availableFiles.collectAsStateWithLifecycle().value
+        val files = state.files
 
         Column(
             modifier = Modifier
@@ -402,7 +330,7 @@ fun HomeScreen(
                 .pointerInput(Unit) { detectTapGestures { focusManager.clearFocus() } }
         ) {
             Text(
-                text = homeViewModel.cwd.value.formatDir(" / "),
+                text = state.cwd.formatDir(" / "),
                 modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp),
                 style = MaterialTheme.typography.bodySmall
             )
@@ -411,7 +339,7 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(horizontal = 8.dp),
             ) {
-                if (homeViewModel.cwd.value == HOME_DIR && homeViewModel.filesCount == 0)
+                if (state.cwd == HOME_DIR && state.filesCount == 0)
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -427,13 +355,13 @@ fun HomeScreen(
                             style = MaterialTheme.typography.labelSmall
                         )
                         Button(
-                            onClick = { create("test") { homeViewModel.refresh() } },
+                            onClick = { homeViewModel.create("test") },
                             modifier = Modifier.padding(top = 16.dp),
                             elevation = ButtonDefaults.buttonElevation(
                                 defaultElevation = 4.dp
                             )
                         ) {
-                            if (homeViewModel.isCreating)
+                            if (state.isCreating)
                                 CircularProgressIndicator(
                                     strokeWidth = 2.dp,
                                     color = Color.White,
@@ -446,16 +374,16 @@ fun HomeScreen(
                 else LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    if (homeViewModel.filesCount > 1)
+                    if (state.filesCount > 1)
                         item {
                             OutlinedTextField(
-                                value = query,
+                                value = state.query,
                                 singleLine = true,
                                 shape = RoundedCornerShape(16.dp),
                                 modifier = Modifier.fillMaxWidth().padding(8.dp),
-                                onValueChange = { query = it; homeViewModel.search(query) },
+                                onValueChange = homeViewModel::search,
                                 label = {
-                                    Text("Search among ${homeViewModel.filesCount} items")
+                                    Text("Search among ${state.filesCount} items")
                                 },
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -463,12 +391,12 @@ fun HomeScreen(
                                 ),
                                 keyboardActions = KeyboardActions(
                                     onSearch = {
-                                        homeViewModel.search(query)
+                                        homeViewModel.search(state.query)
                                         focusManager.clearFocus()
                                     }
                                 ),
                                 trailingIcon = {
-                                    if (query.isNotBlank())
+                                    if (state.query.isNotBlank())
                                         IconButton(onClick = { resetQuery() }) {
                                             Icon(Icons.Outlined.Clear, "Reset query")
                                         }
@@ -487,7 +415,7 @@ fun HomeScreen(
                         }
                     }
 
-                    items(files.size, key = { homeViewModel.cwd.value + files[it].path }) {
+                    items(files.size, key = { state.cwd + files[it].path }) {
                         FileButton(
                             file = files[it],
                             modifier = Modifier.padding(8.dp),
@@ -495,7 +423,7 @@ fun HomeScreen(
                             onClick = {
                                 if (files[it].isDir) {
                                     resetQuery()
-                                    processService?.cd(files[it].name)
+                                    homeViewModel.openDir(files[it].name)
                                 } else if (!files[it].name.contains(".gitconfig")) {
                                     files[it].open(context)
                                 }
@@ -513,47 +441,26 @@ fun HomeScreen(
             }
         }
 
-        if (homeViewModel.copyFileConfirmation) GenericDialog(
+        if (state.showCopyConfirm) GenericDialog(
             isCancellable = false,
             dialogTitle = "Copy",
             dialogText = "Are you sure you want to copy this file here?",
-            onDismissRequest = {
-                homeViewModel.fileUri = null
-                homeViewModel.copyFileConfirmation = false
-            },
-            onConfirmation = confirmation@{
-                val document = DocumentFile.fromSingleUri(context, homeViewModel.fileUri!!)
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        val destination = JFile(homeViewModel.cwd.value, document?.name!!)
-                        val output = destination.outputStream()
-
-                        val input = context.contentResolver.openInputStream(document.uri)!!
-                        input.copyTo(output)
-
-                        input.close()
-                        output.close()
-
-                        homeViewModel.refresh()
-                    } catch (e: Exception) {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(
-                                context, "Error copying file!", Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                        e.printStackTrace()
-                    } finally {
-                        withContext(Dispatchers.Main) {
-                            homeViewModel.fileUri = null
-                            homeViewModel.copyFileConfirmation = false
-                        }
+            onDismissRequest = { homeViewModel.dismissCopy() },
+            onConfirmation = {
+                val name = state.pendingCopyUri?.let {
+                    DocumentFile.fromSingleUri(context, it)?.name
+                }
+                if (name != null) {
+                    homeViewModel.confirmCopy(name) {
+                        Toast.makeText(context, "Error copying file!", Toast.LENGTH_SHORT).show()
                     }
+                } else {
+                    homeViewModel.dismissCopy()
                 }
             }
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && homeViewModel.notificationRationale) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && state.showNotifRationale) {
             GenericDialog(
                 isCancellable = false,
                 dialogTitle = "Permission request",
@@ -562,7 +469,7 @@ fun HomeScreen(
                 confirmText = "OK",
                 dismissText = "No thanks",
                 onDismissRequest = {
-                    homeViewModel.notificationRationale = false
+                    homeViewModel.setNotifRationale(false)
 
                     Toast.makeText(
                         context,
@@ -571,17 +478,17 @@ fun HomeScreen(
                     ).show()
                 },
                 onConfirmation = {
-                    homeViewModel.notificationRationale = false
+                    homeViewModel.setNotifRationale(false)
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             )
         }
 
-        val service = processService
-        if (showTerminalSheet && service != null) {
+        val sessions = homeViewModel.sessionManager
+        if (showTerminalSheet && sessions != null) {
             TerminalSheet(
                 isServiceBound = true,
-                sessionManager = service.sessionManager,
+                sessionManager = sessions,
                 onDismiss = { showTerminalSheet = false }
             )
         }

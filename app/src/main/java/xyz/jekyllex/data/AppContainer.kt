@@ -6,4 +6,5 @@ import xyz.jekyllex.utils.Settings
 class AppContainer(context: Context) {
     val settings = Settings(context.applicationContext)
     val files = FilesRepository()
+    val process = ProcessRepository()
 }

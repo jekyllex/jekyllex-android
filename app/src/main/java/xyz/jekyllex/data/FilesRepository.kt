@@ -1,5 +1,7 @@
 package xyz.jekyllex.data
 
+import android.content.ContentResolver
+import android.net.Uri
 import xyz.jekyllex.models.File
 import xyz.jekyllex.utils.Commands.diskUsage
 import xyz.jekyllex.utils.Commands.getFromYAML
@@ -62,5 +64,12 @@ class FilesRepository {
                 url + (properties.getOrNull(3) ?: "")
             }
         )
+    }
+
+    fun copyUri(resolver: ContentResolver, uri: Uri, destDir: String, name: String) {
+        val dest = JFile(destDir, name)
+        resolver.openInputStream(uri)?.use { input ->
+            dest.outputStream().use { input.copyTo(it) }
+        } ?: throw java.io.IOException("Unable to open $uri")
     }
 }
