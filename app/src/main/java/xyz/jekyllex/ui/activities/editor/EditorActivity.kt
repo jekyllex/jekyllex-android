@@ -50,6 +50,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -232,33 +233,39 @@ fun EditorView(file: String = "", processService: ProcessService? = null) {
         val isEditorLoading = remember { mutableStateOf(true) }
         val canPreview by remember { derivedStateOf { processService?.isRunning == true } }
 
+        DisposableEffect(Unit) {
+            onDispose {
+                viewCache.values.forEach { it.destroy() }
+                viewCache.clear()
+            }
+        }
+
         val theme = settings.get<Int>(Setting.EDITOR_THEME)
         val previewPort = settings.get<Int>(Setting.PREVIEW_PORT)
         val shouldGuessURLs = settings.get<Boolean>(Setting.GUESS_URLS)
         val timeout = settings.get<Float>(Setting.DEBOUNCE_DELAY).times(1000).toInt()
 
         LaunchedEffect(Unit) effect@{
-            CoroutineScope(Dispatchers.IO).launch run@{
-                if (!shouldGuessURLs || ignoreGuessesIn.any { file.contains(it) }) return@run
+            withContext(Dispatchers.IO) {
+                if (!shouldGuessURLs || ignoreGuessesIn.any { file.contains(it) }) return@withContext
 
-                val dir = file.getProjectDir() ?: return@run
+                val dir = file.getProjectDir() ?: return@withContext
                 val path = file.pathInProject()
 
                 val url = NativeUtils.exec(guessDestinationUrl(path), dir)
 
-                if (url.isEmpty()) return@run
+                if (url.isEmpty()) return@withContext
                 val stripExt = path.split('.')
                     .dropLast(1).joinToString()
 
                 if (
                     !url.contains("404") &&
                     (url == "/${stripExt}" || url == "/$path")
-                ) return@run
-
-                guessedUrl = url
-                if (tabIndex == 1) updateDescription(url)
+                ) return@withContext
 
                 withContext(Dispatchers.Main) {
+                    guessedUrl = url
+                    if (tabIndex == 1) updateDescription(url)
                     viewCache[1]?.loadUrl(url.buildPreviewURL())
                 }
             }
