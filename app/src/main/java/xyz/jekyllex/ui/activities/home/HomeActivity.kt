@@ -114,9 +114,9 @@ import xyz.jekyllex.utils.Commands.mkDir
 import xyz.jekyllex.utils.Commands.touch
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.Constants.requiredBinaries
+import xyz.jekyllex.appContainer
 import xyz.jekyllex.utils.open
 import xyz.jekyllex.utils.Setting
-import xyz.jekyllex.utils.Settings
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.toCommand
 import xyz.jekyllex.utils.NativeUtils
@@ -126,7 +126,6 @@ import xyz.jekyllex.utils.openInExternalApp
 
 class HomeActivity : ComponentActivity() {
     private var serviceBound = false
-    private lateinit var settings: Settings
     private lateinit var viewModel: HomeViewModel
     private lateinit var pickFileLauncher: ActivityResultLauncher<String>
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
@@ -165,10 +164,14 @@ class HomeActivity : ComponentActivity() {
             serviceBound = bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
 
-        settings = Settings(this)
+        val container = appContainer
+        val settings = container.settings
         viewModel = viewModels<HomeViewModel>(
             factoryProducer = {
-                HomeViewModel.Factory(settings.get(Setting.REDUCE_ANIMATIONS))
+                HomeViewModel.Factory(
+                    container.files,
+                    container.settings.get(Setting.REDUCE_ANIMATIONS)
+                )
             }
         ).value
 
@@ -229,9 +232,9 @@ class HomeActivity : ComponentActivity() {
     override fun onRestart() {
         super.onRestart()
 
-        if (::viewModel.isInitialized && ::settings.isInitialized)
+        if (::viewModel.isInitialized)
             viewModel.setSkipAnimation(
-                settings.get(Setting.REDUCE_ANIMATIONS)
+                appContainer.settings.get(Setting.REDUCE_ANIMATIONS)
             )
 
         if (::viewModel.isInitialized) viewModel.refresh()

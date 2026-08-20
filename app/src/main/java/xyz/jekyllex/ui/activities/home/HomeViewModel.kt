@@ -37,28 +37,26 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import java.io.File as JFile
+import xyz.jekyllex.data.FilesRepository
 import xyz.jekyllex.models.File
-import xyz.jekyllex.utils.Commands.diskUsage
-import xyz.jekyllex.utils.Commands.getFromYAML
-import xyz.jekyllex.utils.Commands.shell
-import xyz.jekyllex.utils.Commands.stat
 import xyz.jekyllex.utils.Constants.HOME_DIR
-import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.parseOutput
-import xyz.jekyllex.utils.mergeCommands
-import xyz.jekyllex.utils.toDate
 
-class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
+class HomeViewModel(
+    private val filesRepository: FilesRepository,
+    private var skipAnimations: Boolean,
+) : ViewModel() {
     companion object {
         const val LOG_TAG = "HomeViewModel"
     }
 
-    class Factory(private val skipAnimations: Boolean) : ViewModelProvider.Factory {
+    class Factory(
+        private val filesRepository: FilesRepository,
+        private val skipAnimations: Boolean,
+    ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return HomeViewModel(skipAnimations) as T
+                return HomeViewModel(filesRepository, skipAnimations) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }
@@ -121,20 +119,7 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
         val dirPath = _cwd.value
         listJob = viewModelScope.launch(Dispatchers.IO) {
             try {
-                val children = JFile(dirPath).listFiles()?.sortedBy { it.name } ?: emptyList()
-                val listed = if (dirPath == HOME_DIR) {
-                    children.filter { it.isDirectory && !it.name.startsWith(".") }
-                } else {
-                    children.filter { it.name != ".git" }
-                }
-                val files = listed.map {
-                    File(
-                        name = it.name,
-                        path = "$dirPath/${it.name}",
-                        isDir = it.isDirectory
-                    )
-                }
-
+                val files = filesRepository.list(dirPath)
                 _availableFiles.value = files
                 search(query)
 
@@ -150,44 +135,11 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
     }
 
     private suspend fun fetchStats() {
+        val cwd = _cwd.value
         _availableFiles.value = _availableFiles.value.map {
             yield()
-            val cwd = _cwd.value
-
-            val stats = NativeUtils.exec(
-                shell(
-                    mergeCommands(
-                        diskUsage("-sh", it.path),
-                        stat("-c", "%Y", it.path)
-                    )
-                )
-            ).split("\n")
-
-            val properties =
-                if (cwd == HOME_DIR)
-                    NativeUtils.exec(
-                        getFromYAML(
-                            "${it.path}/_config.yml",
-                            "title", "description", "url", "baseurl"
-                        )
-                    ).parseOutput()
-                else if (!it.isDir && cwd.contains("/_") && !cwd.contains("/_site"))
-                    NativeUtils.exec(
-                        getFromYAML(it.path, "title", "description")
-                    ).parseOutput()
-                else listOf()
-
-            it.copy(
-                title = properties.getOrNull(0),
-                description = properties.getOrNull(1),
-                lastModified = stats.getOrNull(1)?.toDate(),
-                size = stats.getOrNull(0)?.split("\t")?.first(),
-                url = properties.getOrNull(2)?.let { url ->
-                    url + (properties.getOrNull(3) ?: "")
-                }
-            )
+            filesRepository.withStats(it, cwd)
         }
-
         search(query)
     }
 }
