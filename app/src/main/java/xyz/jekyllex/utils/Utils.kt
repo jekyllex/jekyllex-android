@@ -151,23 +151,23 @@ fun File.removeSymlinks() {
     }
 }
 
+fun FileModel.usesBuiltInEditor(): Boolean {
+    val ext = this.path.getExtension()
+    val mime = ext.mimeType()
+    return this.name.startsWith(".") ||
+        editorExtensions.contains(ext) ||
+        editorMimes.any { mime.contains(it) }
+}
+
 fun FileModel.open(context: Context) {
-    val defaultAction = {
+    if (usesBuiltInEditor()) {
         context.startActivity(
             Intent(context, EditorActivity::class.java)
                 .putExtra("file", this.path)
         )
+    } else {
+        openInExternalApp(context, false)
     }
-
-    val ext = this.path.getExtension()
-    val mime = ext.mimeType()
-
-    if (
-        this.name.startsWith(".") ||
-        editorExtensions.contains(ext) ||
-        editorMimes.any { mime.contains(it) }
-    ) defaultAction()
-    else openInExternalApp(context, false, mime)
 }
 
 fun FileModel.openInExternalApp(

@@ -114,7 +114,17 @@ class EditorActivity : ComponentActivity() {
 
         setContent {
             JekyllExTheme {
-                EditorView(file, boundService.value)
+                EditorView(
+                    file = file,
+                    processService = boundService.value,
+                    onBack = { finish() },
+                    onRenamed = { destination ->
+                        val next = Intent(this, EditorActivity::class.java)
+                            .putExtra("file", destination)
+                        finish()
+                        startActivity(next)
+                    },
+                )
             }
         }
     }
@@ -126,8 +136,13 @@ class EditorActivity : ComponentActivity() {
 }
 
 @Composable
-fun EditorView(file: String = "", processService: ProcessService? = null) {
-    val context = LocalContext.current as Activity
+fun EditorView(
+    file: String = "",
+    processService: ProcessService? = null,
+    onBack: () -> Unit = {},
+    onRenamed: (String) -> Unit = {},
+) {
+    val context = LocalContext.current
     var showTerminalSheet by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf(file.formatDir("/")) }
 
@@ -169,7 +184,7 @@ fun EditorView(file: String = "", processService: ProcessService? = null) {
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { context.finish() }) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             contentDescription = "Go back",
                             painter = painterResource(id = R.drawable.back),
@@ -203,17 +218,14 @@ fun EditorView(file: String = "", processService: ProcessService? = null) {
                                     CoroutineScope(Dispatchers.IO)
                                 ) {
                                     withContext(Dispatchers.Main) {
-                                        val intent = context.intent
-                                        intent.putExtra("file", destination)
-                                        context.finish()
-                                        context.startActivity(intent)
+                                        onRenamed(destination)
                                     }
                                 }
                             },
                             deleteFile = {
                                 NativeUtils.exec(rm(file), CoroutineScope(Dispatchers.IO)) {
                                     withContext(Dispatchers.Main) {
-                                        context.finish()
+                                        onBack()
                                     }
                                 }
                             }
