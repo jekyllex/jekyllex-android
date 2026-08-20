@@ -45,7 +45,6 @@ import xyz.jekyllex.utils.Commands.shell
 import xyz.jekyllex.utils.Commands.stat
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.getFilesInDir
 import xyz.jekyllex.utils.parseOutput
 import xyz.jekyllex.utils.mergeCommands
 import xyz.jekyllex.utils.toDate
@@ -67,6 +66,7 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
 
     var fileUri: Uri? = null
     private var query: String = ""
+    private var listJob: Job? = null
     private var statsJob: Job? = null
     var isBound by mutableStateOf(false)
     private var _cwd = mutableStateOf("")
@@ -75,11 +75,6 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
     var notificationRationale by mutableStateOf(false)
     private val _availableFiles = MutableStateFlow(listOf<File>())
     private val _searchedFiles = MutableStateFlow(listOf<File>())
-
-    private val lsCmd
-        get() = (_cwd.value == HOME_DIR).let {
-            if (it) "ls -d */" else "ls -a ${_cwd.value.replace(" ", "\\ ")}"
-        }
 
     val cwd
         get() = _cwd
@@ -122,29 +117,36 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
     }
 
     fun refresh() {
-        try {
-            val files = NativeUtils
-                .exec(shell(lsCmd))
-                .getFilesInDir(_cwd.value)
-
-            _availableFiles.value = files
-                .filter { it !in listOf(".", "..", ".git") }
-                .map {
+        listJob?.cancel()
+        statsJob?.let { it.cancel(); statsJob = null }
+        val dirPath = _cwd.value
+        listJob = viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val children = JFile(dirPath).listFiles()?.sortedBy { it.name } ?: emptyList()
+                val listed = if (dirPath == HOME_DIR) {
+                    children.filter { it.isDirectory && !it.name.startsWith(".") }
+                } else {
+                    children.filter { it.name != ".git" }
+                }
+                val files = listed.map {
                     File(
-                        name = it,
-                        path = "${_cwd.value}/$it",
-                        isDir = JFile("${_cwd.value}/$it").isDirectory
+                        name = it.name,
+                        path = "$dirPath/${it.name}",
+                        isDir = it.isDirectory
                     )
                 }
 
-            search(query)
+                _availableFiles.value = files
+                search(query)
 
-            if (!skipAnimations)
-                statsJob = viewModelScope.launch(Dispatchers.IO) { fetchStats() }
+                if (!skipAnimations) {
+                    statsJob = launch { fetchStats() }
+                }
 
-            Log.d(LOG_TAG, "Available files in ${_cwd.value}: $files")
-        } catch (e: Exception) {
-            Log.d(LOG_TAG, "Error while listing files in ${_cwd.value}: $e")
+                Log.d(LOG_TAG, "Available files in $dirPath: ${files.map { it.name }}")
+            } catch (e: Exception) {
+                Log.d(LOG_TAG, "Error while listing files in $dirPath: $e")
+            }
         }
     }
 
