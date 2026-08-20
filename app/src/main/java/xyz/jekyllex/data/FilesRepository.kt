@@ -1,0 +1,66 @@
+package xyz.jekyllex.data
+
+import xyz.jekyllex.models.File
+import xyz.jekyllex.utils.Commands.diskUsage
+import xyz.jekyllex.utils.Commands.getFromYAML
+import xyz.jekyllex.utils.Commands.shell
+import xyz.jekyllex.utils.Commands.stat
+import xyz.jekyllex.utils.Constants.HOME_DIR
+import xyz.jekyllex.utils.NativeUtils
+import xyz.jekyllex.utils.mergeCommands
+import xyz.jekyllex.utils.parseOutput
+import xyz.jekyllex.utils.toDate
+import java.io.File as JFile
+
+class FilesRepository {
+    fun list(dirPath: String): List<File> {
+        val children = JFile(dirPath).listFiles()?.sortedBy { it.name } ?: emptyList()
+        val listed = if (dirPath == HOME_DIR) {
+            children.filter { it.isDirectory && !it.name.startsWith(".") }
+        } else {
+            children.filter { it.name != ".git" }
+        }
+        return listed.map {
+            File(
+                name = it.name,
+                path = "$dirPath/${it.name}",
+                isDir = it.isDirectory
+            )
+        }
+    }
+
+    fun withStats(file: File, cwd: String): File {
+        val stats = NativeUtils.exec(
+            shell(
+                mergeCommands(
+                    diskUsage("-sh", file.path),
+                    stat("-c", "%Y", file.path)
+                )
+            )
+        ).split("\n")
+
+        val properties =
+            if (cwd == HOME_DIR)
+                NativeUtils.exec(
+                    getFromYAML(
+                        "${file.path}/_config.yml",
+                        "title", "description", "url", "baseurl"
+                    )
+                ).parseOutput()
+            else if (!file.isDir && cwd.contains("/_") && !cwd.contains("/_site"))
+                NativeUtils.exec(
+                    getFromYAML(file.path, "title", "description")
+                ).parseOutput()
+            else listOf()
+
+        return file.copy(
+            title = properties.getOrNull(0),
+            description = properties.getOrNull(1),
+            lastModified = stats.getOrNull(1)?.toDate(),
+            size = stats.getOrNull(0)?.split("\t")?.first(),
+            url = properties.getOrNull(2)?.let { url ->
+                url + (properties.getOrNull(3) ?: "")
+            }
+        )
+    }
+}
