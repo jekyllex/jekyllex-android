@@ -27,12 +27,17 @@ package xyz.jekyllex
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Context
 import android.os.Build
+import xyz.jekyllex.data.AppContainer
 
 class JekyllEx : Application() {
+    lateinit var container: AppContainer
+        private set
 
     override fun onCreate() {
         super.onCreate()
+        container = AppContainer(this)
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
@@ -48,3 +53,6 @@ class JekyllEx : Application() {
         manager.createNotificationChannel(channel)
     }
 }
+
+val Context.appContainer: AppContainer
+    get() = (applicationContext as JekyllEx).container
