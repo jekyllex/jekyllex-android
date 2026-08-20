@@ -33,10 +33,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -47,11 +46,9 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,13 +56,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
 import java.io.File as JFile
 import xyz.jekyllex.R
 import xyz.jekyllex.models.File
@@ -80,31 +74,9 @@ fun FileButton(
     onLongClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val viewConfiguration = LocalViewConfiguration.current
     val openDeleteDialog = remember { mutableStateOf(false) }
-    val interactionSource = remember { MutableInteractionSource() }
     val currentOnClick by rememberUpdatedState(onClick)
     val currentOnLongClick by rememberUpdatedState(onLongClick)
-
-    LaunchedEffect (interactionSource) {
-        var isLongClick = false
-
-        interactionSource.interactions.collectLatest { interaction ->
-            when (interaction) {
-                is PressInteraction.Press -> {
-                    isLongClick = false
-                    delay(viewConfiguration.longPressTimeoutMillis)
-                    isLongClick = true
-                    currentOnLongClick()
-                }
-
-                is PressInteraction.Release -> {
-                    if (!isLongClick) currentOnClick()
-                    isLongClick = false
-                }
-            }
-        }
-    }
 
     if (openDeleteDialog.value) {
         val jFile = JFile(file.path)
@@ -123,15 +95,15 @@ fun FileButton(
         )
     }
 
-    OutlinedButton(
-        onClick = {},
-        modifier = modifier,
+    Surface(
+        modifier = modifier.combinedClickable(
+            onClick = currentOnClick,
+            onLongClick = currentOnLongClick,
+        ),
         shape = RoundedCornerShape(16.dp),
-        interactionSource = interactionSource,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
-        Surface {
-            Column {
+        Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -214,7 +186,6 @@ fun FileButton(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
-            }
         }
     }
 }

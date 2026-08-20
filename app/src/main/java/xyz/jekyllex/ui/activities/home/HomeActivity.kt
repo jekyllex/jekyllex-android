@@ -97,6 +97,7 @@ import java.io.File as JFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.activities.home.components.DropDownMenu
@@ -533,13 +534,17 @@ fun HomeScreen(
 
                         homeViewModel.refresh()
                     } catch (e: Exception) {
-                        Toast.makeText(
-                            context, "Error copying file!", Toast.LENGTH_SHORT
-                        ).show()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                context, "Error copying file!", Toast.LENGTH_SHORT
+                            ).show()
+                        }
                         e.printStackTrace()
                     } finally {
-                        homeViewModel.fileUri = null
-                        homeViewModel.copyFileConfirmation = false
+                        withContext(Dispatchers.Main) {
+                            homeViewModel.fileUri = null
+                            homeViewModel.copyFileConfirmation = false
+                        }
                     }
                 }
             }
