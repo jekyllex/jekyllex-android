@@ -44,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import xyz.jekyllex.R
-import xyz.jekyllex.ui.activities.settings.SettingsActivity
 import xyz.jekyllex.utils.Commands.bundle
 import xyz.jekyllex.utils.Constants.HOME_DIR
 
@@ -55,6 +54,7 @@ fun DropDownMenu(
     picker: ActivityResultLauncher<String>,
     onRefresh: () -> Unit,
     goHome: () -> Unit,
+    onOpenSettings: () -> Unit,
     serverIcon: @Composable () -> Unit,
     onCreateProjectConfirmation: (String, MutableState<Boolean>) -> Unit,
     onCreateFileConfirmation: (String, Boolean, MutableState<Boolean>) -> Unit,
@@ -113,9 +113,7 @@ fun DropDownMenu(
             })
             DropdownMenuItem(text = { Text("Settings") }, onClick = {
                 expanded = !expanded
-                context.startActivity(
-                    Intent(context, SettingsActivity::class.java)
-                )
+                onOpenSettings()
             })
             if (cwd.contains("$HOME_DIR/")) {
                 DropdownMenuItem(text = { Text("bundle install") }, onClick = {
