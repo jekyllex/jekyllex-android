@@ -25,6 +25,7 @@
 package xyz.jekyllex.utils
 
 import java.io.File
+import java.util.zip.ZipInputStream
 import android.content.Context
 import android.content.Intent
 import android.content.ActivityNotFoundException
@@ -105,6 +106,33 @@ fun Array<String>.override(session: Session): (() -> Unit)? {
             { session.clearLogs(); }
         }
         else -> null
+    }
+}
+
+fun File.clearContents() {
+    listFiles()?.forEach { child ->
+        if (child.isDirectory) child.deleteRecursively() else child.delete()
+    }
+}
+
+fun File.unzipTo(dest: File) {
+    val destCanon = dest.canonicalFile
+    ZipInputStream(inputStream()).use { zis ->
+        var entry = zis.nextEntry
+        while (entry != null) {
+            val out = File(destCanon, entry.name).canonicalFile
+            if (out != destCanon && !out.path.startsWith(destCanon.path + File.separator)) {
+                throw SecurityException(entry.name)
+            }
+            if (entry.isDirectory) {
+                out.mkdirs()
+            } else {
+                out.parentFile?.mkdirs()
+                out.outputStream().use { zis.copyTo(it) }
+            }
+            zis.closeEntry()
+            entry = zis.nextEntry
+        }
     }
 }
 
