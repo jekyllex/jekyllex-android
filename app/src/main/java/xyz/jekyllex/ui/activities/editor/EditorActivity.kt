@@ -90,18 +90,18 @@ import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.pathInProject
 
-private val isBound = mutableStateOf(false)
-private lateinit var service: ProcessService
-
 class EditorActivity : ComponentActivity() {
+    private var serviceBound = false
+    private val boundService = mutableStateOf<ProcessService?>(null)
+
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
-            service = (binder as ProcessService.LocalBinder).service
-            isBound.value = true
+            serviceBound = true
+            boundService.value = (binder as ProcessService.LocalBinder).service
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            isBound.value = false
+            boundService.value = null
         }
     }
 
@@ -116,19 +116,19 @@ class EditorActivity : ComponentActivity() {
 
         setContent {
             JekyllExTheme {
-                EditorView(file)
+                EditorView(file, boundService.value)
             }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        unbindService(connection)
+        if (serviceBound) unbindService(connection)
     }
 }
 
 @Composable
-fun EditorView(file: String = "") {
+fun EditorView(file: String = "", processService: ProcessService? = null) {
     val context = LocalContext.current as Activity
     var showTerminalSheet by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf(file.formatDir("/")) }
@@ -182,17 +182,17 @@ fun EditorView(file: String = "") {
                     }
                 },
                 actions = {
-                    if (isBound.value) {
+                    if (processService != null) {
                         DropDownMenu(
-                            serverItemText = if (service.isRunning) "Stop server" else "Start server",
+                            serverItemText = if (processService.isRunning) "Stop server" else "Start server",
                             runServer = {
-                                if (!service.isRunning)
+                                if (!processService.isRunning)
                                     file.getProjectDir()?.let { dir ->
-                                        service.exec(jekyll("serve"), dir)
+                                        processService.exec(jekyll("serve"), dir)
                                         showTerminalSheet = true
                                     }
                                 else
-                                    service.killProcess()
+                                    processService.killProcess()
                             },
                             openTerminal = {
                                 showTerminalSheet = true
@@ -230,7 +230,7 @@ fun EditorView(file: String = "") {
         var tabIndex by remember { mutableIntStateOf(0) }
         val viewCache = remember { mutableStateMapOf<Int, WebView>() }
         val isEditorLoading = remember { mutableStateOf(true) }
-        val canPreview by remember { derivedStateOf { isBound.value && service.isRunning } }
+        val canPreview by remember { derivedStateOf { processService?.isRunning == true } }
 
         val theme = settings.get<Int>(Setting.EDITOR_THEME)
         val previewPort = settings.get<Int>(Setting.PREVIEW_PORT)
@@ -288,17 +288,17 @@ fun EditorView(file: String = "") {
                 0 -> Editor(viewCache, file, theme, timeout, innerPadding, isEditorLoading)
                 1 -> Preview(viewCache, file, previewPort, guessedUrl, canPreview, innerPadding, updateDescription) {
                     file.getProjectDir()?.let { dir ->
-                        service.exec(jekyll("serve"), dir)
+                        processService?.exec(jekyll("serve"), dir)
                         showTerminalSheet = true
                     }
                 }
             }
         }
 
-        if (showTerminalSheet) {
+        if (showTerminalSheet && processService != null) {
             TerminalSheet(
-                isServiceBound = isBound.value,
-                sessionManager = service.sessionManager,
+                isServiceBound = true,
+                sessionManager = processService.sessionManager,
                 onDismiss = { showTerminalSheet = false },
             )
         }

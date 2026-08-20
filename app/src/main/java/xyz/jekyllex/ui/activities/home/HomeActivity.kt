@@ -123,23 +123,25 @@ import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.utils.openInExternalApp
 
-private lateinit var service: ProcessService
-
 class HomeActivity : ComponentActivity() {
+    private var serviceBound = false
     private lateinit var settings: Settings
     private lateinit var viewModel: HomeViewModel
     private lateinit var pickFileLauncher: ActivityResultLauncher<String>
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+    private val boundService = mutableStateOf<ProcessService?>(null)
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
+            val processService = (binder as ProcessService.LocalBinder).service
+            serviceBound = true
             viewModel.isBound = true
-            service = (binder as ProcessService.LocalBinder).service
-            service.exec(echo("Welcome to JekyllEx!"))
+            boundService.value = processService
+            processService.exec(echo("Welcome to JekyllEx!"))
 
             lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    service.sessionManager.sessions.value.first().dir.collect { dir ->
+                    processService.sessionManager.sessions.value.first().dir.collect { dir ->
                         viewModel.cd(dir)
                     }
                 }
@@ -148,13 +150,17 @@ class HomeActivity : ComponentActivity() {
 
         override fun onServiceDisconnected(arg0: ComponentName) {
             viewModel.isBound = false
+            boundService.value = null
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!NativeUtils.areUsable(requiredBinaries)) NativeUtils.launchInstaller(this)
+        if (!NativeUtils.areUsable(requiredBinaries)) {
+            NativeUtils.launchInstaller(this)
+            return
+        }
 
         startService(Intent(this, ProcessService::class.java))
         Intent(this, ProcessService::class.java).also { intent ->
@@ -212,7 +218,12 @@ class HomeActivity : ComponentActivity() {
 
         setContent {
             JekyllExTheme {
-                HomeScreen(viewModel, pickFileLauncher, requestPermissionLauncher)
+                HomeScreen(
+                    viewModel,
+                    boundService.value,
+                    pickFileLauncher,
+                    requestPermissionLauncher
+                )
             }
         }
     }
@@ -230,13 +241,14 @@ class HomeActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unbindService(connection)
+        if (serviceBound) unbindService(connection)
     }
 }
 
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel,
+    processService: ProcessService?,
     pickFileLauncher: ActivityResultLauncher<String>,
     requestPermissionLauncher: ActivityResultLauncher<String>
 ) {
@@ -246,7 +258,8 @@ fun HomeScreen(
     var showTerminalSheet by remember { mutableStateOf(false) }
 
     val create: (input: String, callback: () -> Unit) -> Unit = create@{ input, callback ->
-        if (!homeViewModel.isBound || homeViewModel.isCreating) return@create
+        val service = processService ?: return@create
+        if (homeViewModel.isCreating) return@create
         homeViewModel.isCreating = true
 
         val command: Array<String> =
@@ -280,7 +293,7 @@ fun HomeScreen(
 
     val onBackPressed = {
         resetQuery()
-        if (homeViewModel.isBound) service.cd("..")
+        processService?.cd("..")
     }
 
     BackHandler(
@@ -304,7 +317,7 @@ fun HomeScreen(
                         pickFileLauncher,
                         goHome = {
                             resetQuery()
-                            if (homeViewModel.isBound) service.cd(HOME_DIR)
+                            processService?.cd(HOME_DIR)
                         },
                         onCreateProjectConfirmation = { input, isDialogOpen ->
                             if (input.isNotBlank()) create(input) {
@@ -315,6 +328,7 @@ fun HomeScreen(
                         onCreateFileConfirmation = onCreateFileConfirmation@{ input, isFolder, isDialogOpen ->
                             if (homeViewModel.isCreating) return@onCreateFileConfirmation
                             homeViewModel.isCreating = true
+                            val service = processService ?: return@onCreateFileConfirmation
                             val cwd = homeViewModel.cwd.value
                             val isValidURL = URLUtil.isValidUrl(input)
                             val command =
@@ -329,7 +343,7 @@ fun HomeScreen(
                         },
                         serverIcon = {
                             IconButton(onClick = {
-                                if (!homeViewModel.isBound) return@IconButton
+                                val service = processService ?: return@IconButton
                                 if (!service.isRunning) {
                                     service.exec(
                                         jekyll("serve"),
@@ -340,15 +354,14 @@ fun HomeScreen(
                                 else
                                     service.killProcess()
                             }) {
-                                if (!service.isRunning)
+                                if (processService?.isRunning != true)
                                     Icon(Icons.Default.PlayArrow, "Start server")
                                 else
                                     Icon(painterResource(R.drawable.stop), "Stop server")
                             }
                         }
                     ) exec@{ cmd ->
-                        if (!homeViewModel.isBound) return@exec
-
+                        val service = processService ?: return@exec
                         service.exec(cmd)
                         showTerminalSheet = true
                     }
@@ -481,7 +494,7 @@ fun HomeScreen(
                             onClick = {
                                 if (files[it].isDir) {
                                     resetQuery()
-                                    if (homeViewModel.isBound) service.cd(files[it].name)
+                                    processService?.cd(files[it].name)
                                 } else if (!files[it].name.contains(".gitconfig")) {
                                     files[it].open(context)
                                 }
@@ -559,9 +572,10 @@ fun HomeScreen(
             )
         }
 
-        if (showTerminalSheet) {
+        val service = processService
+        if (showTerminalSheet && service != null) {
             TerminalSheet(
-                isServiceBound = homeViewModel.isBound,
+                isServiceBound = true,
                 sessionManager = service.sessionManager,
                 onDismiss = { showTerminalSheet = false }
             )
