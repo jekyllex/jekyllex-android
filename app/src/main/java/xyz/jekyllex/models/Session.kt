@@ -30,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import java.io.BufferedReader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -56,12 +57,15 @@ data class Session(
     private lateinit var reader: BufferedReader
     private val processBuilder = ProcessBuilder()
     private val queue: MutableList<Array<String>> = mutableListOf()
+    private val job = SupervisorJob()
+    private val scope = CoroutineScope(job + Dispatchers.IO)
 
     private var _dir = MutableStateFlow(initialDir ?: HOME_DIR)
     val dir get() = _dir.asStateFlow()
 
     private var _isRunning = mutableStateOf(false)
-    val isRunning get() = _isRunning.value || queue.isNotEmpty()
+    private var _queued = mutableStateOf(false)
+    val isRunning get() = _isRunning.value || _queued.value
 
     private val _logs = MutableStateFlow(emptyList<String>())
     val logs get() = _logs.asStateFlow()
@@ -92,7 +96,11 @@ data class Session(
         if (isRunning) return
 
         queue.addAll(command)
-        processQueue(overrideDir, callBack)
+        _queued.value = queue.isNotEmpty()
+        processQueue(overrideDir) {
+            _queued.value = false
+            callBack()
+        }
     }
 
     private fun processQueue(dir: String? = null, callBack: () -> Unit) {
@@ -113,7 +121,7 @@ data class Session(
         val overrideFn = command.override(this)
         if (overrideFn != null) { overrideFn(); callBack(); return }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        scope.launch {
             _isRunning.value = true
             _runningCommand.update { command.joinToString(" ") }
             notificationCallback()
@@ -137,7 +145,7 @@ data class Session(
 
                 reader = process.inputStream.bufferedReader()
 
-                CoroutineScope(Dispatchers.IO).launch {
+                val drain = launch {
                     try {
                         reader.use {
                             it.forEachLine { line ->
@@ -150,6 +158,7 @@ data class Session(
                 }
 
                 val exitCode = process.waitFor()
+                drain.join()
                 if (exitCode != 0) appendLog("Process exited with code $exitCode")
             } catch (e: Exception) {
                 appendLog("${e.cause}")
@@ -188,12 +197,13 @@ data class Session(
         }
     }
 
-    fun kill() = ::process.isInitialized.let { if(it) process.destroy() }
+    fun kill() { if (::process.isInitialized) process.destroy() }
+
+    fun close() { kill(); job.cancel() }
 
     private fun stop() {
         _isRunning.value = false
         _runningCommand.update { "" }
-        if (::reader.isInitialized) reader.close()
         notificationCallback()
     }
 }
