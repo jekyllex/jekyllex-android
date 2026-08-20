@@ -45,11 +45,15 @@ object Commands {
     fun bundle(vararg command: String): Array<String> = arrayOf("bundle", *command)
     fun jekyll(vararg command: String): Array<String> = arrayOf("jekyll", *command)
 
-    fun getFromYAML(file: String, vararg properties: String): Array<String> = ruby(
-        "-e", "require 'safe_yaml';_=SafeYAML.load_file('${file}');puts ${
-            properties.joinToString(", ") { "_['${it}']" }
-        };"
-    )
+    fun getFromYAML(file: String, vararg properties: String): Array<String> {
+        val puts = properties.indices.joinToString(", ") { "_[ARGV[${it + 1}]]" }
+        return ruby(
+            "-e", "require 'safe_yaml';_=SafeYAML.load_file(ARGV[0]);puts $puts;",
+            "--",
+            file,
+            *properties
+        )
+    }
 
     fun getProjectCommands(): Array<String> = ruby(
         "-e", "require 'safe_yaml';print SafeYAML.load_file('_config.yml')" +
@@ -60,21 +64,24 @@ object Commands {
 
     fun guessDestinationUrl(file: String) = ruby(
         "-e", "require 'jekyll';" +
+                "file=ARGV[0];" +
                 "Jekyll.logger.log_level=:error;" +
                 "c=Jekyll.configuration({'config': '_config.yml'});" +
                 "base=c['baseurl'] || '';" +
                 "s=Jekyll::Site.new(c);" +
                 "s.collections.each { |n,_| " +
-                    "if '$file'.include?(\"_#{n}/\") then " +
+                    "if file.include?(\"_#{n}/\") then " +
                         "puts Jekyll::Document.new(" +
-                            "'$file'," + ":site=>s," +
+                            "file," + ":site=>s," +
                             ":collection=>s.collections[n]" +
                         ").tap(&:read).url.prepend(base); exit; " +
                     "end" +
                 "}; " +
                 "_p=Jekyll::Page.new(" +
-                    "s" + ",'.'," + "''," + "'$file'" +
+                    "s" + ",'.'," + "''," + "file" +
                 ");" +
                 "puts _p.url.prepend(base);",
+        "--",
+        file,
     )
 }
