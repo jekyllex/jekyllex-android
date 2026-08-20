@@ -25,22 +25,32 @@
 package xyz.jekyllex.ui.activities.editor.webview
 
 import java.io.File
+import android.os.Handler
+import android.os.Looper
 import android.webkit.JavascriptInterface
 import androidx.compose.runtime.MutableState
 import xyz.jekyllex.utils.fromBase64
 
 class IOBridge(path: String, private val isLoading: MutableState<Boolean>) {
     private val file = File(path)
+    private val mainHandler = Handler(Looper.getMainLooper())
+    @Volatile
+    private var trusted = false
     private val isSymlink
         get() = file.let { it.canonicalPath != it.absolutePath }
 
+    fun setTrusted(value: Boolean) {
+        trusted = value
+    }
+
     @JavascriptInterface
     fun setLoaded() {
-        isLoading.value = false
+        mainHandler.post { isLoading.value = false }
     }
 
     @JavascriptInterface
     fun saveText(content: String) {
+        if (!trusted) return
         file.apply {
             if (isSymlink) { delete(); createNewFile(); }
             writeText(content.fromBase64())
