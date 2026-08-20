@@ -44,15 +44,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import xyz.jekyllex.R
-import xyz.jekyllex.ui.activities.home.HomeViewModel
 import xyz.jekyllex.ui.activities.settings.SettingsActivity
 import xyz.jekyllex.utils.Commands.bundle
 import xyz.jekyllex.utils.Constants.HOME_DIR
 
 @Composable
 fun DropDownMenu(
-    homeViewModel: HomeViewModel,
+    cwd: String,
+    isCreating: Boolean,
     picker: ActivityResultLauncher<String>,
+    onRefresh: () -> Unit,
     goHome: () -> Unit,
     serverIcon: @Composable () -> Unit,
     onCreateProjectConfirmation: (String, MutableState<Boolean>) -> Unit,
@@ -64,9 +65,9 @@ fun DropDownMenu(
     val openCreateDialog = remember { mutableStateOf(false) }
 
     if (openCreateDialog.value) {
-        if (homeViewModel.cwd.value == HOME_DIR) {
+        if (cwd == HOME_DIR) {
             CreateProjectDialog(
-                isCreating = homeViewModel.isCreating,
+                isCreating = isCreating,
                 onDismissRequest = { openCreateDialog.value = false },
                 onConfirmation = { onCreateProjectConfirmation(it, openCreateDialog) }
             )
@@ -75,7 +76,7 @@ fun DropDownMenu(
             CreateFileDialog(
                 picker = picker,
                 isOpen = openCreateDialog,
-                isCreating = homeViewModel.isCreating,
+                isCreating = isCreating,
                 onDismissRequest = { openCreateDialog.value = false },
                 onConfirmation = { input, isFolder ->
                     onCreateFileConfirmation(input, isFolder, openCreateDialog)
@@ -84,14 +85,14 @@ fun DropDownMenu(
         }
     }
 
-    if (homeViewModel.cwd.value != HOME_DIR) {
+    if (cwd != HOME_DIR) {
         IconButton(onClick = goHome) {
             Icon(Icons.Default.Home, "Go back to home")
         }
         serverIcon()
     }
 
-    IconButton(enabled = !homeViewModel.isCreating, onClick = { openCreateDialog.value = true }) {
+    IconButton(enabled = !isCreating, onClick = { openCreateDialog.value = true }) {
         Icon(Icons.Default.AddCircle, "Create new project")
     }
 
@@ -108,7 +109,7 @@ fun DropDownMenu(
         ) {
             DropdownMenuItem(text = { Text("Refresh") }, onClick = {
                 expanded = !expanded
-                homeViewModel.refresh()
+                onRefresh()
             })
             DropdownMenuItem(text = { Text("Settings") }, onClick = {
                 expanded = !expanded
@@ -116,7 +117,7 @@ fun DropDownMenu(
                     Intent(context, SettingsActivity::class.java)
                 )
             })
-            if (homeViewModel.cwd.value.contains("$HOME_DIR/")) {
+            if (cwd.contains("$HOME_DIR/")) {
                 DropdownMenuItem(text = { Text("bundle install") }, onClick = {
                     expanded = !expanded
                     exec(bundle("install"))
