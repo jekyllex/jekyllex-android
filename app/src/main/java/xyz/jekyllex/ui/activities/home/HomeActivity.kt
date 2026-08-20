@@ -96,13 +96,14 @@ import xyz.jekyllex.ui.components.GenericDialog
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.FileButton
 import xyz.jekyllex.ui.components.TerminalSheet
+import xyz.jekyllex.ui.navigation.JekyllExNav
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.Commands.echo
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.Constants.requiredBinaries
 import xyz.jekyllex.appContainer
-import xyz.jekyllex.utils.open
 import xyz.jekyllex.utils.Setting
+import xyz.jekyllex.utils.usesBuiltInEditor
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.openInExternalApp
@@ -194,10 +195,11 @@ class HomeActivity : ComponentActivity() {
 
         setContent {
             JekyllExTheme {
-                HomeScreen(
-                    viewModel,
-                    pickFileLauncher,
-                    requestPermissionLauncher
+                JekyllExNav(
+                    homeViewModel = viewModel,
+                    process = container.process,
+                    pickFileLauncher = pickFileLauncher,
+                    requestPermissionLauncher = requestPermissionLauncher,
                 )
             }
         }
@@ -227,7 +229,9 @@ class HomeActivity : ComponentActivity() {
 fun HomeScreen(
     homeViewModel: HomeViewModel,
     pickFileLauncher: ActivityResultLauncher<String>,
-    requestPermissionLauncher: ActivityResultLauncher<String>
+    requestPermissionLauncher: ActivityResultLauncher<String>,
+    onOpenFile: (String) -> Unit = {},
+    onOpenSettings: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -269,6 +273,7 @@ fun HomeScreen(
                             resetQuery()
                             homeViewModel.goHome()
                         },
+                        onOpenSettings = onOpenSettings,
                         onCreateProjectConfirmation = { input, isDialogOpen ->
                             if (input.isNotBlank()) homeViewModel.create(input) {
                                 isDialogOpen.value = false
@@ -426,7 +431,8 @@ fun HomeScreen(
                                     resetQuery()
                                     homeViewModel.openDir(files[it].name)
                                 } else if (!files[it].name.contains(".gitconfig")) {
-                                    files[it].open(context)
+                                    if (files[it].usesBuiltInEditor()) onOpenFile(files[it].path)
+                                    else files[it].openInExternalApp(context, false)
                                 }
                             },
                             onLongClick = {

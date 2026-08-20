@@ -48,11 +48,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -73,137 +75,145 @@ class WebPageViewer : ComponentActivity() {
 
         setContent {
             JekyllExTheme {
-                var title by remember {
-                    mutableStateOf(intent.getStringExtra("title") ?: "")
-                }
-                var currentUrl by remember {
-                    mutableStateOf(intent.getStringExtra("url") ?: HOME_PAGE)
-                }
-                var isLoading by remember { mutableStateOf(true) }
-                val webView = remember {
-                    WebView(this).apply {
-                        webViewClient = object : WebViewClient() {
-                            override fun shouldOverrideUrlLoading(
-                                view: WebView,
-                                request: WebResourceRequest
-                            ): Boolean {
-                                val url = request.url.toString()
-                                Log.d("WebPageViewer", "Loading $url")
+                WebPageScreen(
+                    initialUrl = intent.getStringExtra("url") ?: HOME_PAGE,
+                    initialTitle = intent.getStringExtra("title") ?: "",
+                    onBack = { finish() },
+                )
+            }
+        }
+    }
+}
 
-                                if (url.contains(DOMAIN) || url.contains(GITHUB_DOMAIN)) {
-                                    isLoading = true
-                                    return false
-                                }
+@Composable
+fun WebPageScreen(
+    initialUrl: String,
+    initialTitle: String,
+    onBack: () -> Unit,
+) {
+    val context = LocalContext.current
+    var title by remember { mutableStateOf(initialTitle) }
+    var currentUrl by remember { mutableStateOf(initialUrl) }
+    var isLoading by remember { mutableStateOf(true) }
+    val webView = remember {
+        WebView(context).apply {
+            webViewClient = object : WebViewClient() {
+                override fun shouldOverrideUrlLoading(
+                    view: WebView,
+                    request: WebResourceRequest
+                ): Boolean {
+                    val url = request.url.toString()
+                    Log.d("WebPageViewer", "Loading $url")
 
-                                try {
-                                    startActivity(Intent(Intent.ACTION_VIEW, request.url))
-                                } catch (e: ActivityNotFoundException) {
-                                    Toast.makeText(
-                                        this@WebPageViewer,
-                                        "No app found to open this link",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                                return true
-                            }
-
-                            override fun onPageFinished(view: WebView, url: String) {
-                                currentUrl = url
-                                isLoading = false
-                                view.title?.let { title = it }
-                                super.onPageFinished(view, url)
-                            }
-                        }
-
-                        settings.javaScriptEnabled = true
-
-                        loadUrl(intent.getStringExtra("url") ?: HOME_PAGE)
+                    if (url.contains(DOMAIN) || url.contains(GITHUB_DOMAIN)) {
+                        isLoading = true
+                        return false
                     }
-                }
 
-                BackHandler {
-                    if (webView.canGoBack()) {
-                        webView.goBack()
-                    } else {
-                        finish()
+                    try {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
+                    } catch (e: ActivityNotFoundException) {
+                        Toast.makeText(
+                            context,
+                            "No app found to open this link",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
+                    return true
                 }
 
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    topBar = {
-                        JekyllExAppBar(
-                            title = {
-                                Column {
-                                    Text(
-                                        text = title,
-                                        maxLines = 1,
-                                        fontSize = 20.sp,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.padding(0.dp),
-                                    )
-                                    Text(
-                                        text = currentUrl,
-                                        maxLines = 1,
-                                        fontSize = 14.sp,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.padding(0.dp),
-                                        style = MaterialTheme.typography.labelSmall,
-                                    )
-                                }
-                            },
-                            navigationIcon = {
-                                IconButton(onClick = { this.finish() }) {
-                                    Icon(
-                                        contentDescription = "Go back",
-                                        painter = painterResource(id = R.drawable.back),
-                                        modifier = Modifier
-                                            .padding(start = 8.dp)
-                                            .size(20.dp)
-                                    )
-                                }
-                            },
-                            actions = {
-                                IconButton(onClick = {
-                                    try {
-                                        startActivity(
-                                            Intent(Intent.ACTION_VIEW, Uri.parse(webView.url))
-                                        )
-                                    } catch (e: ActivityNotFoundException) {
-                                        Toast.makeText(
-                                            this@WebPageViewer,
-                                            "No app found to open this link",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }) {
-                                    Icon(
-                                        modifier = Modifier.size(20.dp),
-                                        contentDescription = "Open in browser",
-                                        painter = painterResource(R.drawable.open_url)
-                                    )
-                                }
-                            }
-                        )
-                    }
-                ) { innerPadding ->
-
-                    Box(
-                        Modifier.fillMaxSize().padding(innerPadding)
-                    ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.align(Alignment.Center).zIndex(1f)
-                            )
-                        }
-
-                        AndroidView(
-                            factory = { webView },
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
+                override fun onPageFinished(view: WebView, url: String) {
+                    currentUrl = url
+                    isLoading = false
+                    view.title?.let { title = it }
+                    super.onPageFinished(view, url)
                 }
             }
+
+            settings.javaScriptEnabled = true
+            loadUrl(initialUrl)
+        }
+    }
+
+    BackHandler {
+        if (webView.canGoBack()) {
+            webView.goBack()
+        } else {
+            onBack()
+        }
+    }
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            JekyllExAppBar(
+                title = {
+                    Column {
+                        Text(
+                            text = title,
+                            maxLines = 1,
+                            fontSize = 20.sp,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(0.dp),
+                        )
+                        Text(
+                            text = currentUrl,
+                            maxLines = 1,
+                            fontSize = 14.sp,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(0.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            contentDescription = "Go back",
+                            painter = painterResource(id = R.drawable.back),
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .size(20.dp)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        try {
+                            context.startActivity(
+                                Intent(Intent.ACTION_VIEW, Uri.parse(webView.url))
+                            )
+                        } catch (e: ActivityNotFoundException) {
+                            Toast.makeText(
+                                context,
+                                "No app found to open this link",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }) {
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            contentDescription = "Open in browser",
+                            painter = painterResource(R.drawable.open_url)
+                        )
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Box(
+            Modifier.fillMaxSize().padding(innerPadding)
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center).zIndex(1f)
+                )
+            }
+
+            AndroidView(
+                factory = { webView },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
 }

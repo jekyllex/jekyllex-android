@@ -109,14 +109,27 @@ class SettingsActivity : ComponentActivity() {
 
         setContent {
             JekyllExTheme {
-                SettingsView()
+                SettingsView(
+                    onBack = { finish() },
+                    onOpenPage = { url, title ->
+                        startActivity(
+                            Intent(this, WebPageViewer::class.java).apply {
+                                putExtra("url", url)
+                                putExtra("title", title)
+                            }
+                        )
+                    },
+                )
             }
         }
     }
 }
 
 @Composable
-fun SettingsView() {
+fun SettingsView(
+    onBack: () -> Unit = {},
+    onOpenPage: (url: String, title: String) -> Unit = { _, _ -> },
+) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current as Activity
     val clipboardManager = LocalClipboardManager.current
@@ -219,7 +232,7 @@ fun SettingsView() {
             JekyllExAppBar(
                 title = { Text("Settings") },
                 navigationIcon = {
-                    IconButton(onClick = { context.finish() }) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             contentDescription = "Go back",
                             painter = painterResource(id = R.drawable.back),
@@ -566,12 +579,7 @@ fun SettingsView() {
                 preference(
                     key = "docs",
                     onClick = {
-                        context.startActivity(
-                            Intent(context, WebPageViewer::class.java).apply {
-                                putExtra("url", DOCS)
-                                putExtra("title", context.getString(R.string.docs))
-                            }
-                        )
+                        onOpenPage(DOCS, context.getString(R.string.docs))
                     },
                     title = { Text(context.getString(R.string.docs)) },
                 )
@@ -589,12 +597,7 @@ fun SettingsView() {
                 preference(
                     key = "licenses",
                     onClick = {
-                        context.startActivity(
-                            Intent(context, WebPageViewer::class.java).apply {
-                                putExtra("url", LICENSES)
-                                putExtra("title", context.getString(R.string.licenses))
-                            }
-                        )
+                        onOpenPage(LICENSES, context.getString(R.string.licenses))
                     },
                     title = { Text(context.getString(R.string.licenses)) },
                 )
@@ -602,12 +605,7 @@ fun SettingsView() {
                 preference(
                     key = "privacy",
                     onClick = {
-                        context.startActivity(
-                            Intent(context, WebPageViewer::class.java).apply {
-                                putExtra("url", PRIVACY)
-                                putExtra("title", context.getString(R.string.privacy_policy))
-                            }
-                        )
+                        onOpenPage(PRIVACY, context.getString(R.string.privacy_policy))
                     },
                     title = { Text(context.getString(R.string.privacy_policy)) },
                 )
@@ -615,12 +613,7 @@ fun SettingsView() {
                 preference(
                     key = "terms",
                     onClick = {
-                        context.startActivity(
-                            Intent(context, WebPageViewer::class.java).apply {
-                                putExtra("url", TERMS)
-                                putExtra("title", context.getString(R.string.terms_and_conditions))
-                            }
-                        )
+                        onOpenPage(TERMS, context.getString(R.string.terms_and_conditions))
                     },
                     title = { Text(context.getString(R.string.terms_and_conditions)) },
                 )
