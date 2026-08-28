@@ -68,7 +68,6 @@ class HomeViewModel(private var skipAnimations: Boolean) : ViewModel() {
     private var query: String = ""
     private var listJob: Job? = null
     private var statsJob: Job? = null
-    var isBound by mutableStateOf(false)
     private var _cwd = mutableStateOf("")
     var isCreating by mutableStateOf(false)
     var copyFileConfirmation by mutableStateOf(false)

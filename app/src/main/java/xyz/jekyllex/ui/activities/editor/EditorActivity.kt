@@ -52,7 +52,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -96,7 +95,6 @@ class EditorActivity : ComponentActivity() {
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
-            serviceBound = true
             boundService.value = (binder as ProcessService.LocalBinder).service
         }
 
@@ -109,7 +107,7 @@ class EditorActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         Intent(this, ProcessService::class.java).also { intent ->
-            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+            serviceBound = bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
 
         val file = intent.getStringExtra("file") ?: ""
@@ -230,7 +228,7 @@ fun EditorView(file: String = "", processService: ProcessService? = null) {
         var tabIndex by remember { mutableIntStateOf(0) }
         val viewCache = remember { mutableStateMapOf<Int, WebView>() }
         val isEditorLoading = remember { mutableStateOf(true) }
-        val canPreview by remember { derivedStateOf { processService?.isRunning == true } }
+        val canPreview = processService?.isRunning == true
 
         val theme = settings.get<Int>(Setting.EDITOR_THEME)
         val previewPort = settings.get<Int>(Setting.PREVIEW_PORT)
@@ -287,8 +285,9 @@ fun EditorView(file: String = "", processService: ProcessService? = null) {
             when (tabIndex) {
                 0 -> Editor(viewCache, file, theme, timeout, innerPadding, isEditorLoading)
                 1 -> Preview(viewCache, file, previewPort, guessedUrl, canPreview, innerPadding, updateDescription) {
+                    val service = processService ?: return@Preview
                     file.getProjectDir()?.let { dir ->
-                        processService?.exec(jekyll("serve"), dir)
+                        service.exec(jekyll("serve"), dir)
                         showTerminalSheet = true
                     }
                 }

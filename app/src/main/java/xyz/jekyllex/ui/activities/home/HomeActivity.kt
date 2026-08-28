@@ -134,8 +134,6 @@ class HomeActivity : ComponentActivity() {
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, binder: IBinder) {
             val processService = (binder as ProcessService.LocalBinder).service
-            serviceBound = true
-            viewModel.isBound = true
             boundService.value = processService
             processService.exec(echo("Welcome to JekyllEx!"))
 
@@ -149,7 +147,6 @@ class HomeActivity : ComponentActivity() {
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            viewModel.isBound = false
             boundService.value = null
         }
     }
@@ -164,7 +161,7 @@ class HomeActivity : ComponentActivity() {
 
         startService(Intent(this, ProcessService::class.java))
         Intent(this, ProcessService::class.java).also { intent ->
-            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+            serviceBound = bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
 
         settings = Settings(this)
@@ -326,9 +323,9 @@ fun HomeScreen(
                             }
                         },
                         onCreateFileConfirmation = onCreateFileConfirmation@{ input, isFolder, isDialogOpen ->
+                            val service = processService ?: return@onCreateFileConfirmation
                             if (homeViewModel.isCreating) return@onCreateFileConfirmation
                             homeViewModel.isCreating = true
-                            val service = processService ?: return@onCreateFileConfirmation
                             val cwd = homeViewModel.cwd.value
                             val isValidURL = URLUtil.isValidUrl(input)
                             val command =
@@ -383,7 +380,7 @@ fun HomeScreen(
         floatingActionButton = {
             FloatingActionButton(
                 shape = CircleShape,
-                onClick = { showTerminalSheet = true },
+                onClick = { if (processService != null) showTerminalSheet = true },
                 containerColor = MaterialTheme.colorScheme.primary,
                 elevation = FloatingActionButtonDefaults.elevation(
                     defaultElevation = 4.dp
