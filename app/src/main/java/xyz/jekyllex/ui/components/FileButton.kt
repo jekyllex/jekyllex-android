@@ -52,8 +52,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -81,6 +83,8 @@ fun FileButton(
     val viewConfiguration = LocalViewConfiguration.current
     val openDeleteDialog = remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
+    val currentOnClick by rememberUpdatedState(onClick)
+    val currentOnLongClick by rememberUpdatedState(onLongClick)
 
     LaunchedEffect (interactionSource) {
         var isLongClick = false
@@ -91,11 +95,11 @@ fun FileButton(
                     isLongClick = false
                     delay(viewConfiguration.longPressTimeoutMillis)
                     isLongClick = true
-                    onLongClick()
+                    currentOnLongClick()
                 }
 
                 is PressInteraction.Release -> {
-                    if (!isLongClick) onClick()
+                    if (!isLongClick) currentOnClick()
                     isLongClick = false
                 }
             }
