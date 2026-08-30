@@ -1,10 +1,16 @@
 package xyz.jekyllex.ui.navigation
 
+import android.webkit.WebView
 import androidx.activity.result.ActivityResultLauncher
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
@@ -22,13 +28,27 @@ fun JekyllExNav(
     pickFileLauncher: ActivityResultLauncher<String>,
     requestPermissionLauncher: ActivityResultLauncher<String>,
 ) {
+    val context = LocalContext.current
     val backStack = remember { mutableStateListOf<Any>(HomeDestination) }
     val processService by process.bound.collectAsStateWithLifecycle()
     val pop = { if (backStack.size > 1) backStack.removeLastOrNull() }
 
+    LaunchedEffect(Unit) {
+        WebView(context).destroy()
+    }
+
     NavDisplay(
         backStack = backStack,
         onBack = { pop() },
+        transitionSpec = {
+            slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
+        },
+        popTransitionSpec = {
+            slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+        },
+        predictivePopTransitionSpec = {
+            slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+        },
         entryProvider = { key ->
             when (key) {
                 is HomeDestination -> NavEntry(key) {

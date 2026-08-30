@@ -35,11 +35,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import xyz.jekyllex.ui.activities.editor.webview.IOBridge
 import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
 import xyz.jekyllex.utils.buildEditorURL
@@ -53,9 +57,14 @@ fun Editor(
     padding: PaddingValues,
     isLoading: MutableState<Boolean>
 ) {
-    Surface {
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    val editorUrl = file.buildEditorURL(theme, timeout)
+    Surface(Modifier.fillMaxSize()) {
         Box(
-            Modifier.consumeWindowInsets(padding).imePadding()
+            Modifier
+                .fillMaxSize()
+                .consumeWindowInsets(padding)
+                .imePadding()
         ) {
             if (isLoading.value) {
                 CircularProgressIndicator(
@@ -63,26 +72,32 @@ fun Editor(
                 )
             }
 
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = {
-                    viewCache.getOrPut(0) {
-                        WebView(it).apply {
-                            this.layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                            )
+            if (lifecycleState.isAtLeast(Lifecycle.State.RESUMED)) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = {
+                        viewCache.getOrPut(0) {
+                            WebView(it).apply {
+                                this.layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT
+                                )
 
-                            val bridge = IOBridge(file, isLoading)
-                            webViewClient = WebViewClient(file, bridge = bridge)
-                            settings.javaScriptEnabled = true
-                            addJavascriptInterface(bridge, "IOBridge")
-
-                            loadUrl(file.buildEditorURL(theme, timeout))
+                                val bridge = IOBridge(file, isLoading)
+                                webViewClient = WebViewClient(file, bridge = bridge)
+                                settings.javaScriptEnabled = true
+                                addJavascriptInterface(bridge, "IOBridge")
+                            }
                         }
-                    }
-                }
-            )
+                    },
+                    update = { webView ->
+                        val current = webView.url
+                        if (current.isNullOrBlank() || current.startsWith("chrome-error://")) {
+                            webView.loadUrl(editorUrl)
+                        }
+                    },
+                )
+            }
         }
     }
 }

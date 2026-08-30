@@ -14,7 +14,7 @@ material = "1.14.0"
 activity = "1.13.0"
 composePreference = "1.1.1"
 documentfile = "1.1.0"
-navigation3 = "1.1.6"
+navigation3 = "1.1.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
