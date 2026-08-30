@@ -55,6 +55,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -96,10 +97,12 @@ fun FileButton(
     }
 
     Surface(
-        modifier = modifier.combinedClickable(
-            onClick = currentOnClick,
-            onLongClick = currentOnLongClick,
-        ),
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .combinedClickable(
+                onClick = currentOnClick,
+                onLongClick = currentOnLongClick,
+            ),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
