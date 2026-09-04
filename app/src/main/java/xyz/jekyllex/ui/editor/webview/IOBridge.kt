@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.editor.webview
+package xyz.jekyllex.ui.editor.webview
 
 import java.io.File
 import android.os.Handler

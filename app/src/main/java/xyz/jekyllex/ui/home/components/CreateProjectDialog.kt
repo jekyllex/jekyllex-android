@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.home.components
+package xyz.jekyllex.ui.home.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

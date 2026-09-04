@@ -39,11 +39,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import xyz.jekyllex.data.ProcessRepository
-import xyz.jekyllex.ui.activities.editor.EditorView
-import xyz.jekyllex.ui.activities.home.HomeScreen
-import xyz.jekyllex.ui.activities.home.HomeViewModel
-import xyz.jekyllex.ui.activities.settings.SettingsView
-import xyz.jekyllex.ui.activities.viewer.WebPageScreen
+import xyz.jekyllex.ui.editor.EditorView
+import xyz.jekyllex.ui.home.HomeScreen
+import xyz.jekyllex.ui.home.HomeViewModel
+import xyz.jekyllex.ui.settings.SettingsView
+import xyz.jekyllex.ui.viewer.WebPageScreen
 
 @Composable
 fun JekyllExNav(

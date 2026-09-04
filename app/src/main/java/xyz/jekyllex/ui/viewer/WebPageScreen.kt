@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.viewer
+package xyz.jekyllex.ui.viewer
 
 import android.content.ActivityNotFoundException
 import android.content.Intent

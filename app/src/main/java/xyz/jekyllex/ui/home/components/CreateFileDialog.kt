@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.home.components
+package xyz.jekyllex.ui.home.components
 
 import android.webkit.URLUtil
 import android.widget.Toast

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.editor.components
+package xyz.jekyllex.ui.editor.components
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement

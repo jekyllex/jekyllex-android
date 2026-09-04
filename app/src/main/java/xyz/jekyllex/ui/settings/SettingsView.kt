@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.settings
+package xyz.jekyllex.ui.settings
 
 import android.app.Activity
 import android.content.Intent
