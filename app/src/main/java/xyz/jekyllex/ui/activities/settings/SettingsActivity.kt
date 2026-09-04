@@ -27,11 +27,8 @@ package xyz.jekyllex.ui.activities.settings
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
@@ -74,12 +71,10 @@ import me.zhanghai.compose.preference.switchPreference
 import me.zhanghai.compose.preference.textFieldPreference
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.components.JekyllExAppBar
-import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.Commands.git
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Setting.*
 import xyz.jekyllex.BuildConfig
-import xyz.jekyllex.ui.activities.viewer.WebPageViewer
 import xyz.jekyllex.ui.components.GenericDialog
 import xyz.jekyllex.ui.components.ProgressDialog
 import xyz.jekyllex.utils.Commands.rm
@@ -101,29 +96,6 @@ import xyz.jekyllex.utils.mergeCommands
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-
-class SettingsActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            JekyllExTheme {
-                SettingsView(
-                    onBack = { finish() },
-                    onOpenPage = { url, title ->
-                        startActivity(
-                            Intent(this, WebPageViewer::class.java).apply {
-                                putExtra("url", url)
-                                putExtra("title", title)
-                            }
-                        )
-                    },
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun SettingsView(

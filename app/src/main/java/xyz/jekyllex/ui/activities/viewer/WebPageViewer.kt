@@ -27,15 +27,12 @@ package xyz.jekyllex.ui.activities.viewer
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,26 +61,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import xyz.jekyllex.R
 import xyz.jekyllex.ui.components.JekyllExAppBar
-import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.Constants.DOMAIN
 import xyz.jekyllex.utils.Constants.GITHUB_DOMAIN
-import xyz.jekyllex.utils.Constants.HOME_PAGE
-
-class WebPageViewer : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            JekyllExTheme {
-                WebPageScreen(
-                    initialUrl = intent.getStringExtra("url") ?: HOME_PAGE,
-                    initialTitle = intent.getStringExtra("title") ?: "",
-                    onBack = { finish() },
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun WebPageScreen(
