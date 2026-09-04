@@ -24,18 +24,10 @@
 
 package xyz.jekyllex.ui.activities.editor
 
-import android.app.Activity
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.net.Uri
-import android.os.Bundle
-import android.os.IBinder
 import android.webkit.URLUtil
 import android.webkit.WebView
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -66,14 +58,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
 import xyz.jekyllex.ui.activities.editor.components.DropDownMenu
 import xyz.jekyllex.ui.activities.editor.components.Editor
 import xyz.jekyllex.ui.activities.editor.components.Preview
-import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.TerminalSheet
 import xyz.jekyllex.utils.Commands.guessDestinationUrl
@@ -88,52 +78,6 @@ import xyz.jekyllex.utils.buildPreviewURL
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.pathInProject
-
-class EditorActivity : ComponentActivity() {
-    private var serviceBound = false
-    private val boundService = mutableStateOf<ProcessService?>(null)
-
-    private val connection = object : ServiceConnection {
-        override fun onServiceConnected(className: ComponentName, binder: IBinder) {
-            boundService.value = (binder as ProcessService.LocalBinder).service
-        }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            boundService.value = null
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        Intent(this, ProcessService::class.java).also { intent ->
-            serviceBound = bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        }
-
-        val file = intent.getStringExtra("file") ?: ""
-
-        setContent {
-            JekyllExTheme {
-                EditorView(
-                    file = file,
-                    processService = boundService.value,
-                    onBack = { finish() },
-                    onRenamed = { destination ->
-                        val next = Intent(this, EditorActivity::class.java)
-                            .putExtra("file", destination)
-                        finish()
-                        startActivity(next)
-                    },
-                )
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (serviceBound) unbindService(connection)
-    }
-}
 
 @Composable
 fun EditorView(

@@ -40,7 +40,6 @@ import xyz.jekyllex.utils.Commands.bundle
 import xyz.jekyllex.utils.Commands.jekyll
 import xyz.jekyllex.utils.Constants.editorMimes
 import xyz.jekyllex.utils.Constants.editorExtensions
-import xyz.jekyllex.ui.activities.editor.EditorActivity
 import xyz.jekyllex.utils.Constants.COMMAND_NOT_ALLOWED
 
 fun Array<String>.drop(n: Int): Array<String> = this.toList().drop(n).toTypedArray()
@@ -157,17 +156,6 @@ fun FileModel.usesBuiltInEditor(): Boolean {
     return this.name.startsWith(".") ||
         editorExtensions.contains(ext) ||
         editorMimes.any { mime.contains(it) }
-}
-
-fun FileModel.open(context: Context) {
-    if (usesBuiltInEditor()) {
-        context.startActivity(
-            Intent(context, EditorActivity::class.java)
-                .putExtra("file", this.path)
-        )
-    } else {
-        openInExternalApp(context, false)
-    }
 }
 
 fun FileModel.openInExternalApp(
