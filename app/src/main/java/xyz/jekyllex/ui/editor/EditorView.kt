@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.editor
+package xyz.jekyllex.ui.editor
 
 import android.content.Intent
 import android.net.Uri
@@ -61,9 +61,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
 import xyz.jekyllex.services.ProcessService
-import xyz.jekyllex.ui.activities.editor.components.DropDownMenu
-import xyz.jekyllex.ui.activities.editor.components.Editor
-import xyz.jekyllex.ui.activities.editor.components.Preview
+import xyz.jekyllex.ui.editor.components.DropDownMenu
+import xyz.jekyllex.ui.editor.components.Editor
+import xyz.jekyllex.ui.editor.components.Preview
 import xyz.jekyllex.ui.components.JekyllExAppBar
 import xyz.jekyllex.ui.components.TerminalSheet
 import xyz.jekyllex.utils.Commands.guessDestinationUrl

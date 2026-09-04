@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.editor.components
+package xyz.jekyllex.ui.editor.components
 
 import android.view.ViewGroup
 import android.webkit.WebView
@@ -56,7 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
+import xyz.jekyllex.ui.editor.webview.WebViewClient
 import xyz.jekyllex.utils.Commands.rmDir
 import xyz.jekyllex.utils.Constants.WEBVIEW_CACHE
 import xyz.jekyllex.utils.NativeUtils

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.installer
+package xyz.jekyllex.ui.installer
 
 import android.content.Intent
 import android.os.Bundle
@@ -46,7 +46,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import xyz.jekyllex.R
-import xyz.jekyllex.ui.activities.home.HomeActivity
+import xyz.jekyllex.ui.home.HomeActivity
 import xyz.jekyllex.ui.theme.JekyllExTheme
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.Constants.HOME_DIR

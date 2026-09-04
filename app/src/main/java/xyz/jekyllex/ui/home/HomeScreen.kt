@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.home
+package xyz.jekyllex.ui.home
 
 import android.Manifest
 import android.os.Build
@@ -77,7 +77,7 @@ import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import xyz.jekyllex.R
-import xyz.jekyllex.ui.activities.home.components.DropDownMenu
+import xyz.jekyllex.ui.home.components.DropDownMenu
 import xyz.jekyllex.ui.components.FileButton
 import xyz.jekyllex.ui.components.GenericDialog
 import xyz.jekyllex.ui.components.JekyllExAppBar

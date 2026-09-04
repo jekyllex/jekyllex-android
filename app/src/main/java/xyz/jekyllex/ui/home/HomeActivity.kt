@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.home
+package xyz.jekyllex.ui.home
 
 import android.Manifest
 import android.content.ComponentName

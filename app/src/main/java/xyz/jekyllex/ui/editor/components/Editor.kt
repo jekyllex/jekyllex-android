@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.editor.components
+package xyz.jekyllex.ui.editor.components
 
 import android.view.ViewGroup
 import android.webkit.WebView
@@ -44,8 +44,8 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
-import xyz.jekyllex.ui.activities.editor.webview.IOBridge
-import xyz.jekyllex.ui.activities.editor.webview.WebViewClient
+import xyz.jekyllex.ui.editor.webview.IOBridge
+import xyz.jekyllex.ui.editor.webview.WebViewClient
 import xyz.jekyllex.utils.buildEditorURL
 
 @Composable

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.activities.home.components
+package xyz.jekyllex.ui.home.components
 
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
