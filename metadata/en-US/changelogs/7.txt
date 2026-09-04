@@ -1,0 +1,5 @@
+- Host screens in a single activity with slide transitions.
+- Persist integer settings (theme, port, debounce).
+- Harden backup restore against zip-slip.
+- Fix file list, clicks, editor WebView, and process binding.
+- Bug fixes & improvements.
