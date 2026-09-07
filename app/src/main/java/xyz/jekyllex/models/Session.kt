@@ -24,7 +24,6 @@
 
 package xyz.jekyllex.models
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import java.io.BufferedReader
@@ -38,7 +37,6 @@ import kotlinx.coroutines.launch
 import xyz.jekyllex.utils.Constants.BIN_DIR
 import xyz.jekyllex.utils.Constants.COMMAND_NOT_ALLOWED
 import xyz.jekyllex.utils.Constants.HOME_DIR
-import xyz.jekyllex.utils.NativeUtils.buildEnvironment
 import xyz.jekyllex.utils.drop
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.override
@@ -48,7 +46,7 @@ private const val LOG_TAG = "Session"
 
 data class Session(
     val number: Int,
-    val buildEnvironment: (cwd: String, context: Context?) -> Array<String>,
+    val buildEnvironment: (cwd: String) -> Array<String>,
     var initialDir: String? = null,
     val notificationCallback: () -> Unit = {}
 ) {
