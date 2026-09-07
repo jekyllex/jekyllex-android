@@ -73,6 +73,8 @@ class ProcessService : Service() {
 
     private val binder = LocalBinder()
 
+    private fun sessionEnvironment(cwd: String) = buildEnvironment(cwd, this)
+
     override fun onBind(intent: Intent): IBinder {
         hasConnections = true
         return binder
@@ -93,7 +95,7 @@ class ProcessService : Service() {
         super.onCreate()
 
         settings = Settings(this)
-        _sessions.value += Session(sessionCount++, ::buildEnvironment, HOME_DIR) {
+        _sessions.value += Session(sessionCount++, ::sessionEnvironment, HOME_DIR) {
             updateKillActionOnNotif()
         }.apply { setLogTrimming(settings.get(Setting.TRIM_LOGS)) }
 
@@ -118,7 +120,7 @@ class ProcessService : Service() {
 
                 _sessions.value.apply {
                     _sessions.update {
-                        it + Session(sessionCount++, ::buildEnvironment).apply {
+                        it + Session(sessionCount++, ::sessionEnvironment).apply {
                             cd(_sessions.value[_activeSession.value].dir.value)
                         }
                     }
