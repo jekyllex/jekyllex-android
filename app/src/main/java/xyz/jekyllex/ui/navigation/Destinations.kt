@@ -24,10 +24,10 @@
 
 package xyz.jekyllex.ui.navigation
 
-data object HomeDestination
+import androidx.navigation3.runtime.NavKey
 
-data class EditorDestination(val path: String)
-
-data object SettingsDestination
-
-data class PageDestination(val url: String, val title: String)
+sealed interface Destination : NavKey
+data object HomeDestination : Destination
+data class EditorDestination(val path: String) : Destination
+data object SettingsDestination : Destination
+data class PageDestination(val url: String, val title: String) : Destination

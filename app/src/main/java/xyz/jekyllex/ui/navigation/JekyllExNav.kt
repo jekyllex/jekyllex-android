@@ -53,7 +53,7 @@ fun JekyllExNav(
     requestPermissionLauncher: ActivityResultLauncher<String>,
 ) {
     val context = LocalContext.current
-    val backStack = remember { mutableStateListOf<Any>(HomeDestination) }
+    val backStack = remember { mutableStateListOf<Destination>(HomeDestination) }
     val processService by process.bound.collectAsStateWithLifecycle()
     val pop = { if (backStack.size > 1) backStack.removeLastOrNull() }
 
@@ -113,8 +113,6 @@ fun JekyllExNav(
                         onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
                     )
                 }
-
-                else -> NavEntry(Unit) { }
             }
         }
     )
