@@ -55,6 +55,7 @@ fun DropDownMenu(
     onRefresh: () -> Unit,
     goHome: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenTemplates: () -> Unit = {},
     serverIcon: @Composable () -> Unit,
     onCreateProjectConfirmation: (String, MutableState<Boolean>) -> Unit,
     onCreateFileConfirmation: (String, Boolean, MutableState<Boolean>) -> Unit,
@@ -69,6 +70,10 @@ fun DropDownMenu(
             CreateProjectDialog(
                 isCreating = isCreating,
                 onDismissRequest = { openCreateDialog.value = false },
+                onPickTemplate = {
+                    openCreateDialog.value = false
+                    onOpenTemplates()
+                },
                 onConfirmation = { onCreateProjectConfirmation(it, openCreateDialog) }
             )
         }

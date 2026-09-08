@@ -38,6 +38,7 @@ object Constants {
     const val DOMAIN = "jekyllex.xyz"
     const val GITHUB_DOMAIN = "github.com"
     const val HOME_PAGE = "https://$DOMAIN"
+    const val TEMPLATES_URL = "$HOME_PAGE/templates.json"
     const val DOCS = "https://docs.$DOMAIN"
     const val LICENSES = "$HOME_PAGE/licenses"
     const val PRIVACY = "$HOME_PAGE/privacy-policy"

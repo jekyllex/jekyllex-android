@@ -43,6 +43,7 @@ import xyz.jekyllex.ui.editor.EditorView
 import xyz.jekyllex.ui.home.HomeScreen
 import xyz.jekyllex.ui.home.HomeViewModel
 import xyz.jekyllex.ui.settings.SettingsView
+import xyz.jekyllex.ui.templates.TemplatesScreen
 import xyz.jekyllex.ui.viewer.WebPageScreen
 
 @Composable
@@ -82,6 +83,26 @@ fun JekyllExNav(
                         requestPermissionLauncher = requestPermissionLauncher,
                         onOpenFile = { path -> backStack.add(EditorDestination(path)) },
                         onOpenSettings = { backStack.add(SettingsDestination) },
+                        onOpenTemplates = { backStack.add(TemplatesDestination) },
+                    )
+                }
+
+                is TemplatesDestination -> NavEntry(key) {
+                    val state by homeViewModel.uiState.collectAsStateWithLifecycle()
+                    TemplatesScreen(
+                        isCreating = state.isCreating,
+                        onBack = { if (!state.isCreating) pop() },
+                        onOpenPreview = { url, title ->
+                            backStack.add(PageDestination(url, title))
+                        },
+                        onUseTemplate = { starter, onDone ->
+                            homeViewModel.createFromTemplate(
+                                starter.name,
+                                starter.git,
+                                starter.version,
+                                onDone,
+                            )
+                        },
                     )
                 }
 

@@ -50,9 +50,11 @@ import xyz.jekyllex.utils.Commands.jekyll
 import xyz.jekyllex.utils.Commands.mkDir
 import xyz.jekyllex.utils.Commands.touch
 import xyz.jekyllex.utils.Constants.HOME_DIR
+import xyz.jekyllex.utils.cloneTemplateCommand
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.utils.toCommand
+import xyz.jekyllex.utils.uniqueProjectName
 import java.io.File as JFile
 
 class HomeViewModel(
@@ -173,6 +175,32 @@ class HomeViewModel(
             } catch (e: Exception) {
                 Log.d(LOG_TAG, "Error while listing files in $dirPath: $e")
             }
+        }
+    }
+
+    fun createFromTemplate(
+        name: String,
+        url: String,
+        version: String?,
+        onDone: (Boolean, String) -> Unit,
+    ) {
+        if (_uiState.value.isCreating) return
+        if (process.isRunning) {
+            onDone(false, "")
+            return
+        }
+        val dest = uniqueProjectName(name, JFile(HOME_DIR).list()?.toList().orEmpty())
+        if (process.bound.value == null) {
+            onDone(false, dest)
+            return
+        }
+        _uiState.update { it.copy(isCreating = true) }
+        process.exec(cloneTemplateCommand(url, dest, version), HOME_DIR) {
+            val ok = JFile("$HOME_DIR/$dest/.git").exists()
+            _uiState.update { it.copy(isCreating = false) }
+            if (ok) process.cd("$HOME_DIR/$dest")
+            else refresh()
+            viewModelScope.launch(Dispatchers.Main) { onDone(ok, dest) }
         }
     }
 
