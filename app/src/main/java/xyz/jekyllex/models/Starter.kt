@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.navigation
+package xyz.jekyllex.models
 
-import androidx.navigation3.runtime.NavKey
-
-sealed interface Destination : NavKey
-data object HomeDestination : Destination
-data object TemplatesDestination : Destination
-data class EditorDestination(val path: String) : Destination
-data object SettingsDestination : Destination
-data class PageDestination(val url: String, val title: String) : Destination
+data class Starter(
+    val name: String,
+    val url: String,
+    val git: String,
+    val image: String,
+    val description: String,
+    val version: String? = null,
+)

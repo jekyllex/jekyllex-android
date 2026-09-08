@@ -22,13 +22,25 @@
  * SOFTWARE.
  */
 
-package xyz.jekyllex.ui.navigation
+package xyz.jekyllex.utils
 
-import androidx.navigation3.runtime.NavKey
+import xyz.jekyllex.utils.Commands.git
 
-sealed interface Destination : NavKey
-data object HomeDestination : Destination
-data object TemplatesDestination : Destination
-data class EditorDestination(val path: String) : Destination
-data object SettingsDestination : Destination
-data class PageDestination(val url: String, val title: String) : Destination
+fun uniqueProjectName(base: String, existing: Collection<String>): String {
+    val name = base.trim().ifEmpty { "site" }
+        .replace('/', '-')
+        .replace('\\', '-')
+    if (existing.none { it == name }) return name
+    var n = 1
+    while (existing.any { it == "$name ($n)" }) n++
+    return "$name ($n)"
+}
+
+fun cloneTemplateCommand(url: String, dest: String, version: String?): Array<String> {
+    val tag = version?.trim().orEmpty()
+    return if (tag.isEmpty()) {
+        git("clone", "--depth", "1", "--", url, dest)
+    } else {
+        git("clone", "-b", tag, "--single-branch", "--depth", "1", "--", url, dest)
+    }
+}

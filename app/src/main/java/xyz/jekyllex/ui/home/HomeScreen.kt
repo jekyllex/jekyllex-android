@@ -94,6 +94,7 @@ fun HomeScreen(
     requestPermissionLauncher: ActivityResultLauncher<String>,
     onOpenFile: (String) -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    onOpenTemplates: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -136,6 +137,7 @@ fun HomeScreen(
                             homeViewModel.goHome()
                         },
                         onOpenSettings = onOpenSettings,
+                        onOpenTemplates = onOpenTemplates,
                         onCreateProjectConfirmation = { input, isDialogOpen ->
                             if (input.isNotBlank()) homeViewModel.create(input) {
                                 isDialogOpen.value = false

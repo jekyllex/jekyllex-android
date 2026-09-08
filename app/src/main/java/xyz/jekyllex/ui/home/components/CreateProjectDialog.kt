@@ -26,6 +26,7 @@ package xyz.jekyllex.ui.home.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,12 +38,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +62,7 @@ import androidx.compose.ui.unit.dp
 fun CreateProjectDialog(
     isCreating: Boolean,
     onDismissRequest: () -> Unit,
+    onPickTemplate: () -> Unit = {},
     onConfirmation: (input: String) -> Unit,
 ) {
     BasicAlertDialog(onDismissRequest = { }) {
@@ -78,7 +82,27 @@ fun CreateProjectDialog(
             shape = MaterialTheme.shapes.large
         ) {
             Column(modifier = Modifier.padding(18.dp)) {
-                Text(text = "Create project", style = MaterialTheme.typography.headlineSmall)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Create",
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.weight(1f),
+                    )
+                    CompositionLocalProvider(
+                        LocalMinimumInteractiveComponentEnforcement provides false
+                    ) {
+                        TextButton(
+                            enabled = !isCreating,
+                            onClick = onPickTemplate,
+                            contentPadding = PaddingValues(horizontal = 10.dp),
+                        ) {
+                            Text("Pick a template")
+                        }
+                    }
+                }
                 Text(
                     text = "Enter the name of the project, " +
                             "a remote repository's valid https:// URL or a " +
