@@ -28,6 +28,7 @@ import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import xyz.jekyllex.utils.cloneTemplateCommand
+import xyz.jekyllex.utils.repoFolderName
 import xyz.jekyllex.utils.uniqueProjectName
 
 class StartersTest {
@@ -41,6 +42,23 @@ class StartersTest {
         )
         assertEquals("site", uniqueProjectName("  ", emptyList()))
         assertEquals("foo-bar", uniqueProjectName("foo/bar", emptyList()))
+    }
+
+    @Test
+    fun repoFolderNameUsesGitLeafNotThemeTitle() {
+        assertEquals(
+            "jekyll-theme-chirpy",
+            repoFolderName("https://github.com/cotes2020/jekyll-theme-chirpy.git"),
+        )
+        assertEquals(
+            "minimal-mistakes",
+            repoFolderName("git@github.com:mmistakes/minimal-mistakes.git"),
+        )
+        assertEquals(
+            "minima",
+            repoFolderName("https://github.com/jekyll/minima/"),
+        )
+        assertEquals("site", repoFolderName("   "))
     }
 
     @Test

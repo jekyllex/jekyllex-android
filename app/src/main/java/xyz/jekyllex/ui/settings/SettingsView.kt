@@ -515,7 +515,7 @@ fun SettingsView(
                             shell(
                                 mergeCommands(
                                     rm("backup.zip"),
-                                    zip("-r", "backup.zip", ".", "-x", "'.bundle/*'")
+                                    zip("-r", "backup.zip", ".", "-x", ".bundle/*")
                                 ),
                             ),
                             CoroutineScope(Dispatchers.IO)
