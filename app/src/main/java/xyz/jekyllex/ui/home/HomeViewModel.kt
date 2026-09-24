@@ -44,6 +44,7 @@ import kotlinx.coroutines.yield
 import xyz.jekyllex.data.FilesRepository
 import xyz.jekyllex.data.ProcessRepository
 import xyz.jekyllex.models.File
+import xyz.jekyllex.utils.Commands.bundle
 import xyz.jekyllex.utils.Commands.curl
 import xyz.jekyllex.utils.Commands.git
 import xyz.jekyllex.utils.Commands.jekyll
@@ -53,6 +54,7 @@ import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.cloneTemplateCommand
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.removeSymlinks
+import xyz.jekyllex.utils.repoFolderName
 import xyz.jekyllex.utils.toCommand
 import xyz.jekyllex.utils.uniqueProjectName
 import java.io.File as JFile
@@ -179,7 +181,6 @@ class HomeViewModel(
     }
 
     fun createFromTemplate(
-        name: String,
         url: String,
         version: String?,
         onDone: (Boolean, String) -> Unit,
@@ -189,18 +190,30 @@ class HomeViewModel(
             onDone(false, "")
             return
         }
-        val dest = uniqueProjectName(name, JFile(HOME_DIR).list()?.toList().orEmpty())
+        val dest = uniqueProjectName(repoFolderName(url), JFile(HOME_DIR).list()?.toList().orEmpty())
         if (process.bound.value == null) {
             onDone(false, dest)
             return
         }
         _uiState.update { it.copy(isCreating = true) }
-        process.exec(cloneTemplateCommand(url, dest, version), HOME_DIR) {
-            val ok = JFile("$HOME_DIR/$dest/.git").exists()
+        val projectDir = "$HOME_DIR/$dest"
+        fun fail() {
             _uiState.update { it.copy(isCreating = false) }
-            if (ok) process.cd("$HOME_DIR/$dest")
-            else refresh()
-            viewModelScope.launch(Dispatchers.Main) { onDone(ok, dest) }
+            refresh()
+            viewModelScope.launch(Dispatchers.Main) { onDone(false, dest) }
+        }
+        process.exec(cloneTemplateCommand(url, dest, version), HOME_DIR) {
+            if (!JFile(projectDir, ".git").exists()) {
+                fail()
+                return@exec
+            }
+            process.sessionManager?.setActiveSession(0)
+            process.cd(projectDir)
+            if (process.bound.value != null) {
+                process.exec(bundle("install"), projectDir)
+            }
+            _uiState.update { it.copy(isCreating = false, pendingTerminal = true) }
+            viewModelScope.launch(Dispatchers.Main) { onDone(true, dest) }
         }
     }
 
@@ -264,7 +277,14 @@ class HomeViewModel(
     }
 
     fun exec(cmd: Array<String>) {
+        process.sessionManager?.setActiveSession(0)
         process.exec(cmd)
+        _uiState.update { it.copy(pendingTerminal = true) }
+    }
+
+    fun consumeTerminal() {
+        if (!_uiState.value.pendingTerminal) return
+        _uiState.update { it.copy(pendingTerminal = false) }
     }
 
     fun toggleServer() {

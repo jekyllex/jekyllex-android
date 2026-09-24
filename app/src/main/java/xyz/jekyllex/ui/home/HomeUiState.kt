@@ -36,4 +36,5 @@ data class HomeUiState(
     val pendingCopyUri: Uri? = null,
     val showCopyConfirm: Boolean = false,
     val showNotifRationale: Boolean = false,
+    val pendingTerminal: Boolean = false,
 )

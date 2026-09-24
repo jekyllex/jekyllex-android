@@ -46,8 +46,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -58,13 +56,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -100,6 +98,12 @@ fun HomeScreen(
     val focusManager = LocalFocusManager.current
     val state by homeViewModel.uiState.collectAsStateWithLifecycle()
     var showTerminalSheet by remember { mutableStateOf(false) }
+
+    LaunchedEffect(state.pendingTerminal) {
+        if (!state.pendingTerminal) return@LaunchedEffect
+        showTerminalSheet = true
+        homeViewModel.consumeTerminal()
+    }
 
     val resetQuery = {
         focusManager.clearFocus()
@@ -162,7 +166,6 @@ fun HomeScreen(
                         }
                     ) { cmd ->
                         homeViewModel.exec(cmd)
-                        showTerminalSheet = true
                     }
                 },
                 navigationIcon = {
@@ -221,24 +224,14 @@ fun HomeScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
                         Text(
-                            text = "Let's start by creating a 'test' project:",
+                            text = "Pick a template to start your site.",
                             style = MaterialTheme.typography.labelSmall
                         )
                         Button(
-                            onClick = { homeViewModel.create("test") },
+                            onClick = onOpenTemplates,
                             modifier = Modifier.padding(top = 16.dp),
-                            elevation = ButtonDefaults.buttonElevation(
-                                defaultElevation = 4.dp
-                            )
                         ) {
-                            if (state.isCreating)
-                                CircularProgressIndicator(
-                                    strokeWidth = 2.dp,
-                                    color = Color.White,
-                                    modifier = Modifier.size(18.dp),
-                                )
-                            else
-                                Text(text = "Create")
+                            Text(text = "Browse templates")
                         }
                     }
                 else LazyColumn(

@@ -34,6 +34,7 @@ import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.formatDir
 import xyz.jekyllex.utils.getProjectDir
 import xyz.jekyllex.utils.isDenied
+import xyz.jekyllex.utils.mergeCommands
 import xyz.jekyllex.utils.toCommand
 
 class CommandAndPathTest {
@@ -51,6 +52,18 @@ class CommandAndPathTest {
             arrayOf("echo", "hello world"),
             "echo 'hello world'".toCommand()
         )
+    }
+
+    @Test
+    fun mergeCommandsQuotesPathsWithSpaces() {
+        assertEquals(
+            "'du' '-sh' '/home/Chirpy (1)';'stat' '-c' '%Y' '/home/Chirpy (1)'",
+            mergeCommands(
+                arrayOf("du", "-sh", "/home/Chirpy (1)"),
+                arrayOf("stat", "-c", "%Y", "/home/Chirpy (1)"),
+            ),
+        )
+        assertEquals("'echo' 'it'\\''s'", mergeCommands(arrayOf("echo", "it's")))
     }
 
     @Test

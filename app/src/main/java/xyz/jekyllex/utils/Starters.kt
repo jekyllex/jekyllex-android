@@ -26,6 +26,16 @@ package xyz.jekyllex.utils
 
 import xyz.jekyllex.utils.Commands.git
 
+fun repoFolderName(gitUrl: String): String {
+    val trimmed = gitUrl.trim().substringBefore('?').substringBefore('#').trimEnd('/')
+    val leaf = if (trimmed.contains("://")) {
+        trimmed.substringAfterLast('/')
+    } else {
+        trimmed.substringAfterLast(':').substringAfterLast('/')
+    }.removeSuffix(".git")
+    return leaf.ifBlank { "site" }
+}
+
 fun uniqueProjectName(base: String, existing: Collection<String>): String {
     val name = base.trim().ifEmpty { "site" }
         .replace('/', '-')

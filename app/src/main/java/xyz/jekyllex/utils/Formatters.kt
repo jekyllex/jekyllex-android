@@ -55,7 +55,9 @@ fun String.toBase64(): String = Base64.encodeToString(
 fun String.fromBase64(): String = String(Base64.decode(this, Base64.NO_WRAP))
 
 fun mergeCommands(vararg commands: Array<String>): String =
-    commands.joinToString(";") { cmd -> cmd.joinToString(" ") }
+    commands.joinToString(";") { cmd -> cmd.joinToString(" ") { it.shellQuote() } }
+
+private fun String.shellQuote(): String = "'" + replace("'", "'\\''") + "'"
 
 fun String.formatDir(separator: String): String =
     this.replace(HOME_DIR, "~").replace("/", separator)
@@ -76,10 +78,11 @@ fun String.parseOutput() = this.split("\n").map { prop ->
     prop.replace("nil", "").ifBlank { null }
 }
 
-fun String.toDate(): String {
+fun String.toDate(): String? {
+    val seconds = toLongOrNull() ?: return null
     val dateFormat = SimpleDateFormat("hh:mm a dd MMM yyyy", Locale.getDefault())
     dateFormat.timeZone = TimeZone.getDefault()
-    return dateFormat.format(this.toLong() * 1000)
+    return dateFormat.format(seconds * 1000)
 }
 
 fun buildStatsString(isDir: Boolean?, size: String?, lastMod: String?): String? {

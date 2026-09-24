@@ -91,13 +91,12 @@ fun JekyllExNav(
                     val state by homeViewModel.uiState.collectAsStateWithLifecycle()
                     TemplatesScreen(
                         isCreating = state.isCreating,
-                        onBack = { if (!state.isCreating) pop() },
+                        onBack = { pop() },
                         onOpenPreview = { url, title ->
                             backStack.add(PageDestination(url, title))
                         },
                         onUseTemplate = { starter, onDone ->
                             homeViewModel.createFromTemplate(
-                                starter.name,
                                 starter.git,
                                 starter.version,
                                 onDone,
