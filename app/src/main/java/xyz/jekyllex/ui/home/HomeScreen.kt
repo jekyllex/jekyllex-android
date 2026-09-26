@@ -237,7 +237,7 @@ fun HomeScreen(
                 else LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    if (state.filesCount > 1)
+                    if (state.filesCount > 0)
                         item {
                             OutlinedTextField(
                                 value = state.query,
@@ -246,7 +246,10 @@ fun HomeScreen(
                                 modifier = Modifier.fillMaxWidth().padding(8.dp),
                                 onValueChange = homeViewModel::search,
                                 label = {
-                                    Text("Search among ${state.filesCount} items")
+                                    Text(
+                                        if (state.cwd == HOME_DIR) "Search projects and text"
+                                        else "Search names and text"
+                                    )
                                 },
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
@@ -281,6 +284,7 @@ fun HomeScreen(
                     items(files.size, key = { state.cwd + files[it].path }) {
                         FileButton(
                             file = files[it],
+                            query = state.query,
                             modifier = Modifier.padding(8.dp),
                             refresh = { homeViewModel.refresh() },
                             onClick = {

@@ -31,8 +31,10 @@ import android.webkit.URLUtil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -53,11 +55,14 @@ import xyz.jekyllex.utils.Commands.touch
 import xyz.jekyllex.utils.Constants.HOME_DIR
 import xyz.jekyllex.utils.cloneTemplateCommand
 import xyz.jekyllex.utils.getProjectDir
+import xyz.jekyllex.utils.mergeSearchResults
+import xyz.jekyllex.utils.matchesQuery
 import xyz.jekyllex.utils.removeSymlinks
 import xyz.jekyllex.utils.repoFolderName
 import xyz.jekyllex.utils.toCommand
 import xyz.jekyllex.utils.uniqueProjectName
 import java.io.File as JFile
+import java.util.concurrent.atomic.AtomicInteger
 
 class HomeViewModel(
     private val filesRepository: FilesRepository,
@@ -91,6 +96,7 @@ class HomeViewModel(
 
     private var listJob: Job? = null
     private var statsJob: Job? = null
+    private val searchGen = AtomicInteger(0)
     private var allFiles = listOf<File>()
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
@@ -113,24 +119,36 @@ class HomeViewModel(
     }
 
     fun search(query: String) {
-        _uiState.update {
-            it.copy(
-                query = query,
-                files = filterFiles(query, allFiles),
-            )
-        }
+        _uiState.update { it.copy(query = query) }
+        publishSearch()
     }
 
-    private fun filterFiles(query: String, source: List<File>) =
-        if (query.isBlank()) source
-        else source.filter {
-            it.name.contains(query, true) or
-                it.url.orEmpty().contains(query, true) or
-                it.size.orEmpty().contains(query, true) or
-                it.title.orEmpty().contains(query, true) or
-                it.description.orEmpty().contains(query, true) or
-                it.lastModified.orEmpty().contains(query, true)
+    private fun publishSearch() {
+        val gen = searchGen.incrementAndGet()
+        val query = _uiState.value.query
+        val cwd = _uiState.value.cwd
+        val direct = allFiles.toList()
+        if (query.isBlank()) {
+            _uiState.update { it.copy(files = direct) }
+            return
         }
+        _uiState.update { it.copy(files = direct.filter { file -> file.matchesQuery(query) }) }
+        viewModelScope.launch(Dispatchers.IO) {
+            val hits = try {
+                filesRepository.search(cwd, query) { searchGen.get() == gen }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.d(LOG_TAG, "Search failed in $cwd: $e")
+                return@launch
+            }
+            val files = mergeSearchResults(direct, hits, query)
+            _uiState.update { state ->
+                if (searchGen.get() != gen || state.cwd != cwd || state.query != query) state
+                else state.copy(files = files)
+            }
+        }
+    }
 
     fun setSkipAnimation(value: Boolean) {
         skipAnimations = value
@@ -162,18 +180,16 @@ class HomeViewModel(
         listJob = viewModelScope.launch(Dispatchers.IO) {
             try {
                 val files = filesRepository.list(dirPath)
+                if (!isActive || _uiState.value.cwd != dirPath) return@launch
                 allFiles = files
-                val query = _uiState.value.query
-                _uiState.update {
-                    it.copy(
-                        files = filterFiles(query, files),
-                        filesCount = files.size,
-                    )
-                }
+                _uiState.update { it.copy(filesCount = files.size) }
+                publishSearch()
                 if (!skipAnimations) {
                     statsJob = launch { fetchStats() }
                 }
                 Log.d(LOG_TAG, "Available files in $dirPath: ${files.map { it.name }}")
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.d(LOG_TAG, "Error while listing files in $dirPath: $e")
             }
@@ -298,17 +314,15 @@ class HomeViewModel(
 
     private suspend fun fetchStats() {
         val cwd = _uiState.value.cwd
-        allFiles = allFiles.map {
+        val files = allFiles.map {
             yield()
             filesRepository.withStats(it, cwd)
         }
-        val query = _uiState.value.query
-        _uiState.update {
-            it.copy(
-                files = filterFiles(query, allFiles),
-                filesCount = allFiles.size,
-            )
-        }
+        yield()
+        if (_uiState.value.cwd != cwd) return
+        allFiles = files
+        _uiState.update { it.copy(filesCount = allFiles.size) }
+        publishSearch()
     }
 
     private fun createCommand(input: String): Array<String> {
