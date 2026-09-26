@@ -58,18 +58,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import java.io.File as JFile
 import xyz.jekyllex.R
 import xyz.jekyllex.models.File
 import xyz.jekyllex.utils.buildStatsString
+import xyz.jekyllex.utils.matchRanges
 
 @Composable
 fun FileButton(
     file: File,
     modifier: Modifier = Modifier,
+    query: String = "",
     refresh: () -> Unit = {},
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
@@ -112,10 +120,11 @@ fun FileButton(
                         .fillMaxWidth()
                         .padding(top = 8.dp, bottom = 8.dp)
                 ) {
-                    Text(
+                    HighlightedText(
+                        text = file.title ?: file.name.substringAfterLast('/'),
+                        query = query,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        text = file.title ?: file.name,
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Start,
                         modifier = Modifier
@@ -157,18 +166,20 @@ fun FileButton(
                     }
                 ) { description ->
                     if (description == null) return@AnimatedContent
-                    Text(
-                        maxLines = 3,
+                    HighlightedText(
                         text = description,
+                        query = query,
+                        maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(vertical = 6.dp),
                     )
                 }
-                if (file.title != null)
-                    Text(
-                        maxLines = 1,
+                if (file.title != null || file.name.contains('/'))
+                    HighlightedText(
                         text = "./${file.name}",
+                        query = query,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Start,
@@ -183,12 +194,53 @@ fun FileButton(
                     }
                 ) { description ->
                     if (description == null) return@AnimatedContent
-                    Text(
+                    HighlightedText(
                         text = description,
+                        query = query,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
         }
+    }
+}
+
+@Composable
+private fun HighlightedText(
+    text: String,
+    query: String,
+    style: TextStyle,
+    modifier: Modifier = Modifier,
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = TextOverflow.Clip,
+    textAlign: TextAlign? = null,
+) {
+    val mark = SpanStyle(
+        fontWeight = FontWeight.SemiBold,
+        background = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
+    )
+    Text(
+        text = highlight(text, query, mark),
+        style = style,
+        modifier = modifier,
+        maxLines = maxLines,
+        overflow = overflow,
+        textAlign = textAlign,
+    )
+}
+
+private fun highlight(text: String, query: String, mark: SpanStyle): AnnotatedString {
+    val ranges = matchRanges(text, query)
+    if (ranges.isEmpty()) return AnnotatedString(text)
+    return buildAnnotatedString {
+        var cursor = 0
+        for (range in ranges) {
+            val start = range.first
+            val end = range.last + 1
+            if (start > cursor) append(text.substring(cursor, start))
+            withStyle(mark) { append(text.substring(start, end)) }
+            cursor = end
+        }
+        if (cursor < text.length) append(text.substring(cursor))
     }
 }
