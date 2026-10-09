@@ -101,6 +101,11 @@ android {
         buildConfig = true
     }
 
+    androidResources {
+        ignoreAssetsPattern =
+            "!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~:!*.md:!*.webp:!CNAME:!LICENSE"
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -145,6 +150,18 @@ val skipBootstrap = gradle.startParameter.taskNames.isNotEmpty() &&
         val task = name.substringAfterLast(":")
         task.startsWith("test") && !task.contains("AndroidTest", ignoreCase = true)
     }
+
+tasks.register("checkEditor") {
+    doLast {
+        check(file("src/main/assets/index.html").exists()) {
+            "Editor submodule is missing. Run: git submodule update --init"
+        }
+    }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("checkEditor")
+}
 
 if (!skipBootstrap) {
     tasks.named("preBuild").configure {
