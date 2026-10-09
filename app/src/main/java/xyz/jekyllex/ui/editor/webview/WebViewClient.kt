@@ -33,22 +33,21 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.webkit.WebViewAssetLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import xyz.jekyllex.utils.Commands.cat
 import xyz.jekyllex.utils.Constants.EDITOR_HOST
 import xyz.jekyllex.utils.NativeUtils
-import xyz.jekyllex.utils.editorAssetPath
-import xyz.jekyllex.utils.editorMime
 import xyz.jekyllex.utils.toBase64
-import java.io.IOException
 
 class WebViewClient(
     private val file: String,
     private val bridge: IOBridge? = null,
     private val previewLoadCallback: (url: String) -> Unit = {},
 ): WebViewClient() {
+    private var assets: WebViewAssetLoader? = null
     override fun shouldOverrideUrlLoading(
         view: WebView,
         request: WebResourceRequest
@@ -82,16 +81,11 @@ class WebViewClient(
         view: WebView,
         request: WebResourceRequest,
     ): WebResourceResponse? {
-        val uri = request.url
-        if (!isEditor(uri)) return null
-        val asset = editorAssetPath(uri.path) ?: return null
-        return try {
-            val mime = editorMime(asset)
-            val encoding = if (mime.startsWith("text/") || mime == "application/json") "utf-8" else null
-            WebResourceResponse(mime, encoding, view.context.assets.open(asset))
-        } catch (_: IOException) {
-            null
-        }
+        val loader = assets ?: WebViewAssetLoader.Builder()
+            .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(view.context.applicationContext))
+            .build()
+            .also { assets = it }
+        return loader.shouldInterceptRequest(request.url)
     }
 
     override fun onPageFinished(view: WebView, url: String) {

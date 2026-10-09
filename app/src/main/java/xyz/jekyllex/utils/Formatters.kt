@@ -98,31 +98,6 @@ fun String.buildEditorURL(
     timeout: Int = DEBOUNCE_DELAY.defaultValue.get()
 ): String = "$EDITOR_URL?lang=${this.getExtension()}&timeout=$timeout&theme=$theme"
 
-fun editorAssetPath(path: String?): String? {
-    if (path.isNullOrEmpty()) return null
-    val clean = path.trimStart('/')
-    if (
-        clean.isEmpty() ||
-        clean.contains('\\') ||
-        clean.contains('\u0000') ||
-        clean.split('/').any { it == ".." }
-    ) return null
-    return clean
-}
-
-fun editorMime(path: String): String = when (path.substringAfterLast('.', "")) {
-    "html" -> "text/html"
-    "css" -> "text/css"
-    "js", "mjs" -> "text/javascript"
-    "json" -> "application/json"
-    "svg" -> "image/svg+xml"
-    "png" -> "image/png"
-    "webp" -> "image/webp"
-    "woff" -> "font/woff"
-    "woff2" -> "font/woff2"
-    else -> "application/octet-stream"
-}
-
 fun String.buildPreviewURL(port: Int = PREVIEW_PORT.defaultValue.get()): String =
     "$PREVIEW_URL:$port" + this.let { if ((it.getOrNull(0) ?: "") == '/') it else "/$it" }
 

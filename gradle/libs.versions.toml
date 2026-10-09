@@ -15,6 +15,7 @@ activity = "1.13.0"
 composePreference = "1.1.1"
 documentfile = "1.1.0"
 navigation3 = "1.1.7"
+webkit = "1.17.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,6 +43,7 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 compose-preference = { group = "me.zhanghai.compose.preference", name = "library", version.ref = "composePreference" }
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
+androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 
 [plugins]

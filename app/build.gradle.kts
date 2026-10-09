@@ -188,6 +188,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
+    implementation(libs.androidx.webkit)
     implementation(libs.compose.preference)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

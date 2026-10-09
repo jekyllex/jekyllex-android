@@ -25,13 +25,10 @@
 package xyz.jekyllex
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import xyz.jekyllex.utils.Constants
 import xyz.jekyllex.utils.buildEditorURL
-import xyz.jekyllex.utils.editorAssetPath
-import xyz.jekyllex.utils.editorMime
 import java.io.File
 
 class EditorAssetsTest {
@@ -41,15 +38,6 @@ class EditorAssetsTest {
             "https://appassets.androidplatform.net/index.html?lang=md&timeout=1000&theme=3",
             "/tmp/post.md".buildEditorURL(theme = 3, timeout = 1000),
         )
-    }
-
-    @Test
-    fun assetPathRejectsTraversal() {
-        assertEquals("index.html", editorAssetPath("/index.html"))
-        assertEquals("assets/css/prism/one-light.css", editorAssetPath("/assets/css/prism/one-light.css"))
-        assertNull(editorAssetPath("/../secrets"))
-        assertNull(editorAssetPath("/assets/../../etc/passwd"))
-        assertEquals("text/css", editorMime("assets/css/prism/one-dark.css"))
     }
 
     @Test
