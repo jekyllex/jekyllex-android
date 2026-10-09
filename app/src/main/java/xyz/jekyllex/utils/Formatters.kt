@@ -96,7 +96,7 @@ fun buildStatsString(isDir: Boolean?, size: String?, lastMod: String?): String? 
 fun String.buildEditorURL(
     theme: Int = EDITOR_THEME.defaultValue.get(),
     timeout: Int = DEBOUNCE_DELAY.defaultValue.get()
-): String = "$EDITOR_URL/?lang=${this.getExtension()}&timeout=$timeout&theme=$theme"
+): String = "$EDITOR_URL?lang=${this.getExtension()}&timeout=$timeout&theme=$theme"
 
 fun String.buildPreviewURL(port: Int = PREVIEW_PORT.defaultValue.get()): String =
     "$PREVIEW_URL:$port" + this.let { if ((it.getOrNull(0) ?: "") == '/') it else "/$it" }

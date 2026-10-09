@@ -4,3 +4,6 @@
 [submodule "app/srcLib/termux-packages"]
 	path = app/srcLib/termux-packages
 	url = https://github.com/termux/termux-packages.git
+[submodule "app/src/main/assets"]
+	path = app/src/main/assets
+	url = https://github.com/jekyllex/editor.git

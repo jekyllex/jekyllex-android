@@ -29,15 +29,16 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.webkit.WebViewAssetLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import xyz.jekyllex.utils.Commands.cat
-import xyz.jekyllex.utils.Constants.EDITOR_URL
-import xyz.jekyllex.utils.Constants.PREVIEW_URL
+import xyz.jekyllex.utils.Constants.EDITOR_HOST
 import xyz.jekyllex.utils.NativeUtils
 import xyz.jekyllex.utils.toBase64
 
@@ -46,16 +47,17 @@ class WebViewClient(
     private val bridge: IOBridge? = null,
     private val previewLoadCallback: (url: String) -> Unit = {},
 ): WebViewClient() {
+    private var assets: WebViewAssetLoader? = null
     override fun shouldOverrideUrlLoading(
         view: WebView,
         request: WebResourceRequest
     ): Boolean {
-        val url = request.url.toString()
-        if (url.contains(EDITOR_URL) || url.contains(PREVIEW_URL)) return false
+        val uri = request.url
+        if (isEditor(uri) || isPreview(uri)) return false
 
         try {
             view.context.startActivity(
-                Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                Intent(Intent.ACTION_VIEW, uri)
             )
         } catch (e: ActivityNotFoundException) {
             Toast.makeText(
@@ -70,13 +72,25 @@ class WebViewClient(
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
-        bridge?.setTrusted(url.contains(EDITOR_URL))
-        if (url.contains(PREVIEW_URL)) previewLoadCallback(url)
+        val uri = Uri.parse(url)
+        bridge?.setTrusted(isEditor(uri))
+        if (isPreview(uri)) previewLoadCallback(url)
+    }
+
+    override fun shouldInterceptRequest(
+        view: WebView,
+        request: WebResourceRequest,
+    ): WebResourceResponse? {
+        val loader = assets ?: WebViewAssetLoader.Builder()
+            .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(view.context.applicationContext))
+            .build()
+            .also { assets = it }
+        return loader.shouldInterceptRequest(request.url)
     }
 
     override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
-        if (!url.contains(EDITOR_URL)) return
+        if (!isEditor(Uri.parse(url))) return
 
         NativeUtils.exec(cat(file), CoroutineScope(Dispatchers.IO)) { content ->
             withContext(Dispatchers.Main) {
@@ -84,4 +98,8 @@ class WebViewClient(
             }
         }
     }
+
+    private fun isEditor(uri: Uri) = uri.scheme == "https" && uri.host == EDITOR_HOST
+
+    private fun isPreview(uri: Uri) = uri.scheme == "http" && (uri.host == "localhost" || uri.host == "127.0.0.1")
 }
