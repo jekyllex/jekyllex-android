@@ -1,0 +1,5 @@
+- Open files 60% faster with the new built-in editor.
+- Add a starter template picker. An empty home opens it.
+- Install dependencies after a template clone.
+- Apply JEKYLL_ENV to terminal sessions.
+- Bug fixes & improvements.
